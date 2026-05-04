@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: OutreachFlow API
+  version: 0.1.0
+  description: API contract for OutreachFlow v1.
+servers:
+  - url: http://localhost:5054
+    description: Local development server
+paths:
+  /api/v1/health:
+    get:
+      operationId: getHealth
+      summary: Returns service health status
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - utcNow
+      properties:
+        status:
+          type: string
+          example: Healthy
+        utcNow:
+          type: string
+          format: date-time

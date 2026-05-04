@@ -1,0 +1,28 @@
+schema: spec-driven
+
+context: |
+  Project: OutreachFlow.
+  Tech stack: .NET 8, ASP.NET Core Web API, Blazor Web App, EF Core, SQLite for MVP, xUnit, FluentAssertions, Swagger/OpenAPI.
+  Architecture: layered architecture with Domain, Application, Infrastructure, Api, and Web projects.
+  Dependency direction: Presentation -> Application; Infrastructure -> Application and Domain; Application -> Domain; Domain -> nothing.
+  Product principles: generic lightweight CRM and controlled email outreach manager; no spam tooling; no hardcoded business-specific content, branding, colors, sender data, templates, or documents.
+  Quality bar: all behavior changes require relevant tests; EF changes require relational integration tests; API contract changes require OpenAPI documentation updates.
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: C#, ASP.NET Core, Blazor
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours

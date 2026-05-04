@@ -1,0 +1,6 @@
+@OutreachFlow.Api_HostAddress = http://localhost:5131
+
+GET {{OutreachFlow.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,35 @@
+using OutreachFlow.Application.DependencyInjection;
+using OutreachFlow.Infrastructure.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseHttpsRedirection();
+}
+
+app.MapGet("/api/v1/health", () =>
+    Results.Ok(new
+    {
+        status = "Healthy",
+        utcNow = DateTimeOffset.UtcNow
+    }))
+    .WithName("GetHealth")
+    .WithOpenApi();
+
+app.Run();
+
+public partial class Program;
