@@ -1,5 +1,8 @@
 # OutreachFlow
 
+[![CI](https://github.com/carlos-aisa/OutreachFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/carlos-aisa/OutreachFlow/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/carlos-aisa/OutreachFlow/main/.github/badges/coverage.json)](https://github.com/carlos-aisa/OutreachFlow/actions/workflows/ci.yml)
+
 OutreachFlow is a lightweight CRM and controlled email outreach manager for small teams and independent professionals. It helps organize contacts, tag audiences, generate personalized email drafts from templates, attach reusable documents, send emails through configurable providers, and track communication history.
 
 ## Who It Is For
@@ -114,8 +117,22 @@ dotnet test
 
 - Pull requests run restore, build, tests, and total coverage reporting.
 - Coverage is reported in the workflow summary, uploaded as an HTML artifact, and posted as a pull request comment.
+- The README coverage badge is updated from the latest successful `main` coverage run.
 - Coverage is report-only for now and does not block pull requests.
+- Pull requests must be opened from branches named `change/<change-id-or-short-description>`.
 - Completed OpenSpec changes are released through the manual `release openspec change` workflow after the change is archived, `VERSION` is bumped, and `CHANGELOG.md` has a matching entry.
+
+## OpenSpec Branch Workflow
+
+Each OpenSpec change must be implemented in its own branch and reviewed through a pull request.
+
+```bash
+git switch main
+git pull
+git switch -c change/p01-core-contacts-model
+```
+
+Use one branch per change. Do not implement multiple OpenSpec changes in the same pull request.
 
 ## Release Process
 

@@ -25,6 +25,6 @@ Thumbs.db
 *.db-wal
 
 # Test results
-TestResults/
-coverage/
-coverage-report/
+/TestResults/
+/coverage/
+/coverage-report/
