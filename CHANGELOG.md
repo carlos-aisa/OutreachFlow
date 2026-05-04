@@ -15,6 +15,9 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 - Blazor Web App baseline with initial navigation pages.
 - CI workflow with restore, build, and test stages.
 - CI coverage reporting for pull requests and main branch builds.
+- README badges for CI status and latest main branch coverage.
+- Pull request branch validation for `change/*` branches.
+- Pull request template aligned with the OpenSpec workflow.
 - Manual OpenSpec release workflow with archived change validation.
 - Release helper scripts for OpenSpec release validation and changelog extraction.
 - Baseline unit and integration tests for project and EF wiring.
