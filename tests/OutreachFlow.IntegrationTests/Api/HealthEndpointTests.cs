@@ -23,4 +23,15 @@ public sealed class HealthEndpointTests
         document.RootElement.TryGetProperty("utcNow", out var utcNowProperty).Should().BeTrue();
         utcNowProperty.GetString().Should().NotBeNullOrWhiteSpace();
     }
+
+    [Fact]
+    public async Task OrganizationsListShouldReturnSuccessWithoutManualDatabaseInitialization()
+    {
+        using var factory = new OutreachFlowApiFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/organizations");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
 }
