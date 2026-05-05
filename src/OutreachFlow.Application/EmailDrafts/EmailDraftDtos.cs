@@ -21,6 +21,8 @@ public sealed record EmailDraftDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
     DateTimeOffset? ApprovedAt,
+    DateTimeOffset? SentAt,
+    string? FailureReason,
     DateTimeOffset? CancelledAt);
 
 public sealed record EmailDraftFilterRequest(

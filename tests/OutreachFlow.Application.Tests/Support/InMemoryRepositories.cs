@@ -2,6 +2,7 @@ using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Attachments;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.EmailDrafts;
+using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
@@ -9,6 +10,7 @@ using OutreachFlow.Application.Tags;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.EmailDrafts;
+using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
@@ -411,4 +413,54 @@ internal sealed class InMemoryEmailDraftRepository : IEmailDraftRepository
         return Task.FromResult<IReadOnlyList<EmailDraft>>(
             query.OrderByDescending(draft => draft.CreatedAt).ToArray());
     }
+}
+
+internal sealed class InMemoryEmailMessageRepository : IEmailMessageRepository
+{
+    private readonly List<EmailMessage> _emailMessages = [];
+
+    public IReadOnlyList<EmailMessage> EmailMessages => _emailMessages;
+
+    public Task AddAsync(EmailMessage emailMessage, CancellationToken cancellationToken = default)
+    {
+        _emailMessages.Add(emailMessage);
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> ExistsEquivalentSentEmailAsync(
+        Guid contactId,
+        string subject,
+        DateTimeOffset since,
+        CancellationToken cancellationToken = default)
+    {
+        var exists = _emailMessages.Any(emailMessage =>
+            emailMessage.ContactId == contactId &&
+            emailMessage.Status == EmailMessageStatus.Sent &&
+            emailMessage.Subject == subject &&
+            emailMessage.CreatedAt >= since);
+
+        return Task.FromResult(exists);
+    }
+}
+
+internal sealed class InMemoryEmailSender(
+    Func<SendEmailCommand, EmailSendResult>? sendHandler = null) : IEmailSender
+{
+    private readonly Func<SendEmailCommand, EmailSendResult> _sendHandler =
+        sendHandler ?? (_ => new EmailSendResult(true, "Fake", $"fake-{Guid.NewGuid():N}", null));
+
+    public List<SendEmailCommand> SentCommands { get; } = [];
+
+    public Task<EmailSendResult> SendAsync(
+        SendEmailCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        SentCommands.Add(command);
+        return Task.FromResult(_sendHandler(command));
+    }
+}
+
+internal sealed class FixedEmailSendingPolicy(TimeSpan equivalentEmailWindow) : IEmailSendingPolicy
+{
+    public TimeSpan EquivalentEmailWindow { get; } = equivalentEmailWindow;
 }

@@ -1,8 +1,10 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 using OutreachFlow.Application.Attachments;
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
@@ -11,6 +13,7 @@ using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Common;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.EmailDrafts;
+using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
@@ -24,11 +27,17 @@ public sealed class EmailDraftService(
     ISenderProfileRepository senderProfileRepository,
     IAttachmentAssetRepository attachmentAssetRepository,
     IEmailDraftRepository emailDraftRepository,
+    IEmailMessageRepository emailMessageRepository,
+    IEmailSender emailSender,
+    IEmailSendingPolicy emailSendingPolicy,
     ITemplateRenderer templateRenderer,
     IUnitOfWork unitOfWork)
     : IEmailDraftService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly Regex UnresolvedTokenRegex = new(
+        @"\{\{[^{}]+\}\}",
+        RegexOptions.Compiled);
 
     public async Task<GenerateEmailDraftsResult> GenerateAsync(
         GenerateEmailDraftsRequest request,
@@ -266,6 +275,129 @@ public sealed class EmailDraftService(
         return Map(draft, contact);
     }
 
+    public async Task<EmailDraftDto> SendApprovedDraftAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var draft = await emailDraftRepository.GetByIdAsync(id, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Email draft was not found.");
+
+        var contact = await contactRepository.GetByIdAsync(draft.ContactId, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Draft contact was not found.");
+
+        var senderProfile = await senderProfileRepository.GetByIdAsync(draft.SenderProfileId, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Sender profile was not found.");
+
+        EnsureDraftCanBeSent(draft);
+
+        if (contact.DoNotContact)
+        {
+            throw new ApplicationValidationException("Do Not Contact recipients cannot receive emails.");
+        }
+
+        if (string.IsNullOrWhiteSpace(contact.Email))
+        {
+            throw new ApplicationValidationException("Contact does not have a valid recipient email address.");
+        }
+
+        if (!senderProfile.IsActive)
+        {
+            throw new ApplicationValidationException("Inactive sender profiles cannot be used for email sending.");
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var hasEquivalentRecentSend = await emailMessageRepository.ExistsEquivalentSentEmailAsync(
+            contact.Id,
+            draft.Subject,
+            now.Subtract(emailSendingPolicy.EquivalentEmailWindow),
+            cancellationToken);
+
+        if (hasEquivalentRecentSend)
+        {
+            throw new ApplicationValidationException(
+                "An equivalent email was already sent to this contact recently.");
+        }
+
+        var attachments = await ResolveDraftAttachmentsAsync(draft, cancellationToken);
+        var sendCommand = new SendEmailCommand(
+            contact.Email,
+            draft.Subject,
+            draft.Body,
+            new EmailSenderPayload(
+                senderProfile.Id,
+                senderProfile.Name,
+                senderProfile.Email,
+                senderProfile.Phone,
+                senderProfile.OrganizationName,
+                senderProfile.Website,
+                senderProfile.Signature),
+            attachments
+                .Select(attachmentAsset => new EmailAttachmentPayload(
+                    attachmentAsset.Id,
+                    attachmentAsset.Name,
+                    attachmentAsset.FileName,
+                    attachmentAsset.ContentType,
+                    attachmentAsset.StoragePath,
+                    attachmentAsset.SizeBytes))
+                .ToArray(),
+            new Dictionary<string, string>
+            {
+                ["draftId"] = draft.Id.ToString(),
+                ["contactId"] = contact.Id.ToString()
+            });
+
+        var sendResult = await emailSender.SendAsync(sendCommand, cancellationToken);
+        var provider = string.IsNullOrWhiteSpace(sendResult.Provider)
+            ? "Unknown"
+            : sendResult.Provider.Trim();
+
+        EmailMessage emailMessage;
+
+        try
+        {
+            if (sendResult.Success)
+            {
+                draft.MarkSent(now);
+                contact.MarkContacted(now);
+                emailMessage = EmailMessage.CreateSent(
+                    contact.Id,
+                    draft.OrganizationId,
+                    draft.Id,
+                    contact.Email,
+                    draft.Subject,
+                    draft.Body,
+                    provider,
+                    sendResult.ProviderMessageId,
+                    now);
+            }
+            else
+            {
+                var failureReason = string.IsNullOrWhiteSpace(sendResult.ErrorMessage)
+                    ? "The email provider returned a failure result."
+                    : sendResult.ErrorMessage.Trim();
+
+                draft.MarkFailed(failureReason, now);
+                emailMessage = EmailMessage.CreateFailed(
+                    contact.Id,
+                    draft.OrganizationId,
+                    draft.Id,
+                    contact.Email,
+                    draft.Subject,
+                    draft.Body,
+                    provider,
+                    failureReason,
+                    now);
+            }
+        }
+        catch (DomainException exception)
+        {
+            throw new ApplicationValidationException(exception.Message);
+        }
+
+        await emailMessageRepository.AddAsync(emailMessage, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return Map(draft, contact);
+    }
+
     private async Task<Organization?> ResolveOrganizationAsync(
         Guid? organizationId,
         Dictionary<Guid, Organization?> organizationCache,
@@ -309,6 +441,63 @@ public sealed class EmailDraftService(
         return attachments;
     }
 
+    private async Task<IReadOnlyList<AttachmentAsset>> ResolveDraftAttachmentsAsync(
+        EmailDraft draft,
+        CancellationToken cancellationToken)
+    {
+        var attachments = new List<AttachmentAsset>(draft.Attachments.Count);
+
+        foreach (var draftAttachment in draft.Attachments)
+        {
+            var attachmentAsset = await attachmentAssetRepository.GetByIdAsync(
+                draftAttachment.AttachmentAssetId,
+                cancellationToken);
+
+            if (attachmentAsset is null)
+            {
+                throw new ApplicationNotFoundException("A draft attachment asset was not found.");
+            }
+
+            if (!attachmentAsset.IsActive)
+            {
+                throw new ApplicationValidationException("Inactive attachments cannot be used for email sending.");
+            }
+
+            attachments.Add(attachmentAsset);
+        }
+
+        return attachments;
+    }
+
+    private static void EnsureDraftCanBeSent(EmailDraft draft)
+    {
+        if (draft.Status == EmailDraftStatus.Sent)
+        {
+            throw new ApplicationValidationException("This draft was already sent.");
+        }
+
+        if (draft.Status != EmailDraftStatus.Approved)
+        {
+            throw new ApplicationValidationException("Only approved drafts can be sent.");
+        }
+
+        if (draft.HasRenderErrors)
+        {
+            throw new ApplicationValidationException("Drafts with render errors cannot be sent.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(draft.MissingVariablesJson) ||
+            !string.IsNullOrWhiteSpace(draft.UnknownVariablesJson))
+        {
+            throw new ApplicationValidationException("Draft contains unresolved template diagnostics.");
+        }
+
+        if (UnresolvedTokenRegex.IsMatch(draft.Subject) || UnresolvedTokenRegex.IsMatch(draft.Body))
+        {
+            throw new ApplicationValidationException("Draft contains unresolved template variables.");
+        }
+    }
+
     private static EmailDraftDto Map(EmailDraft draft, Contact contact)
     {
         return new EmailDraftDto(
@@ -332,6 +521,8 @@ public sealed class EmailDraftService(
             draft.CreatedAt,
             draft.UpdatedAt,
             draft.ApprovedAt,
+            draft.SentAt,
+            draft.FailureReason,
             draft.CancelledAt);
     }
 

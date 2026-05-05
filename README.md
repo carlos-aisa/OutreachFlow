@@ -121,6 +121,21 @@ Phase 6 completed:
 - Blazor draft list and draft detail pages for review, corrections, approval, and cancellation
 - Domain, application, and integration tests for draft review rules and endpoint behavior
 
+Phase 7 completed:
+
+- Email sending abstraction through `IEmailSender` and send contracts (`SendEmailCommand`, `EmailSendResult`)
+- Default `FakeEmailSender` provider for local development and automated tests
+- Controlled send use case for approved drafts with validation rules:
+  - approved-only sending,
+  - do-not-contact enforcement,
+  - unresolved-variable blocking,
+  - active attachment validation,
+  - duplicate and equivalent recent send prevention
+- `EmailMessage` persistence for successful and failed send attempts
+- Draft send status transitions (`Sent`, `Failed`) with `sentAt` and failure reason tracking
+- Contact `LastContactedAt` update on successful send
+- Send endpoint and UI action (`POST /api/v1/drafts/{id}/send`)
+
 ## Roadmap
 
 - Phase 1: Core contacts model (organizations, contacts, tags)
@@ -192,6 +207,7 @@ The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Current end
 - `/api/v1/drafts/{id}` (PUT for edit)
 - `/api/v1/drafts/{id}/approve`
 - `/api/v1/drafts/{id}/cancel`
+- `/api/v1/drafts/{id}/send`
 
 ## Supported Template Variables
 
@@ -251,5 +267,7 @@ Use one branch per change. Do not implement multiple OpenSpec changes in the sam
 ## Technical Notes
 
 - Provider-specific email sending is abstracted for future SMTP/Gmail/Graph implementations.
+- The default provider is `Fake` (`EmailSending:Provider`).
+- Fake sender failures can be simulated using `EmailSending:FakeFailureKeyword` in subject/body/recipient (default: `[fail-send]`).
 - Secrets must be managed through environment variables or user secrets, never in source control.
 - MVP focus is controlled and traceable outreach, not automation at scale.

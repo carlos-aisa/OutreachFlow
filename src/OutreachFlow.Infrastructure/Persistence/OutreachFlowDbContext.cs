@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.EmailDrafts;
+using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
@@ -32,6 +33,8 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
     public DbSet<EmailDraftAttachment> EmailDraftAttachments => Set<EmailDraftAttachment>();
 
+    public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureOrganizations(modelBuilder);
@@ -44,6 +47,7 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
         ConfigureEmailTemplateAttachments(modelBuilder);
         ConfigureEmailDrafts(modelBuilder);
         ConfigureEmailDraftAttachments(modelBuilder);
+        ConfigureEmailMessages(modelBuilder);
     }
 
     private static void ConfigureOrganizations(ModelBuilder modelBuilder)
@@ -294,6 +298,11 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
             builder.Property(emailDraft => emailDraft.CancelledAt);
 
+            builder.Property(emailDraft => emailDraft.SentAt);
+
+            builder.Property(emailDraft => emailDraft.FailureReason)
+                .HasMaxLength(4000);
+
             builder.HasIndex(emailDraft => emailDraft.ContactId);
             builder.HasIndex(emailDraft => emailDraft.OrganizationId);
             builder.HasIndex(emailDraft => emailDraft.TemplateId);
@@ -348,6 +357,58 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
                 .WithMany()
                 .HasForeignKey(emailDraftAttachment => emailDraftAttachment.AttachmentAssetId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureEmailMessages(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EmailMessage>(builder =>
+        {
+            builder.ToTable("EmailMessages");
+            builder.HasKey(emailMessage => emailMessage.Id);
+
+            builder.Property(emailMessage => emailMessage.To)
+                .HasMaxLength(320)
+                .IsRequired();
+
+            builder.Property(emailMessage => emailMessage.Subject)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            builder.Property(emailMessage => emailMessage.Body)
+                .HasMaxLength(20000)
+                .IsRequired();
+
+            builder.Property(emailMessage => emailMessage.Provider)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            builder.Property(emailMessage => emailMessage.ProviderMessageId)
+                .HasMaxLength(500);
+
+            builder.Property(emailMessage => emailMessage.FailureReason)
+                .HasMaxLength(4000);
+
+            builder.HasIndex(emailMessage => emailMessage.ContactId);
+            builder.HasIndex(emailMessage => emailMessage.EmailDraftId);
+            builder.HasIndex(emailMessage => emailMessage.Status);
+            builder.HasIndex(emailMessage => emailMessage.CreatedAt);
+            builder.HasIndex(emailMessage => new { emailMessage.ContactId, emailMessage.Subject, emailMessage.Status, emailMessage.CreatedAt });
+
+            builder.HasOne<Contact>()
+                .WithMany()
+                .HasForeignKey(emailMessage => emailMessage.ContactId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<Organization>()
+                .WithMany()
+                .HasForeignKey(emailMessage => emailMessage.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasOne<EmailDraft>()
+                .WithMany()
+                .HasForeignKey(emailMessage => emailMessage.EmailDraftId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

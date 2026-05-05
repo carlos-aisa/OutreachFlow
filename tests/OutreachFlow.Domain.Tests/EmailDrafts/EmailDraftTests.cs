@@ -117,6 +117,47 @@ public sealed class EmailDraftTests
     }
 
     [Fact]
+    public void ShouldMarkApprovedDraftAsSent()
+    {
+        var draft = CreateDraft();
+        var approvedAt = DateTimeOffset.UtcNow.AddMinutes(-2);
+        var sentAt = DateTimeOffset.UtcNow;
+        draft.Approve(approvedAt);
+
+        draft.MarkSent(sentAt);
+
+        draft.Status.Should().Be(EmailDraftStatus.Sent);
+        draft.SentAt.Should().Be(sentAt);
+        draft.FailureReason.Should().BeNull();
+    }
+
+    [Fact]
+    public void ShouldMarkApprovedDraftAsFailed()
+    {
+        var draft = CreateDraft();
+        var approvedAt = DateTimeOffset.UtcNow.AddMinutes(-2);
+        var failedAt = DateTimeOffset.UtcNow;
+        draft.Approve(approvedAt);
+
+        draft.MarkFailed("Provider timeout.", failedAt);
+
+        draft.Status.Should().Be(EmailDraftStatus.Failed);
+        draft.FailureReason.Should().Be("Provider timeout.");
+        draft.SentAt.Should().BeNull();
+    }
+
+    [Fact]
+    public void ShouldRejectMarkingNonApprovedDraftAsSent()
+    {
+        var draft = CreateDraft();
+
+        var act = () => draft.MarkSent(DateTimeOffset.UtcNow);
+
+        act.Should().Throw<DomainException>()
+            .WithMessage("Only approved drafts can be marked as sent.");
+    }
+
+    [Fact]
     public void ShouldRejectApprovalWhenUnresolvedVariableTokenRemains()
     {
         var draft = EmailDraft.CreateGenerated(

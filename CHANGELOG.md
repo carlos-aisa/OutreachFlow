@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.8.0] - 2026-05-05
+
+### Added
+
+- Email sending abstraction contracts in Application:
+  - `IEmailSender`
+  - `SendEmailCommand` and payload models
+  - `EmailSendResult`
+- `EmailMessage` domain model and persistence for send attempt traceability.
+- `FakeEmailSender` Infrastructure provider with configurable failure keyword simulation.
+- Configurable email sending policy (`EquivalentEmailWindowHours`) for equivalent recent send prevention.
+- `SendApprovedDraftAsync` use case with controlled validation rules:
+  - approved-only sends,
+  - do-not-contact block,
+  - unresolved variable/diagnostic block,
+  - active attachment validation,
+  - duplicate/equivalent recent send prevention.
+- Send API endpoint: `POST /api/v1/drafts/{id}/send`.
+- Draft send UI action in review page.
+- Domain, application, integration, and persistence tests for sending success/failure and duplicate prevention.
+- OpenSpec archive for `p07-email-sending-abstraction`.
+
+### Changed
+
+- `EmailDraft` now stores send outcome metadata (`sentAt`, `failureReason`) and supports `Sent`/`Failed` transitions.
+- OpenAPI, README, and architecture documentation now describe the Phase 7 controlled sending workflow and fake provider behavior.
+
 ## [0.7.0] - 2026-05-05
 
 ### Added

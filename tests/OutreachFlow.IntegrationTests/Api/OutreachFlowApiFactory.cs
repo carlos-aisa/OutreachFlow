@@ -35,6 +35,9 @@ internal sealed class OutreachFlowApiFactory : WebApplicationFactory<Program>
             {
                 ["ConnectionStrings:OutreachFlow"] = $"Data Source={_databasePath}",
                 ["AttachmentStorage:RootPath"] = _attachmentsRootPath,
+                ["EmailSending:Provider"] = "Fake",
+                ["EmailSending:EquivalentEmailWindowHours"] = "168",
+                ["EmailSending:FakeFailureKeyword"] = "[fail-send]",
                 ["Logging:LogLevel:Default"] = "Warning",
                 ["Logging:LogLevel:Microsoft.EntityFrameworkCore"] = "Warning"
             };
