@@ -9,11 +9,15 @@ public sealed class TemplateVariableServiceTests
     public void ShouldListSupportedTemplateVariables()
     {
         var service = new TemplateVariableService();
+        var registryNames = TemplateVariableRegistry
+            .ListSupported()
+            .Select(variable => variable.Name)
+            .ToArray();
 
         var variables = service.ListSupportedVariables();
+        var variableNames = variables.Select(variable => variable.Name).ToArray();
 
-        variables.Should().Contain(variable => variable.Name == "contact.displayName");
-        variables.Should().Contain(variable => variable.Name == "sender.signature");
+        variableNames.Should().Equal(registryNames);
         variables.Should().OnlyContain(variable => !string.IsNullOrWhiteSpace(variable.Example));
     }
 }

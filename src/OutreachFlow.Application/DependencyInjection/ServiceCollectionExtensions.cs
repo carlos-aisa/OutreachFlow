@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISenderProfileService, SenderProfileService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddSingleton<ITemplateVariableService, TemplateVariableService>();
+        services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
 
         return services;
     }

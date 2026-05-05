@@ -86,6 +86,14 @@ Phase 2 completed:
 - REST endpoints and Blazor pages for sender profiles and templates
 - Domain, application, and integration tests for configurable sender identity and template management
 
+Phase 3 completed:
+
+- `ITemplateRenderer` contract with centralized variable rendering rules
+- `TemplateContext` and `RenderedEmail` models for deterministic render diagnostics
+- Unknown variable detection and missing value detection for supported variables
+- Unresolved token safety checks to block risky draft generation flows
+- Application tests for success, unknown variables, missing values, and unsupported expression syntax
+
 ## Roadmap
 
 - Phase 1: Core contacts model (organizations, contacts, tags)
@@ -106,7 +114,7 @@ Phase 2 completed:
 dotnet restore
 ```
 
-2. Apply migrations:
+2. Optional: apply migrations manually (the API also applies pending migrations on startup):
 
 ```bash
 dotnet ef database update --project src/OutreachFlow.Infrastructure --startup-project src/OutreachFlow.Api
@@ -138,6 +146,25 @@ The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Phase 1 add
 - `/api/v1/sender-profiles/default`
 - `/api/v1/templates`
 - `/api/v1/templates/variables`
+
+## Supported Template Variables
+
+Supported variable names are centralized and validated:
+
+- `contact.displayName`
+- `contact.email`
+- `contact.role`
+- `organization.name`
+- `organization.city`
+- `organization.province`
+- `sender.name`
+- `sender.email`
+- `sender.phone`
+- `sender.organizationName`
+- `sender.website`
+- `sender.signature`
+
+Rendering supports only direct substitution with `{{variable.name}}` syntax. Loops, conditionals, scripts, and expression evaluation are intentionally out of scope for MVP.
 
 ## Run Tests
 
