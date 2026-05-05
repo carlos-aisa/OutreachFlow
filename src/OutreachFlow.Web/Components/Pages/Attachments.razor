@@ -1,0 +1,245 @@
+@page "/attachments"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using OutreachFlow.Application.Attachments
+@using OutreachFlow.Web.Attachments
+@inject AttachmentAssetApiClient AttachmentClient
+
+<PageTitle>Attachments</PageTitle>
+
+<h1>Attachments</h1>
+
+<p class="text-muted">
+    Manage reusable files that can be attached to templates and reused in controlled outreach workflows.
+</p>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <section class="card">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Upload attachment</h2>
+            </div>
+            <div class="card-body">
+                <EditForm Model="form" OnValidSubmit="UploadAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="attachment-name">Name</label>
+                            <InputText id="attachment-name" class="form-control" @bind-Value="form.Name" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="attachment-description">Description</label>
+                            <InputText id="attachment-description" class="form-control" @bind-Value="form.Description" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="attachment-file">File</label>
+                            <InputFile id="attachment-file" OnChange="OnFileSelected" />
+                            @if (selectedFile is not null)
+                            {
+                                <div class="form-text">
+                                    Selected: <strong>@selectedFile.Name</strong> (@FormatSize(selectedFile.Size))
+                                </div>
+                            }
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success" disabled="@isUploading">Upload</button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-7">
+        <section class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">Attachment list</h2>
+                <span class="badge text-bg-secondary">@attachments.Count files</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">File</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Size</th>
+                            <th scope="col">Active</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (isLoading)
+                        {
+                            <tr><td colspan="6">Loading attachments...</td></tr>
+                        }
+                        else if (attachments.Count == 0)
+                        {
+                            <tr><td colspan="6">No attachments uploaded yet.</td></tr>
+                        }
+                        else
+                        {
+                            @foreach (var attachment in attachments)
+                            {
+                                <tr>
+                                    <td>@attachment.Name</td>
+                                    <td>@attachment.FileName</td>
+                                    <td><code>@attachment.ContentType</code></td>
+                                    <td>@FormatSize(attachment.SizeBytes)</td>
+                                    <td>@(attachment.IsActive ? "Yes" : "No")</td>
+                                    <td>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            @onclick="() => DeactivateAsync(attachment.Id)"
+                                            disabled="@(!attachment.IsActive)">
+                                            Deactivate
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+@code {
+    private IReadOnlyList<AttachmentAssetDto> attachments = [];
+    private AttachmentUploadFormModel form = new();
+    private IBrowserFile? selectedFile;
+    private string? errorMessage;
+    private bool isLoading;
+    private bool isUploading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            attachments = await AttachmentClient.ListAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs args)
+    {
+        selectedFile = args.File;
+
+        if (selectedFile is not null && string.IsNullOrWhiteSpace(form.Name))
+        {
+            form.Name = Path.GetFileNameWithoutExtension(selectedFile.Name);
+        }
+    }
+
+    private async Task UploadAsync()
+    {
+        if (selectedFile is null)
+        {
+            errorMessage = "Please select a file to upload.";
+            return;
+        }
+
+        isUploading = true;
+        errorMessage = null;
+
+        try
+        {
+            await using var stream = selectedFile.OpenReadStream(maxAllowedSize: 20 * 1024 * 1024);
+            var contentType = string.IsNullOrWhiteSpace(selectedFile.ContentType)
+                ? "application/octet-stream"
+                : selectedFile.ContentType;
+
+            await AttachmentClient.UploadAsync(
+                form.Name,
+                form.Description,
+                selectedFile.Name,
+                contentType,
+                stream);
+
+            form = new AttachmentUploadFormModel();
+            selectedFile = null;
+            await LoadAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+
+    private async Task DeactivateAsync(Guid id)
+    {
+        try
+        {
+            await AttachmentClient.DeactivateAsync(id);
+            await LoadAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+    }
+
+    private static string FormatSize(long sizeBytes)
+    {
+        if (sizeBytes < 1024)
+        {
+            return $"{sizeBytes} B";
+        }
+
+        if (sizeBytes < 1024 * 1024)
+        {
+            return $"{sizeBytes / 1024d:0.##} KB";
+        }
+
+        return $"{sizeBytes / (1024d * 1024d):0.##} MB";
+    }
+
+    private sealed class AttachmentUploadFormModel
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        public string? Description { get; set; }
+    }
+}

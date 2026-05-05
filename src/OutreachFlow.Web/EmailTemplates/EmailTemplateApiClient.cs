@@ -60,4 +60,29 @@ public sealed class EmailTemplateApiClient(HttpClient httpClient)
         using var response = await httpClient.DeleteAsync($"api/v1/templates/{id}", cancellationToken);
         await ApiClientJson.EnsureSuccessAsync(response, cancellationToken);
     }
+
+    public async Task<EmailTemplateDto> AssignDefaultAttachmentAsync(
+        Guid templateId,
+        Guid attachmentAssetId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PostAsync(
+            $"api/v1/templates/{templateId}/attachments/{attachmentAssetId}",
+            content: null,
+            cancellationToken);
+
+        return await ApiClientJson.ReadRequiredAsync<EmailTemplateDto>(response, cancellationToken);
+    }
+
+    public async Task<EmailTemplateDto> RemoveDefaultAttachmentAsync(
+        Guid templateId,
+        Guid attachmentAssetId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.DeleteAsync(
+            $"api/v1/templates/{templateId}/attachments/{attachmentAssetId}",
+            cancellationToken);
+
+        return await ApiClientJson.ReadRequiredAsync<EmailTemplateDto>(response, cancellationToken);
+    }
 }

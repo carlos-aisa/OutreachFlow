@@ -1,4 +1,5 @@
 using OutreachFlow.Application.Common;
+using OutreachFlow.Application.Attachments;
 using OutreachFlow.Domain.Common;
 using OutreachFlow.Domain.EmailTemplates;
 
@@ -6,6 +7,7 @@ namespace OutreachFlow.Application.EmailTemplates;
 
 public sealed class EmailTemplateService(
     IEmailTemplateRepository emailTemplateRepository,
+    IAttachmentAssetRepository attachmentAssetRepository,
     IUnitOfWork unitOfWork)
     : IEmailTemplateService
 {
@@ -71,6 +73,43 @@ public sealed class EmailTemplateService(
         await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<EmailTemplateDto> AssignDefaultAttachmentAsync(
+        Guid id,
+        Guid attachmentAssetId,
+        CancellationToken cancellationToken = default)
+    {
+        var emailTemplate = await emailTemplateRepository.GetByIdAsync(id, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Email template was not found.");
+
+        var attachmentAsset = await attachmentAssetRepository.GetByIdAsync(attachmentAssetId, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Attachment asset was not found.");
+
+        try
+        {
+            emailTemplate.AssignDefaultAttachment(attachmentAsset, DateTimeOffset.UtcNow);
+        }
+        catch (DomainException exception)
+        {
+            throw new ApplicationValidationException(exception.Message);
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return Map(emailTemplate);
+    }
+
+    public async Task<EmailTemplateDto> RemoveDefaultAttachmentAsync(
+        Guid id,
+        Guid attachmentAssetId,
+        CancellationToken cancellationToken = default)
+    {
+        var emailTemplate = await emailTemplateRepository.GetByIdAsync(id, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Email template was not found.");
+
+        emailTemplate.RemoveDefaultAttachment(attachmentAssetId, DateTimeOffset.UtcNow);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return Map(emailTemplate);
+    }
+
     private static EmailTemplate CreateEmailTemplate(CreateEmailTemplateRequest request)
     {
         try
@@ -95,6 +134,10 @@ public sealed class EmailTemplateService(
             emailTemplate.Description,
             emailTemplate.SubjectTemplate,
             emailTemplate.BodyTemplate,
+            emailTemplate.DefaultAttachments
+                .Select(defaultAttachment => defaultAttachment.AttachmentAssetId)
+                .OrderBy(attachmentId => attachmentId)
+                .ToArray(),
             emailTemplate.IsActive,
             emailTemplate.CreatedAt,
             emailTemplate.UpdatedAt);

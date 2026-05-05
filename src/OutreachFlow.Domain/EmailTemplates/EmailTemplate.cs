@@ -1,9 +1,12 @@
 using OutreachFlow.Domain.Common;
+using OutreachFlow.Domain.Attachments;
 
 namespace OutreachFlow.Domain.EmailTemplates;
 
 public sealed class EmailTemplate
 {
+    private readonly List<EmailTemplateAttachment> _defaultAttachments = [];
+
     private EmailTemplate()
     {
         Name = string.Empty;
@@ -44,6 +47,8 @@ public sealed class EmailTemplate
 
     public DateTimeOffset UpdatedAt { get; private set; }
 
+    public IReadOnlyCollection<EmailTemplateAttachment> DefaultAttachments => _defaultAttachments.AsReadOnly();
+
     public void Update(
         string name,
         string? description,
@@ -70,6 +75,41 @@ public sealed class EmailTemplate
     {
         IsActive = false;
         UpdatedAt = updatedAt;
+    }
+
+    public bool AssignDefaultAttachment(AttachmentAsset attachmentAsset, DateTimeOffset updatedAt)
+    {
+        ArgumentNullException.ThrowIfNull(attachmentAsset);
+
+        if (!attachmentAsset.IsActive)
+        {
+            throw new DomainException("Inactive attachments cannot be assigned to templates.");
+        }
+
+        if (_defaultAttachments.Any(defaultAttachment =>
+                defaultAttachment.AttachmentAssetId == attachmentAsset.Id))
+        {
+            return false;
+        }
+
+        _defaultAttachments.Add(new EmailTemplateAttachment(Id, attachmentAsset.Id));
+        UpdatedAt = updatedAt;
+        return true;
+    }
+
+    public bool RemoveDefaultAttachment(Guid attachmentAssetId, DateTimeOffset updatedAt)
+    {
+        var existingAttachment = _defaultAttachments.FirstOrDefault(defaultAttachment =>
+            defaultAttachment.AttachmentAssetId == attachmentAssetId);
+
+        if (existingAttachment is null)
+        {
+            return false;
+        }
+
+        _defaultAttachments.Remove(existingAttachment);
+        UpdatedAt = updatedAt;
+        return true;
     }
 
     private static string RequireText(string value, string message)

@@ -6,6 +6,7 @@ public sealed record EmailTemplateDto(
     string? Description,
     string SubjectTemplate,
     string BodyTemplate,
+    IReadOnlyList<Guid> DefaultAttachmentIds,
     bool IsActive,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);

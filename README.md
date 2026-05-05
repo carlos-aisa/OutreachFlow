@@ -94,6 +94,16 @@ Phase 3 completed:
 - Unresolved token safety checks to block risky draft generation flows
 - Application tests for success, unknown variables, missing values, and unsupported expression syntax
 
+Phase 4 completed:
+
+- Reusable attachment assets with active/inactive lifecycle behavior
+- Local file storage through `IAttachmentFileStorage` and `LocalAttachmentFileStorage`
+- Safe storage root configuration under `AttachmentStorage:RootPath`
+- REST endpoints for attachment upload/list/read/update/deactivate
+- Template default attachment assignment/removal endpoints
+- Blazor attachment management page and template editor attachment controls
+- Domain, application, and integration tests for attachment persistence, upload, and association rules
+
 ## Roadmap
 
 - Phase 1: Core contacts model (organizations, contacts, tags)
@@ -120,13 +130,23 @@ dotnet restore
 dotnet ef database update --project src/OutreachFlow.Infrastructure --startup-project src/OutreachFlow.Api
 ```
 
-3. Run API:
+3. Optional: configure local attachment storage root (default: `storage/attachments`):
+
+```json
+{
+  "AttachmentStorage": {
+    "RootPath": "storage/attachments"
+  }
+}
+```
+
+4. Run API:
 
 ```bash
 dotnet run --project src/OutreachFlow.Api
 ```
 
-4. Run Web UI:
+5. Run Web UI:
 
 ```bash
 dotnet run --project src/OutreachFlow.Web
@@ -146,6 +166,9 @@ The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Phase 1 add
 - `/api/v1/sender-profiles/default`
 - `/api/v1/templates`
 - `/api/v1/templates/variables`
+- `/api/v1/templates/{id}/attachments/{attachmentId}`
+- `/api/v1/attachments`
+- `/api/v1/attachments/{id}`
 
 ## Supported Template Variables
 

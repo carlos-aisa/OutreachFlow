@@ -11,7 +11,10 @@ public sealed class EmailTemplateServiceTests
     public async Task ShouldCreateActiveEmailTemplate()
     {
         var repository = new InMemoryEmailTemplateRepository();
-        var service = new EmailTemplateService(repository, new InMemoryUnitOfWork());
+        var service = new EmailTemplateService(
+            repository,
+            new InMemoryAttachmentAssetRepository(),
+            new InMemoryUnitOfWork());
 
         var template = await service.CreateAsync(new CreateEmailTemplateRequest(
             "Intro",
@@ -29,6 +32,7 @@ public sealed class EmailTemplateServiceTests
     {
         var service = new EmailTemplateService(
             new InMemoryEmailTemplateRepository(),
+            new InMemoryAttachmentAssetRepository(),
             new InMemoryUnitOfWork());
         var template = await service.CreateAsync(new CreateEmailTemplateRequest(
             "Intro",
@@ -52,6 +56,7 @@ public sealed class EmailTemplateServiceTests
     {
         var service = new EmailTemplateService(
             new InMemoryEmailTemplateRepository(),
+            new InMemoryAttachmentAssetRepository(),
             new InMemoryUnitOfWork());
         var activeTemplate = await service.CreateAsync(new CreateEmailTemplateRequest(
             "Active",
@@ -76,6 +81,7 @@ public sealed class EmailTemplateServiceTests
     {
         var service = new EmailTemplateService(
             new InMemoryEmailTemplateRepository(),
+            new InMemoryAttachmentAssetRepository(),
             new InMemoryUnitOfWork());
 
         var act = () => service.CreateAsync(new CreateEmailTemplateRequest(
@@ -86,5 +92,34 @@ public sealed class EmailTemplateServiceTests
 
         await act.Should().ThrowAsync<ApplicationValidationException>()
             .WithMessage("Email template body is required.");
+    }
+
+    [Fact]
+    public async Task ShouldRejectInactiveDefaultAttachmentAssignment()
+    {
+        var templateRepository = new InMemoryEmailTemplateRepository();
+        var attachmentRepository = new InMemoryAttachmentAssetRepository();
+        var service = new EmailTemplateService(
+            templateRepository,
+            attachmentRepository,
+            new InMemoryUnitOfWork());
+        var template = await service.CreateAsync(new CreateEmailTemplateRequest(
+            "Intro",
+            null,
+            "Subject",
+            "Body"));
+        var attachment = new OutreachFlow.Domain.Attachments.AttachmentAsset(
+            "Brochure",
+            "brochure.pdf",
+            "application/pdf",
+            "storage/brochure.pdf",
+            1024);
+        attachment.Deactivate();
+        await attachmentRepository.AddAsync(attachment);
+
+        var act = () => service.AssignDefaultAttachmentAsync(template.Id, attachment.Id);
+
+        await act.Should().ThrowAsync<ApplicationValidationException>()
+            .WithMessage("Inactive attachments cannot be assigned to templates.");
     }
 }
