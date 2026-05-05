@@ -74,6 +74,15 @@ public static class EmailDraftEndpoints
             .WithName("CancelEmailDraft")
             .WithOpenApi();
 
+        group.MapPost("/{id:guid}/send", async (
+            Guid id,
+            IEmailDraftService service,
+            CancellationToken cancellationToken) =>
+            await ApiEndpoint.HandleAsync(async () =>
+                Results.Ok(await service.SendApprovedDraftAsync(id, cancellationToken))))
+            .WithName("SendApprovedEmailDraft")
+            .WithOpenApi();
+
         return endpoints;
     }
 }

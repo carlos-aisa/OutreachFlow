@@ -2,13 +2,14 @@ using FluentAssertions;
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.EmailDrafts;
+using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.Templates;
 using OutreachFlow.Application.Tests.Support;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.EmailDrafts;
+using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
-using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
 
 namespace OutreachFlow.Application.Tests.EmailDrafts;
@@ -18,22 +19,14 @@ public sealed class EmailDraftServiceTests
     [Fact]
     public async Task ShouldGenerateDraftsForEligibleContactsAndStoreDiagnostics()
     {
-        var contactRepository = new InMemoryContactRepository();
-        var organizationRepository = new InMemoryOrganizationRepository();
-        var emailTemplateRepository = new InMemoryEmailTemplateRepository();
-        var senderProfileRepository = new InMemorySenderProfileRepository();
-        var attachmentRepository = new InMemoryAttachmentAssetRepository();
-        var draftRepository = new InMemoryEmailDraftRepository();
-        var unitOfWork = new InMemoryUnitOfWork();
-        var service = new EmailDraftService(
-            contactRepository,
-            organizationRepository,
-            emailTemplateRepository,
-            senderProfileRepository,
-            attachmentRepository,
-            draftRepository,
-            new TemplateRenderer(),
-            unitOfWork);
+        var service = CreateEmailDraftService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out var attachmentRepository,
+            out var draftRepository,
+            out _,
+            out var unitOfWork);
         var eligibleContact = new Contact(
             "Alex Morgan",
             "alex@example.com");
@@ -99,11 +92,14 @@ public sealed class EmailDraftServiceTests
     [Fact]
     public async Task ShouldRejectInactiveSelectedAttachment()
     {
-        var service = CreateService(
+        var service = CreateEmailDraftService(
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
-            out var attachmentRepository);
+            out var attachmentRepository,
+            out _,
+            out _,
+            out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
         var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
@@ -138,10 +134,13 @@ public sealed class EmailDraftServiceTests
     [Fact]
     public async Task ShouldUpdateNeedsReviewDraftAndApproveAfterManualFix()
     {
-        var service = CreateService(
+        var service = CreateEmailDraftService(
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
+            out _,
+            out _,
+            out _,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
@@ -190,10 +189,13 @@ public sealed class EmailDraftServiceTests
     [Fact]
     public async Task ShouldRejectApprovalWhenDraftStillHasRenderErrors()
     {
-        var service = CreateService(
+        var service = CreateEmailDraftService(
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
+            out _,
+            out _,
+            out _,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
@@ -228,10 +230,13 @@ public sealed class EmailDraftServiceTests
     [Fact]
     public async Task ShouldCancelDraftAndRejectFurtherApprovals()
     {
-        var service = CreateService(
+        var service = CreateEmailDraftService(
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
+            out _,
+            out _,
+            out _,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
@@ -263,18 +268,254 @@ public sealed class EmailDraftServiceTests
             .WithMessage("Cancelled drafts cannot be approved.");
     }
 
-    private static EmailDraftService CreateService(
+    [Fact]
+    public async Task ShouldSendApprovedDraftAndPersistSuccessfulEmailMessage()
+    {
+        var service = CreateEmailDraftService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _,
+            out _,
+            out var emailMessageRepository,
+            out _);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Body");
+        await emailTemplateRepository.AddAsync(template);
+
+        var generationResult = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+        var draftId = generationResult.Drafts.Single().Id;
+        await service.ApproveAsync(draftId);
+
+        var sentDraft = await service.SendApprovedDraftAsync(draftId);
+
+        sentDraft.Status.Should().Be(EmailDraftStatus.Sent);
+        sentDraft.SentAt.Should().NotBeNull();
+        sentDraft.FailureReason.Should().BeNull();
+        emailMessageRepository.EmailMessages.Should().ContainSingle();
+        emailMessageRepository.EmailMessages[0].Status.Should().Be(EmailMessageStatus.Sent);
+
+        var updatedContact = await contactRepository.GetByIdAsync(contact.Id);
+        updatedContact.Should().NotBeNull();
+        updatedContact!.LastContactedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ShouldPersistFailedEmailMessageWhenSenderFails()
+    {
+        var service = CreateEmailDraftService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _,
+            out _,
+            out var emailMessageRepository,
+            out _,
+            _ => new EmailSendResult(
+                Success: false,
+                Provider: "Fake",
+                ProviderMessageId: null,
+                ErrorMessage: "Simulated failure from tests."));
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Body");
+        await emailTemplateRepository.AddAsync(template);
+
+        var generationResult = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+        var draftId = generationResult.Drafts.Single().Id;
+        await service.ApproveAsync(draftId);
+
+        var failedDraft = await service.SendApprovedDraftAsync(draftId);
+
+        failedDraft.Status.Should().Be(EmailDraftStatus.Failed);
+        failedDraft.FailureReason.Should().Be("Simulated failure from tests.");
+        emailMessageRepository.EmailMessages.Should().ContainSingle();
+        emailMessageRepository.EmailMessages[0].Status.Should().Be(EmailMessageStatus.Failed);
+    }
+
+    [Fact]
+    public async Task ShouldBlockDuplicateSendForAlreadySentDraft()
+    {
+        var service = CreateEmailDraftService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _,
+            out _,
+            out _,
+            out _);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Body");
+        await emailTemplateRepository.AddAsync(template);
+
+        var generationResult = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+        var draftId = generationResult.Drafts.Single().Id;
+        await service.ApproveAsync(draftId);
+        _ = await service.SendApprovedDraftAsync(draftId);
+
+        var act = () => service.SendApprovedDraftAsync(draftId);
+
+        await act.Should().ThrowAsync<ApplicationValidationException>()
+            .WithMessage("This draft was already sent.");
+    }
+
+    [Fact]
+    public async Task ShouldBlockEquivalentRecentEmailSend()
+    {
+        var service = CreateEmailDraftService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _,
+            out _,
+            out _,
+            out _,
+            sendHandler: _ => new EmailSendResult(
+                Success: true,
+                Provider: "Fake",
+                ProviderMessageId: $"fake-{Guid.NewGuid():N}",
+                ErrorMessage: null),
+            equivalentEmailWindow: TimeSpan.FromDays(7));
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Body");
+        await emailTemplateRepository.AddAsync(template);
+
+        var firstGeneration = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+        var firstDraftId = firstGeneration.Drafts.Single().Id;
+        await service.ApproveAsync(firstDraftId);
+        _ = await service.SendApprovedDraftAsync(firstDraftId);
+
+        var secondGeneration = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+        var secondDraftId = secondGeneration.Drafts.Single().Id;
+        await service.ApproveAsync(secondDraftId);
+
+        var act = () => service.SendApprovedDraftAsync(secondDraftId);
+
+        await act.Should().ThrowAsync<ApplicationValidationException>()
+            .WithMessage("An equivalent email was already sent to this contact recently.");
+    }
+
+    [Fact]
+    public async Task ShouldBlockSendingToDoNotContactRecipient()
+    {
+        var service = CreateEmailDraftService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _,
+            out _,
+            out _,
+            out _);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Body");
+        await emailTemplateRepository.AddAsync(template);
+
+        var generationResult = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+        var draftId = generationResult.Drafts.Single().Id;
+        await service.ApproveAsync(draftId);
+        contact.MarkDoNotContact(DateTimeOffset.UtcNow);
+
+        var act = () => service.SendApprovedDraftAsync(draftId);
+
+        await act.Should().ThrowAsync<ApplicationValidationException>()
+            .WithMessage("Do Not Contact recipients cannot receive emails.");
+    }
+
+    private static EmailDraftService CreateEmailDraftService(
         out InMemoryContactRepository contactRepository,
         out InMemoryEmailTemplateRepository emailTemplateRepository,
         out InMemorySenderProfileRepository senderProfileRepository,
-        out InMemoryAttachmentAssetRepository attachmentRepository)
+        out InMemoryAttachmentAssetRepository attachmentRepository,
+        out InMemoryEmailDraftRepository draftRepository,
+        out InMemoryEmailMessageRepository emailMessageRepository,
+        out InMemoryUnitOfWork unitOfWork,
+        Func<SendEmailCommand, EmailSendResult>? sendHandler = null,
+        TimeSpan? equivalentEmailWindow = null)
     {
         contactRepository = new InMemoryContactRepository();
         var organizationRepository = new InMemoryOrganizationRepository();
         emailTemplateRepository = new InMemoryEmailTemplateRepository();
         senderProfileRepository = new InMemorySenderProfileRepository();
         attachmentRepository = new InMemoryAttachmentAssetRepository();
-        var draftRepository = new InMemoryEmailDraftRepository();
+        draftRepository = new InMemoryEmailDraftRepository();
+        emailMessageRepository = new InMemoryEmailMessageRepository();
+        unitOfWork = new InMemoryUnitOfWork();
+        var emailSender = new InMemoryEmailSender(sendHandler);
+        var policy = new FixedEmailSendingPolicy(equivalentEmailWindow ?? TimeSpan.FromDays(7));
 
         return new EmailDraftService(
             contactRepository,
@@ -283,7 +524,10 @@ public sealed class EmailDraftServiceTests
             senderProfileRepository,
             attachmentRepository,
             draftRepository,
+            emailMessageRepository,
+            emailSender,
+            policy,
             new TemplateRenderer(),
-            new InMemoryUnitOfWork());
+            unitOfWork);
     }
 }

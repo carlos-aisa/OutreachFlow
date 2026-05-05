@@ -1,6 +1,7 @@
 @page "/drafts/{DraftId:guid}"
 @rendermode InteractiveServer
 @using OutreachFlow.Application.EmailDrafts
+@using OutreachFlow.Domain.EmailDrafts
 @using OutreachFlow.Web.EmailDrafts
 @inject EmailDraftApiClient DraftClient
 
@@ -51,6 +52,12 @@ else
 
                 <dt class="col-sm-3">Cancelled</dt>
                 <dd class="col-sm-9">@FormatDate(draft.CancelledAt)</dd>
+
+                <dt class="col-sm-3">Sent</dt>
+                <dd class="col-sm-9">@FormatDate(draft.SentAt)</dd>
+
+                <dt class="col-sm-3">Failure reason</dt>
+                <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(draft.FailureReason) ? "-" : draft.FailureReason)</dd>
             </dl>
         </div>
     </section>
@@ -71,6 +78,7 @@ else
             <div class="d-flex flex-wrap gap-2">
                 <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isBusy">Save</button>
                 <button class="btn btn-success" @onclick="ApproveAsync" disabled="@isBusy">Approve</button>
+                <button class="btn btn-warning" @onclick="SendAsync" disabled="@(!canSend || isBusy)">Send</button>
                 <button class="btn btn-outline-danger" @onclick="CancelAsync" disabled="@isBusy">Cancel draft</button>
             </div>
         </div>
@@ -125,11 +133,13 @@ else
     private bool isLoading;
     private bool isSaving;
     private bool isApproving;
+    private bool isSending;
     private bool isCancelling;
     private string? errorMessage;
     private string? successMessage;
 
-    private bool isBusy => isSaving || isApproving || isCancelling;
+    private bool isBusy => isSaving || isApproving || isSending || isCancelling;
+    private bool canSend => draft?.Status == EmailDraftStatus.Approved;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -254,6 +264,38 @@ else
         finally
         {
             isCancelling = false;
+        }
+    }
+
+    private async Task SendAsync()
+    {
+        if (draft is null)
+        {
+            return;
+        }
+
+        isSending = true;
+        successMessage = null;
+        errorMessage = null;
+
+        try
+        {
+            draft = await DraftClient.SendApprovedAsync(draft.Id);
+            successMessage = draft.Status == EmailDraftStatus.Sent
+                ? "Draft sent."
+                : "Draft send attempt recorded with failure status.";
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isSending = false;
         }
     }
 

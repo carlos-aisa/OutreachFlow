@@ -169,6 +169,30 @@ Web adds dedicated review screens:
 - Draft list page with status filtering.
 - Draft detail page with subject/body editing and approval/cancellation actions.
 
+## Email Sending Abstraction
+
+Phase 7 introduces controlled sending without provider coupling:
+
+- `IEmailSender` is the Application boundary for email delivery.
+- `SendEmailCommand` and `EmailSendResult` define provider-agnostic send input/output.
+- `FakeEmailSender` is the default Infrastructure implementation for local/dev/test execution.
+- `IEmailSendingPolicy` centralizes duplicate-equivalent send window settings.
+
+Send workflow (`SendApprovedDraftAsync`) enforces:
+
+- approved-only draft sending;
+- do-not-contact and recipient eligibility checks;
+- unresolved variable and diagnostics blocking;
+- active attachment validation;
+- duplicate and equivalent recent send prevention.
+
+Persistence additions:
+
+- `EmailMessage` stores successful/failed send attempts with provider metadata.
+- `EmailDraft` stores send outcome metadata (`SentAt`, `FailureReason`) and status transitions (`Sent`, `Failed`).
+
+A successful send also updates `Contact.LastContactedAt` to keep outreach history consistent for later filtering and follow-up planning.
+
 ## Email Provider Strategy (Future Phase)
 
 - Application defines ports for outbound email sending.

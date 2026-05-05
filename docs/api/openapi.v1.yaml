@@ -854,6 +854,25 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "404":
           $ref: "#/components/responses/NotFoundError"
+  /api/v1/drafts/{id}/send:
+    post:
+      operationId: sendApprovedEmailDraft
+      summary: Sends an approved email draft using the configured provider
+      tags:
+        - EmailDrafts
+      parameters:
+        - $ref: "#/components/parameters/EmailDraftId"
+      responses:
+        "200":
+          description: Email draft send attempt processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailDraft"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 components:
   parameters:
     ContactId:
@@ -1515,6 +1534,13 @@ components:
         approvedAt:
           type: string
           format: date-time
+          nullable: true
+        sentAt:
+          type: string
+          format: date-time
+          nullable: true
+        failureReason:
+          type: string
           nullable: true
         cancelledAt:
           type: string

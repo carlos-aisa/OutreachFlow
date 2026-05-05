@@ -78,4 +78,10 @@ public sealed class EmailDraftApiClient(HttpClient httpClient)
         using var response = await httpClient.PostAsync($"api/v1/drafts/{id}/cancel", null, cancellationToken);
         return await ApiClientJson.ReadRequiredAsync<EmailDraftDto>(response, cancellationToken);
     }
+
+    public async Task<EmailDraftDto> SendApprovedAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PostAsync($"api/v1/drafts/{id}/send", null, cancellationToken);
+        return await ApiClientJson.ReadRequiredAsync<EmailDraftDto>(response, cancellationToken);
+    }
 }

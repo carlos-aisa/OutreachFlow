@@ -20,4 +20,6 @@ public interface IEmailDraftService
     Task<EmailDraftDto> ApproveAsync(Guid id, CancellationToken cancellationToken = default);
 
     Task<EmailDraftDto> CancelAsync(Guid id, CancellationToken cancellationToken = default);
+
+    Task<EmailDraftDto> SendApprovedDraftAsync(Guid id, CancellationToken cancellationToken = default);
 }

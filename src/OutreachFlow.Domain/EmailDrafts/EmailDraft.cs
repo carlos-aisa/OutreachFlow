@@ -83,6 +83,10 @@ public sealed class EmailDraft
 
     public DateTimeOffset? ApprovedAt { get; private set; }
 
+    public DateTimeOffset? SentAt { get; private set; }
+
+    public string? FailureReason { get; private set; }
+
     public DateTimeOffset? CancelledAt { get; private set; }
 
     public IReadOnlyCollection<EmailDraftAttachment> Attachments => _attachments.AsReadOnly();
@@ -143,6 +147,8 @@ public sealed class EmailDraft
             HasRenderErrors = true;
             Status = EmailDraftStatus.NeedsReview;
             ApprovedAt = null;
+            SentAt = null;
+            FailureReason = null;
             UpdatedAt = updatedAt;
             return;
         }
@@ -152,6 +158,8 @@ public sealed class EmailDraft
         UnknownVariablesJson = null;
         Status = EmailDraftStatus.Draft;
         ApprovedAt = null;
+        SentAt = null;
+        FailureReason = null;
         UpdatedAt = updatedAt;
     }
 
@@ -189,7 +197,33 @@ public sealed class EmailDraft
 
         Status = EmailDraftStatus.Approved;
         ApprovedAt = approvedAt;
+        FailureReason = null;
         UpdatedAt = approvedAt;
+    }
+
+    public void MarkSent(DateTimeOffset sentAt)
+    {
+        if (Status != EmailDraftStatus.Approved)
+        {
+            throw new DomainException("Only approved drafts can be marked as sent.");
+        }
+
+        Status = EmailDraftStatus.Sent;
+        SentAt = sentAt;
+        FailureReason = null;
+        UpdatedAt = sentAt;
+    }
+
+    public void MarkFailed(string failureReason, DateTimeOffset failedAt)
+    {
+        if (Status != EmailDraftStatus.Approved)
+        {
+            throw new DomainException("Only approved drafts can be marked as failed.");
+        }
+
+        Status = EmailDraftStatus.Failed;
+        FailureReason = RequireText(failureReason, "Failure reason is required.");
+        UpdatedAt = failedAt;
     }
 
     public void Cancel(DateTimeOffset cancelledAt)
