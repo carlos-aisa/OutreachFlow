@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.6.0] - 2026-05-05
+
+### Added
+
+- Email draft domain model (`EmailDraft`, `EmailDraftStatus`, `EmailDraftAttachment`) with generated status behavior and attachment assignment rules.
+- Draft persistence with EF Core mappings and migration for `EmailDrafts` and `EmailDraftAttachments`.
+- Draft generation application flow with:
+  - multi-contact selection via existing contact filters and tags,
+  - template rendering diagnostics persistence,
+  - skipped contact reporting for ineligible recipients,
+  - attachment validation and default/optional attachment assignment.
+- REST endpoints for draft generation, listing, and detail:
+  - `POST /api/v1/drafts/generate`
+  - `GET /api/v1/drafts`
+  - `GET /api/v1/drafts/{id}`
+- Blazor draft generation wizard with recipient filtering, template/sender/attachment selection, preview, and result summary.
+- Domain, application, and integration tests for draft creation, generation diagnostics, persistence, and API behavior.
+- OpenSpec archive for `p05-email-draft-generation`.
+
+### Changed
+
+- OpenAPI specification now includes draft generation contracts and `EmailDraft` schemas.
+- README and architecture documentation now describe Phase 5 draft generation workflow.
+
 ## [0.5.0] - 2026-05-05
 
 ### Added

@@ -1,12 +1,14 @@
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Attachments;
 using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tags;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
@@ -370,5 +372,43 @@ internal sealed class InMemoryAttachmentFileStorage : IAttachmentFileStorage
         CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_saveHandler(request));
+    }
+}
+
+internal sealed class InMemoryEmailDraftRepository : IEmailDraftRepository
+{
+    private readonly List<EmailDraft> _drafts = [];
+
+    public IReadOnlyList<EmailDraft> Drafts => _drafts;
+
+    public Task AddRangeAsync(IReadOnlyList<EmailDraft> drafts, CancellationToken cancellationToken = default)
+    {
+        _drafts.AddRange(drafts);
+        return Task.CompletedTask;
+    }
+
+    public Task<EmailDraft?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_drafts.FirstOrDefault(draft => draft.Id == id));
+    }
+
+    public Task<IReadOnlyList<EmailDraft>> ListAsync(
+        EmailDraftFilterRequest filter,
+        CancellationToken cancellationToken = default)
+    {
+        IEnumerable<EmailDraft> query = _drafts;
+
+        if (filter.Status is not null)
+        {
+            query = query.Where(draft => draft.Status == filter.Status);
+        }
+
+        if (filter.ContactId is not null)
+        {
+            query = query.Where(draft => draft.ContactId == filter.ContactId);
+        }
+
+        return Task.FromResult<IReadOnlyList<EmailDraft>>(
+            query.OrderByDescending(draft => draft.CreatedAt).ToArray());
     }
 }

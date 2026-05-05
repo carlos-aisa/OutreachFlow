@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OutreachFlow.Application.Attachments;
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
@@ -48,6 +49,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<ISenderProfileRepository, SenderProfileRepository>();
         services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
+        services.AddScoped<IEmailDraftRepository, EmailDraftRepository>();
         services.AddScoped<IAttachmentAssetRepository, AttachmentAssetRepository>();
         services.AddScoped<IAttachmentFileStorage, LocalAttachmentFileStorage>();
         services.AddScoped<IContactLookupService, ContactLookupService>();

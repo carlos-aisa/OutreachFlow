@@ -114,6 +114,32 @@ Template assignment rules are enforced through the Domain model:
 - inactive attachments cannot be assigned as defaults;
 - duplicate default assignments are ignored idempotently.
 
+## Email Draft Generation
+
+Phase 5 introduces controlled draft generation before any send action:
+
+- `EmailDraft` stores rendered subject/body snapshots and render diagnostics for review workflows.
+- `EmailDraftAttachment` persists selected and default attachment references per generated draft.
+- `EmailDraftService` orchestrates:
+  - contact selection using existing filter and tag criteria;
+  - template rendering via `ITemplateRenderer`;
+  - skip reporting for ineligible contacts;
+  - attachment validation and assignment.
+
+Generation outputs explicit diagnostics:
+
+- `MissingVariables`
+- `UnknownVariables`
+- `HasRenderErrors` and `NeedsReview` status when render issues exist.
+
+API and Web now include draft generation endpoints and a Blazor wizard flow that mirrors the controlled process:
+
+1. filter recipients,
+2. select template and sender,
+3. select optional attachments,
+4. preview,
+5. generate and inspect results.
+
 ## Email Provider Strategy (Future Phase)
 
 - Application defines ports for outbound email sending.

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
@@ -19,6 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISenderProfileService, SenderProfileService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IAttachmentAssetService, AttachmentAssetService>();
+        services.AddScoped<IEmailDraftService, EmailDraftService>();
         services.AddSingleton<ITemplateVariableService, TemplateVariableService>();
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
 
