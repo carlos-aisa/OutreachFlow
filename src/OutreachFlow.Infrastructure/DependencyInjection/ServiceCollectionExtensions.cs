@@ -3,7 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
+using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tags;
 using OutreachFlow.Infrastructure.Persistence;
 using OutreachFlow.Infrastructure.Persistence.Queries;
@@ -32,6 +34,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
+        services.AddScoped<ISenderProfileRepository, SenderProfileRepository>();
+        services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
         services.AddScoped<IContactLookupService, ContactLookupService>();
 
         return services;

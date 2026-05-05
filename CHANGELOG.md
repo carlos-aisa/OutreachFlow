@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.3.0] - 2026-05-05
+
+### Added
+
+- Sender profile domain model with active/default behavior and sender identity fields.
+- Email template domain model with active/inactive lifecycle behavior.
+- EF Core mappings, indexes, repositories, and `SenderProfilesAndTemplates` migration.
+- Application services and DTOs for sender profile and email template CRUD/deactivation.
+- Centralized supported template variable catalog exposed through Application, API, and Web UI.
+- REST endpoints and OpenAPI documentation for sender profiles, default sender lookup, email templates, and template variables.
+- Blazor pages and typed API clients for sender profile and email template management.
+- Domain, application, and integration tests for sender profiles, email templates, template variables, EF persistence, and API endpoints.
+- OpenSpec archive for `p02-sender-profiles-and-templates`.
+
+### Changed
+
+- README and architecture documentation now describe configurable sender identity and reusable template management.
+
 ## [0.2.0] - 2026-05-05
 
 ### Added

@@ -1,9 +1,13 @@
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
+using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tags;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.Organizations;
+using OutreachFlow.Domain.SenderProfiles;
 using OutreachFlow.Domain.Tags;
 
 namespace OutreachFlow.Application.Tests.Support;
@@ -225,5 +229,90 @@ internal sealed class InMemoryContactLookupService(
             contact.CreatedAt,
             contact.UpdatedAt,
             tags);
+    }
+}
+
+internal sealed class InMemorySenderProfileRepository : ISenderProfileRepository
+{
+    private readonly List<SenderProfile> _senderProfiles = [];
+
+    public IReadOnlyList<SenderProfile> SenderProfiles => _senderProfiles;
+
+    public Task AddAsync(SenderProfile senderProfile, CancellationToken cancellationToken = default)
+    {
+        _senderProfiles.Add(senderProfile);
+        return Task.CompletedTask;
+    }
+
+    public Task<SenderProfile?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_senderProfiles.FirstOrDefault(senderProfile => senderProfile.Id == id));
+    }
+
+    public Task<SenderProfile?> GetDefaultAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_senderProfiles.FirstOrDefault(senderProfile =>
+            senderProfile.IsActive && senderProfile.IsDefault));
+    }
+
+    public Task<IReadOnlyList<SenderProfile>> ListAsync(
+        bool? activeOnly,
+        CancellationToken cancellationToken = default)
+    {
+        IEnumerable<SenderProfile> query = _senderProfiles;
+
+        if (activeOnly is not null)
+        {
+            query = query.Where(senderProfile => senderProfile.IsActive == activeOnly);
+        }
+
+        return Task.FromResult<IReadOnlyList<SenderProfile>>(
+            query
+                .OrderByDescending(senderProfile => senderProfile.IsDefault)
+                .ThenBy(senderProfile => senderProfile.Name)
+                .ToArray());
+    }
+
+    public void Remove(SenderProfile senderProfile)
+    {
+        _senderProfiles.Remove(senderProfile);
+    }
+}
+
+internal sealed class InMemoryEmailTemplateRepository : IEmailTemplateRepository
+{
+    private readonly List<EmailTemplate> _emailTemplates = [];
+
+    public IReadOnlyList<EmailTemplate> EmailTemplates => _emailTemplates;
+
+    public Task AddAsync(EmailTemplate emailTemplate, CancellationToken cancellationToken = default)
+    {
+        _emailTemplates.Add(emailTemplate);
+        return Task.CompletedTask;
+    }
+
+    public Task<EmailTemplate?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_emailTemplates.FirstOrDefault(emailTemplate => emailTemplate.Id == id));
+    }
+
+    public Task<IReadOnlyList<EmailTemplate>> ListAsync(
+        bool? activeOnly,
+        CancellationToken cancellationToken = default)
+    {
+        IEnumerable<EmailTemplate> query = _emailTemplates;
+
+        if (activeOnly is not null)
+        {
+            query = query.Where(emailTemplate => emailTemplate.IsActive == activeOnly);
+        }
+
+        return Task.FromResult<IReadOnlyList<EmailTemplate>>(
+            query.OrderBy(emailTemplate => emailTemplate.Name).ToArray());
+    }
+
+    public void Remove(EmailTemplate emailTemplate)
+    {
+        _emailTemplates.Remove(emailTemplate);
     }
 }

@@ -1,6 +1,8 @@
 using OutreachFlow.Web.Components;
 using OutreachFlow.Web.Contacts;
+using OutreachFlow.Web.EmailTemplates;
 using OutreachFlow.Web.Organizations;
+using OutreachFlow.Web.SenderProfiles;
 using OutreachFlow.Web.Tags;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +19,10 @@ builder.Services.AddHttpClient<ContactApiClient>(client =>
 builder.Services.AddHttpClient<OrganizationApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<TagApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<SenderProfileApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<EmailTemplateApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();
