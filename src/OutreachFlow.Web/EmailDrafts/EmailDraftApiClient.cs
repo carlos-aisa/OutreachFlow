@@ -46,4 +46,36 @@ public sealed class EmailDraftApiClient(HttpClient httpClient)
         using var response = await httpClient.GetAsync(uri, cancellationToken);
         return await ApiClientJson.ReadRequiredAsync<IReadOnlyList<EmailDraftDto>>(response, cancellationToken);
     }
+
+    public async Task<EmailDraftDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.GetAsync($"api/v1/drafts/{id}", cancellationToken);
+        return await ApiClientJson.ReadRequiredAsync<EmailDraftDto>(response, cancellationToken);
+    }
+
+    public async Task<EmailDraftDto> UpdateAsync(
+        Guid id,
+        UpdateEmailDraftRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PutAsJsonAsync(
+            $"api/v1/drafts/{id}",
+            request,
+            ApiClientJson.Options,
+            cancellationToken);
+
+        return await ApiClientJson.ReadRequiredAsync<EmailDraftDto>(response, cancellationToken);
+    }
+
+    public async Task<EmailDraftDto> ApproveAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PostAsync($"api/v1/drafts/{id}/approve", null, cancellationToken);
+        return await ApiClientJson.ReadRequiredAsync<EmailDraftDto>(response, cancellationToken);
+    }
+
+    public async Task<EmailDraftDto> CancelAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PostAsync($"api/v1/drafts/{id}/cancel", null, cancellationToken);
+        return await ApiClientJson.ReadRequiredAsync<EmailDraftDto>(response, cancellationToken);
+    }
 }

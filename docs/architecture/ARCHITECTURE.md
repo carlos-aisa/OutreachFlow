@@ -140,6 +140,35 @@ API and Web now include draft generation endpoints and a Blazor wizard flow that
 4. preview,
 5. generate and inspect results.
 
+## Draft Review And Approval
+
+Phase 6 introduces the explicit human review gate before any future sending workflow:
+
+- `EmailDraft` now supports review transitions:
+  - manual content update (`UpdateContent`);
+  - approval (`Approve`);
+  - cancellation (`Cancel`).
+- Domain approval invariants block approval when:
+  - render errors remain;
+  - unresolved diagnostics remain;
+  - unresolved `{{...}}` tokens remain in subject or body.
+- `ApprovedAt` and `CancelledAt` timestamps are persisted for traceability.
+
+Application adds explicit review use cases (`UpdateAsync`, `ApproveAsync`, `CancelAsync`) that wrap domain rule violations as validation errors for API/UI feedback.
+
+API now exposes draft review endpoints:
+
+- `GET /api/v1/drafts`
+- `GET /api/v1/drafts/{id}`
+- `PUT /api/v1/drafts/{id}`
+- `POST /api/v1/drafts/{id}/approve`
+- `POST /api/v1/drafts/{id}/cancel`
+
+Web adds dedicated review screens:
+
+- Draft list page with status filtering.
+- Draft detail page with subject/body editing and approval/cancellation actions.
+
 ## Email Provider Strategy (Future Phase)
 
 - Application defines ports for outbound email sending.

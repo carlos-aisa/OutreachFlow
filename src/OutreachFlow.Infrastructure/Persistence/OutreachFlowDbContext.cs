@@ -290,6 +290,10 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
             builder.Property(emailDraft => emailDraft.UnknownVariablesJson)
                 .HasMaxLength(4000);
 
+            builder.Property(emailDraft => emailDraft.ApprovedAt);
+
+            builder.Property(emailDraft => emailDraft.CancelledAt);
+
             builder.HasIndex(emailDraft => emailDraft.ContactId);
             builder.HasIndex(emailDraft => emailDraft.OrganizationId);
             builder.HasIndex(emailDraft => emailDraft.TemplateId);

@@ -8,6 +8,7 @@ using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Templates;
 using OutreachFlow.Domain.Attachments;
+using OutreachFlow.Domain.Common;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailTemplates;
@@ -194,6 +195,77 @@ public sealed class EmailDraftService(
         return Map(draft, contact);
     }
 
+    public async Task<EmailDraftDto> UpdateAsync(
+        Guid id,
+        UpdateEmailDraftRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var draft = await emailDraftRepository.GetByIdAsync(id, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Email draft was not found.");
+
+        try
+        {
+            draft.UpdateContent(request.Subject, request.Body, DateTimeOffset.UtcNow);
+        }
+        catch (DomainException exception)
+        {
+            throw new ApplicationValidationException(exception.Message);
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var contact = await contactRepository.GetByIdAsync(draft.ContactId, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Draft contact was not found.");
+
+        return Map(draft, contact);
+    }
+
+    public async Task<EmailDraftDto> ApproveAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var draft = await emailDraftRepository.GetByIdAsync(id, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Email draft was not found.");
+
+        try
+        {
+            draft.Approve(DateTimeOffset.UtcNow);
+        }
+        catch (DomainException exception)
+        {
+            throw new ApplicationValidationException(exception.Message);
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var contact = await contactRepository.GetByIdAsync(draft.ContactId, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Draft contact was not found.");
+
+        return Map(draft, contact);
+    }
+
+    public async Task<EmailDraftDto> CancelAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var draft = await emailDraftRepository.GetByIdAsync(id, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Email draft was not found.");
+
+        try
+        {
+            draft.Cancel(DateTimeOffset.UtcNow);
+        }
+        catch (DomainException exception)
+        {
+            throw new ApplicationValidationException(exception.Message);
+        }
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var contact = await contactRepository.GetByIdAsync(draft.ContactId, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Draft contact was not found.");
+
+        return Map(draft, contact);
+    }
+
     private async Task<Organization?> ResolveOrganizationAsync(
         Guid? organizationId,
         Dictionary<Guid, Organization?> organizationCache,
@@ -258,7 +330,9 @@ public sealed class EmailDraftService(
                 .OrderBy(attachmentId => attachmentId)
                 .ToArray(),
             draft.CreatedAt,
-            draft.UpdatedAt);
+            draft.UpdatedAt,
+            draft.ApprovedAt,
+            draft.CancelledAt);
     }
 
     private static string? SerializeVariables(IReadOnlyList<string> variableNames)

@@ -113,6 +113,14 @@ Phase 5 completed:
 - Blazor draft generation wizard with recipient filters, selections, preview, and result
 - Domain, application, and integration tests for draft persistence and generation behavior
 
+Phase 6 completed:
+
+- Draft review workflow with edit, approve, and cancel transitions
+- Approval gate that blocks unresolved variables, unresolved diagnostics, and render errors
+- Draft review APIs (`PUT /api/v1/drafts/{id}`, `POST /api/v1/drafts/{id}/approve`, `POST /api/v1/drafts/{id}/cancel`)
+- Blazor draft list and draft detail pages for review, corrections, approval, and cancellation
+- Domain, application, and integration tests for draft review rules and endpoint behavior
+
 ## Roadmap
 
 - Phase 1: Core contacts model (organizations, contacts, tags)
@@ -165,7 +173,7 @@ The Web UI calls the API configured by `OutreachFlowApi:BaseUrl`. The default lo
 
 ## API Surface
 
-The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Phase 1 adds:
+The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Current endpoints include:
 
 - `/api/v1/organizations`
 - `/api/v1/contacts`
@@ -181,6 +189,9 @@ The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Phase 1 add
 - `/api/v1/drafts/generate`
 - `/api/v1/drafts`
 - `/api/v1/drafts/{id}`
+- `/api/v1/drafts/{id}` (PUT for edit)
+- `/api/v1/drafts/{id}/approve`
+- `/api/v1/drafts/{id}/cancel`
 
 ## Supported Template Variables
 

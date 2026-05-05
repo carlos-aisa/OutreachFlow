@@ -1,0 +1,269 @@
+@page "/drafts/{DraftId:guid}"
+@rendermode InteractiveServer
+@using OutreachFlow.Application.EmailDrafts
+@using OutreachFlow.Web.EmailDrafts
+@inject EmailDraftApiClient DraftClient
+
+<PageTitle>Draft Review</PageTitle>
+
+<h1>Draft Review</h1>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+@if (isLoading)
+{
+    <p>Loading draft...</p>
+}
+else if (draft is null)
+{
+    <p>Draft not found.</p>
+}
+else
+{
+    <section class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Summary</h2>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Contact</dt>
+                <dd class="col-sm-9">@draft.ContactDisplayName (@draft.ContactEmail)</dd>
+
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">@draft.Status</dd>
+
+                <dt class="col-sm-3">Created</dt>
+                <dd class="col-sm-9">@FormatDate(draft.CreatedAt)</dd>
+
+                <dt class="col-sm-3">Updated</dt>
+                <dd class="col-sm-9">@FormatDate(draft.UpdatedAt)</dd>
+
+                <dt class="col-sm-3">Approved</dt>
+                <dd class="col-sm-9">@FormatDate(draft.ApprovedAt)</dd>
+
+                <dt class="col-sm-3">Cancelled</dt>
+                <dd class="col-sm-9">@FormatDate(draft.CancelledAt)</dd>
+            </dl>
+        </div>
+    </section>
+
+    <section class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Draft content</h2>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">Subject</label>
+                <input class="form-control" @bind="editableSubject" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Body</label>
+                <textarea class="form-control" rows="12" @bind="editableBody"></textarea>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isBusy">Save</button>
+                <button class="btn btn-success" @onclick="ApproveAsync" disabled="@isBusy">Approve</button>
+                <button class="btn btn-outline-danger" @onclick="CancelAsync" disabled="@isBusy">Cancel draft</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Diagnostics</h2>
+        </div>
+        <div class="card-body">
+            <p class="mb-1">
+                Render errors: <strong>@(draft.HasRenderErrors ? "Yes" : "No")</strong>
+            </p>
+            <p class="mb-1">
+                Missing variables: <strong>@FormatVariables(draft.MissingVariables)</strong>
+            </p>
+            <p class="mb-0">
+                Unknown variables: <strong>@FormatVariables(draft.UnknownVariables)</strong>
+            </p>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Attachments</h2>
+        </div>
+        <div class="card-body">
+            @if (draft.AttachmentAssetIds.Count == 0)
+            {
+                <p class="mb-0">No attachments associated with this draft.</p>
+            }
+            else
+            {
+                <ul class="mb-0">
+                    @foreach (var attachmentId in draft.AttachmentAssetIds)
+                    {
+                        <li>@attachmentId</li>
+                    }
+                </ul>
+            }
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter]
+    public Guid DraftId { get; set; }
+
+    private EmailDraftDto? draft;
+    private string editableSubject = string.Empty;
+    private string editableBody = string.Empty;
+    private bool isLoading;
+    private bool isSaving;
+    private bool isApproving;
+    private bool isCancelling;
+    private string? errorMessage;
+    private string? successMessage;
+
+    private bool isBusy => isSaving || isApproving || isCancelling;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadDraftAsync();
+    }
+
+    private async Task LoadDraftAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            draft = await DraftClient.GetByIdAsync(DraftId);
+            editableSubject = draft.Subject;
+            editableBody = draft.Body;
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+            draft = null;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            draft = null;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (draft is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        successMessage = null;
+        errorMessage = null;
+
+        try
+        {
+            draft = await DraftClient.UpdateAsync(
+                draft.Id,
+                new UpdateEmailDraftRequest(editableSubject, editableBody));
+            editableSubject = draft.Subject;
+            editableBody = draft.Body;
+            successMessage = "Draft updated.";
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task ApproveAsync()
+    {
+        if (draft is null)
+        {
+            return;
+        }
+
+        isApproving = true;
+        successMessage = null;
+        errorMessage = null;
+
+        try
+        {
+            draft = await DraftClient.ApproveAsync(draft.Id);
+            successMessage = "Draft approved.";
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isApproving = false;
+        }
+    }
+
+    private async Task CancelAsync()
+    {
+        if (draft is null)
+        {
+            return;
+        }
+
+        isCancelling = true;
+        successMessage = null;
+        errorMessage = null;
+
+        try
+        {
+            draft = await DraftClient.CancelAsync(draft.Id);
+            successMessage = "Draft cancelled.";
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isCancelling = false;
+        }
+    }
+
+    private static string FormatVariables(IReadOnlyList<string> variables)
+    {
+        return variables.Count == 0 ? "-" : string.Join(", ", variables);
+    }
+
+    private static string FormatDate(DateTimeOffset? value)
+    {
+        return value is null ? "-" : value.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+    }
+}
