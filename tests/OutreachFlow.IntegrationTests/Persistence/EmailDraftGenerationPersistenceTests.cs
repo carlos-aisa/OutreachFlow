@@ -62,6 +62,44 @@ public sealed class EmailDraftGenerationPersistenceTests
         savedDraft.Attachments.Should().ContainSingle(item => item.AttachmentAssetId == attachment.Id);
     }
 
+    [Fact]
+    public async Task ShouldPersistApprovalAndCancellationTimestamps()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = await CreateMigratedContextAsync(connection);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        var senderProfile = new SenderProfile("Primary sender", "sender@example.com");
+        var template = new EmailTemplate("Intro", null, "Subject", "Body");
+        var draft = EmailDraft.CreateGenerated(
+            contact.Id,
+            organizationId: null,
+            template.Id,
+            senderProfile.Id,
+            "Subject",
+            "Body",
+            hasRenderErrors: false,
+            missingVariablesJson: null,
+            unknownVariablesJson: null);
+        var approvedAt = DateTimeOffset.UtcNow.AddMinutes(-5);
+        var cancelledAt = DateTimeOffset.UtcNow;
+        draft.Approve(approvedAt);
+        draft.Cancel(cancelledAt);
+
+        context.Contacts.Add(contact);
+        context.SenderProfiles.Add(senderProfile);
+        context.EmailTemplates.Add(template);
+        context.EmailDrafts.Add(draft);
+        await context.SaveChangesAsync();
+
+        context.ChangeTracker.Clear();
+
+        var savedDraft = await context.EmailDrafts.SingleAsync();
+
+        savedDraft.Status.Should().Be(EmailDraftStatus.Cancelled);
+        savedDraft.ApprovedAt.Should().Be(approvedAt);
+        savedDraft.CancelledAt.Should().Be(cancelledAt);
+    }
+
     private static async Task<SqliteConnection> OpenConnectionAsync()
     {
         var connection = new SqliteConnection("Data Source=:memory:");

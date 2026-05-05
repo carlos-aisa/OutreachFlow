@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.7.0] - 2026-05-05
+
+### Added
+
+- Draft review domain behavior for manual edits, approval, and cancellation transitions.
+- Approval guard rules that block approval when render errors, unresolved diagnostics, or unresolved `{{...}}` tokens remain.
+- Draft review metadata persistence (`ApprovedAt`, `CancelledAt`) with EF migration `DraftReviewApprovalMetadata`.
+- Draft review API endpoints:
+  - `PUT /api/v1/drafts/{id}`
+  - `POST /api/v1/drafts/{id}/approve`
+  - `POST /api/v1/drafts/{id}/cancel`
+- Blazor draft review UI:
+  - draft list page with status filter,
+  - draft detail page for subject/body editing,
+  - approve/cancel actions with validation feedback.
+- Domain, application, persistence, and API integration tests for draft review and approval flows.
+- OpenSpec archive for `p06-draft-review-and-approval`.
+
+### Changed
+
+- Draft DTO/API contract now includes `approvedAt` and `cancelledAt` timestamps.
+- README, architecture, and OpenAPI documentation now describe the Phase 6 human review workflow.
+
 ## [0.6.0] - 2026-05-05
 
 ### Added

@@ -6,6 +6,7 @@ using OutreachFlow.Application.Templates;
 using OutreachFlow.Application.Tests.Support;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
@@ -88,7 +89,7 @@ public sealed class EmailDraftServiceTests
         result.Drafts.Should().ContainSingle();
         var generatedDraft = result.Drafts.Single();
         generatedDraft.ContactId.Should().Be(eligibleContact.Id);
-        generatedDraft.Status.Should().Be(OutreachFlow.Domain.EmailDrafts.EmailDraftStatus.NeedsReview);
+        generatedDraft.Status.Should().Be(EmailDraftStatus.NeedsReview);
         generatedDraft.MissingVariables.Should().Contain("organization.name");
         generatedDraft.AttachmentAssetIds.Should().BeEquivalentTo([defaultAttachment.Id, optionalAttachment.Id]);
         draftRepository.Drafts.Should().ContainSingle();
@@ -132,6 +133,134 @@ public sealed class EmailDraftServiceTests
 
         await act.Should().ThrowAsync<ApplicationValidationException>()
             .WithMessage("Inactive attachments cannot be used for draft generation.");
+    }
+
+    [Fact]
+    public async Task ShouldUpdateNeedsReviewDraftAndApproveAfterManualFix()
+    {
+        var service = CreateService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile(
+            "Primary Sender",
+            "sender@example.com",
+            signature: "Best regards");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate(
+            "Intro",
+            null,
+            "Subject for {{contact.displayName}}",
+            "Hello {{contact.displayName}}, organization {{organization.name}}.");
+        await emailTemplateRepository.AddAsync(template);
+
+        var generationResult = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+        var generatedDraft = generationResult.Drafts.Single();
+
+        var updatedDraft = await service.UpdateAsync(
+            generatedDraft.Id,
+            new UpdateEmailDraftRequest(
+                "Manual subject",
+                "Manual body without unresolved variables."));
+
+        updatedDraft.Status.Should().Be(EmailDraftStatus.Draft);
+        updatedDraft.HasRenderErrors.Should().BeFalse();
+        updatedDraft.MissingVariables.Should().BeEmpty();
+        updatedDraft.UnknownVariables.Should().BeEmpty();
+
+        var approvedDraft = await service.ApproveAsync(generatedDraft.Id);
+
+        approvedDraft.Status.Should().Be(EmailDraftStatus.Approved);
+        approvedDraft.ApprovedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ShouldRejectApprovalWhenDraftStillHasRenderErrors()
+    {
+        var service = CreateService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate(
+            "Intro",
+            null,
+            "Subject {{contact.displayName}}",
+            "Body {{organization.name}}");
+        await emailTemplateRepository.AddAsync(template);
+
+        var generationResult = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+        var draft = generationResult.Drafts.Single();
+
+        var act = () => service.ApproveAsync(draft.Id);
+
+        await act.Should().ThrowAsync<ApplicationValidationException>()
+            .WithMessage("Draft cannot be approved while render errors remain.");
+    }
+
+    [Fact]
+    public async Task ShouldCancelDraftAndRejectFurtherApprovals()
+    {
+        var service = CreateService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Body");
+        await emailTemplateRepository.AddAsync(template);
+
+        var generationResult = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+        var draft = generationResult.Drafts.Single();
+
+        var cancelledDraft = await service.CancelAsync(draft.Id);
+
+        cancelledDraft.Status.Should().Be(EmailDraftStatus.Cancelled);
+        cancelledDraft.CancelledAt.Should().NotBeNull();
+
+        var approveAct = () => service.ApproveAsync(draft.Id);
+        await approveAct.Should().ThrowAsync<ApplicationValidationException>()
+            .WithMessage("Cancelled drafts cannot be approved.");
     }
 
     private static EmailDraftService CreateService(

@@ -19,7 +19,9 @@ public sealed record EmailDraftDto(
     IReadOnlyList<string> UnknownVariables,
     IReadOnlyList<Guid> AttachmentAssetIds,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    DateTimeOffset? ApprovedAt,
+    DateTimeOffset? CancelledAt);
 
 public sealed record EmailDraftFilterRequest(
     EmailDraftStatus? Status,
@@ -36,6 +38,10 @@ public sealed record GenerateEmailDraftsRequest(
     Guid TemplateId,
     Guid SenderProfileId,
     IReadOnlyList<Guid>? AttachmentAssetIds);
+
+public sealed record UpdateEmailDraftRequest(
+    string Subject,
+    string Body);
 
 public sealed record SkippedDraftContactDto(
     Guid ContactId,

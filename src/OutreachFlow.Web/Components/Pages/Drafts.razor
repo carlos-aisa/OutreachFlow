@@ -1,0 +1,145 @@
+@page "/drafts"
+@rendermode InteractiveServer
+@using OutreachFlow.Application.EmailDrafts
+@using OutreachFlow.Domain.EmailDrafts
+@using OutreachFlow.Web.EmailDrafts
+@inject EmailDraftApiClient DraftClient
+
+<PageTitle>Drafts</PageTitle>
+
+<h1>Drafts</h1>
+
+<p class="text-muted">
+    Review generated drafts before approval and sending.
+</p>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<section class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">Filters</h2>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select class="form-select" @bind="selectedStatus">
+                    <option value="">Any</option>
+                    @foreach (var status in statusValues)
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-8 d-flex gap-2">
+                <button class="btn btn-primary" @onclick="LoadDraftsAsync" disabled="@isLoading">Apply</button>
+                <button class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@isLoading">Clear</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card-header">
+        <h2 class="h5 mb-0">Draft list</h2>
+    </div>
+    <div class="card-body">
+        @if (isLoading)
+        {
+            <p class="mb-0">Loading drafts...</p>
+        }
+        else if (drafts.Count == 0)
+        {
+            <p class="mb-0">No drafts found for the selected filters.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Updated</th>
+                            <th>Approved</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var draft in drafts)
+                        {
+                            <tr>
+                                <td>@draft.ContactDisplayName</td>
+                                <td>@draft.ContactEmail</td>
+                                <td>@draft.Status</td>
+                                <td>@draft.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@FormatDate(draft.ApprovedAt)</td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-primary" href="@($"/drafts/{draft.Id}")">
+                                        Review
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private readonly EmailDraftStatus[] statusValues = Enum.GetValues<EmailDraftStatus>();
+    private IReadOnlyList<EmailDraftDto> drafts = [];
+    private string? selectedStatus;
+    private bool isLoading;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDraftsAsync();
+    }
+
+    private async Task LoadDraftsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            drafts = await DraftClient.ListAsync(ParseStatus(selectedStatus));
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ClearFiltersAsync()
+    {
+        selectedStatus = null;
+        await LoadDraftsAsync();
+    }
+
+    private static EmailDraftStatus? ParseStatus(string? value)
+    {
+        return Enum.TryParse<EmailDraftStatus>(value, out var status) ? status : null;
+    }
+
+    private static string FormatDate(DateTimeOffset? value)
+    {
+        return value is null ? "-" : value.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+    }
+}

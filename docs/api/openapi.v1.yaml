@@ -792,6 +792,68 @@ paths:
                 $ref: "#/components/schemas/EmailDraft"
         "404":
           $ref: "#/components/responses/NotFoundError"
+    put:
+      operationId: updateEmailDraft
+      summary: Updates draft subject and body before approval
+      tags:
+        - EmailDrafts
+      parameters:
+        - $ref: "#/components/parameters/EmailDraftId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEmailDraftRequest"
+      responses:
+        "200":
+          description: Email draft updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailDraft"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/drafts/{id}/approve:
+    post:
+      operationId: approveEmailDraft
+      summary: Approves an email draft
+      tags:
+        - EmailDrafts
+      parameters:
+        - $ref: "#/components/parameters/EmailDraftId"
+      responses:
+        "200":
+          description: Email draft approved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailDraft"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/drafts/{id}/cancel:
+    post:
+      operationId: cancelEmailDraft
+      summary: Cancels an email draft
+      tags:
+        - EmailDrafts
+      parameters:
+        - $ref: "#/components/parameters/EmailDraftId"
+      responses:
+        "200":
+          description: Email draft cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailDraft"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 components:
   parameters:
     ContactId:
@@ -1450,6 +1512,26 @@ components:
         updatedAt:
           type: string
           format: date-time
+        approvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        cancelledAt:
+          type: string
+          format: date-time
+          nullable: true
+    UpdateEmailDraftRequest:
+      type: object
+      required:
+        - subject
+        - body
+      properties:
+        subject:
+          type: string
+          example: Updated subject
+        body:
+          type: string
+          example: Updated body content ready for approval.
     GenerateEmailDraftsRequest:
       type: object
       required:

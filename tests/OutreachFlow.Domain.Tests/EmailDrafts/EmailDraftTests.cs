@@ -2,6 +2,7 @@ using FluentAssertions;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Common;
 using OutreachFlow.Domain.EmailDrafts;
+using System.Reflection;
 
 namespace OutreachFlow.Domain.Tests.EmailDrafts;
 
@@ -62,6 +63,125 @@ public sealed class EmailDraftTests
     }
 
     [Fact]
+    public void ShouldUpdateDraftAndClearDiagnosticsWhenContentIsResolved()
+    {
+        var createdAt = DateTimeOffset.UtcNow.AddMinutes(-10);
+        var updatedAt = DateTimeOffset.UtcNow;
+        var draft = EmailDraft.CreateGenerated(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Subject {{organization.name}}",
+            "Body with unresolved token.",
+            hasRenderErrors: true,
+            missingVariablesJson: "[\"organization.name\"]",
+            unknownVariablesJson: "[]",
+            createdAt);
+
+        draft.UpdateContent("Resolved subject", "Resolved body", updatedAt);
+
+        draft.Status.Should().Be(EmailDraftStatus.Draft);
+        draft.HasRenderErrors.Should().BeFalse();
+        draft.MissingVariablesJson.Should().BeNull();
+        draft.UnknownVariablesJson.Should().BeNull();
+        draft.UpdatedAt.Should().Be(updatedAt);
+        draft.ApprovedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public void ShouldSetNeedsReviewWhenUpdatedContentContainsUnresolvedTokens()
+    {
+        var draft = CreateDraft();
+
+        draft.UpdateContent(
+            "Subject {{contact.displayName}}",
+            "Resolved body",
+            DateTimeOffset.UtcNow);
+
+        draft.Status.Should().Be(EmailDraftStatus.NeedsReview);
+        draft.HasRenderErrors.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ShouldApproveDraftWithoutErrors()
+    {
+        var approvedAt = DateTimeOffset.UtcNow;
+        var draft = CreateDraft();
+
+        draft.Approve(approvedAt);
+
+        draft.Status.Should().Be(EmailDraftStatus.Approved);
+        draft.ApprovedAt.Should().Be(approvedAt);
+        draft.UpdatedAt.Should().Be(approvedAt);
+    }
+
+    [Fact]
+    public void ShouldRejectApprovalWhenUnresolvedVariableTokenRemains()
+    {
+        var draft = EmailDraft.CreateGenerated(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Subject {{contact.displayName}}",
+            "Body",
+            hasRenderErrors: false,
+            missingVariablesJson: null,
+            unknownVariablesJson: null);
+
+        var act = () => draft.Approve(DateTimeOffset.UtcNow);
+
+        act.Should().Throw<DomainException>()
+            .WithMessage("Draft cannot be approved while unresolved template variables remain.");
+    }
+
+    [Fact]
+    public void ShouldRejectApprovalWhenRenderErrorsRemain()
+    {
+        var draft = EmailDraft.CreateGenerated(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            "Subject",
+            "Body",
+            hasRenderErrors: true,
+            missingVariablesJson: null,
+            unknownVariablesJson: null);
+
+        var act = () => draft.Approve(DateTimeOffset.UtcNow);
+
+        act.Should().Throw<DomainException>()
+            .WithMessage("Draft cannot be approved while render errors remain.");
+    }
+
+    [Fact]
+    public void ShouldCancelUnsentDraft()
+    {
+        var cancelledAt = DateTimeOffset.UtcNow;
+        var draft = CreateDraft();
+
+        draft.Cancel(cancelledAt);
+
+        draft.Status.Should().Be(EmailDraftStatus.Cancelled);
+        draft.CancelledAt.Should().Be(cancelledAt);
+        draft.UpdatedAt.Should().Be(cancelledAt);
+    }
+
+    [Fact]
+    public void ShouldRejectCancellingSentDraft()
+    {
+        var draft = CreateDraft();
+        SetDraftStatusForTesting(draft, EmailDraftStatus.Sent);
+
+        var act = () => draft.Cancel(DateTimeOffset.UtcNow);
+
+        act.Should().Throw<DomainException>()
+            .WithMessage("Sent drafts cannot be cancelled.");
+    }
+
+    [Fact]
     public void ShouldRejectInactiveAttachmentAssignment()
     {
         var draft = CreateDraft();
@@ -91,5 +211,14 @@ public sealed class EmailDraftTests
             hasRenderErrors: false,
             missingVariablesJson: null,
             unknownVariablesJson: null);
+    }
+
+    private static void SetDraftStatusForTesting(EmailDraft draft, EmailDraftStatus status)
+    {
+        var property = typeof(EmailDraft).GetProperty(
+            nameof(EmailDraft.Status),
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        property.Should().NotBeNull();
+        property!.SetValue(draft, status);
     }
 }

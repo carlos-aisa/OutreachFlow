@@ -1,10 +1,15 @@
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Common;
+using System.Text.RegularExpressions;
 
 namespace OutreachFlow.Domain.EmailDrafts;
 
 public sealed class EmailDraft
 {
+    private static readonly Regex UnresolvedTokenRegex = new(
+        @"\{\{[^{}]+\}\}",
+        RegexOptions.Compiled);
+
     private readonly List<EmailDraftAttachment> _attachments = [];
 
     private EmailDraft()
@@ -76,6 +81,10 @@ public sealed class EmailDraft
 
     public DateTimeOffset UpdatedAt { get; private set; }
 
+    public DateTimeOffset? ApprovedAt { get; private set; }
+
+    public DateTimeOffset? CancelledAt { get; private set; }
+
     public IReadOnlyCollection<EmailDraftAttachment> Attachments => _attachments.AsReadOnly();
 
     public static EmailDraft CreateGenerated(
@@ -122,6 +131,84 @@ public sealed class EmailDraft
         return true;
     }
 
+    public void UpdateContent(string subject, string body, DateTimeOffset updatedAt)
+    {
+        EnsureCanEdit();
+
+        Subject = RequireText(subject, "Draft subject is required.");
+        Body = RequireText(body, "Draft body is required.");
+
+        if (ContainsUnresolvedTokens(Subject) || ContainsUnresolvedTokens(Body))
+        {
+            HasRenderErrors = true;
+            Status = EmailDraftStatus.NeedsReview;
+            ApprovedAt = null;
+            UpdatedAt = updatedAt;
+            return;
+        }
+
+        HasRenderErrors = false;
+        MissingVariablesJson = null;
+        UnknownVariablesJson = null;
+        Status = EmailDraftStatus.Draft;
+        ApprovedAt = null;
+        UpdatedAt = updatedAt;
+    }
+
+    public void Approve(DateTimeOffset approvedAt)
+    {
+        if (Status == EmailDraftStatus.Approved)
+        {
+            throw new DomainException("Draft is already approved.");
+        }
+
+        if (Status == EmailDraftStatus.Sent)
+        {
+            throw new DomainException("Sent drafts cannot be approved.");
+        }
+
+        if (Status == EmailDraftStatus.Cancelled)
+        {
+            throw new DomainException("Cancelled drafts cannot be approved.");
+        }
+
+        if (HasRenderErrors)
+        {
+            throw new DomainException("Draft cannot be approved while render errors remain.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(MissingVariablesJson) || !string.IsNullOrWhiteSpace(UnknownVariablesJson))
+        {
+            throw new DomainException("Draft cannot be approved while render diagnostics remain unresolved.");
+        }
+
+        if (ContainsUnresolvedTokens(Subject) || ContainsUnresolvedTokens(Body))
+        {
+            throw new DomainException("Draft cannot be approved while unresolved template variables remain.");
+        }
+
+        Status = EmailDraftStatus.Approved;
+        ApprovedAt = approvedAt;
+        UpdatedAt = approvedAt;
+    }
+
+    public void Cancel(DateTimeOffset cancelledAt)
+    {
+        if (Status == EmailDraftStatus.Cancelled)
+        {
+            throw new DomainException("Draft is already cancelled.");
+        }
+
+        if (Status == EmailDraftStatus.Sent)
+        {
+            throw new DomainException("Sent drafts cannot be cancelled.");
+        }
+
+        Status = EmailDraftStatus.Cancelled;
+        CancelledAt = cancelledAt;
+        UpdatedAt = cancelledAt;
+    }
+
     private static string RequireText(string value, string message)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -135,5 +222,18 @@ public sealed class EmailDraft
     private static string? NormalizeOptional(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static bool ContainsUnresolvedTokens(string value)
+    {
+        return UnresolvedTokenRegex.IsMatch(value);
+    }
+
+    private void EnsureCanEdit()
+    {
+        if (Status == EmailDraftStatus.Sent || Status == EmailDraftStatus.Cancelled)
+        {
+            throw new DomainException("Sent or cancelled drafts cannot be edited.");
+        }
     }
 }
