@@ -66,6 +66,20 @@ The API layer exposes REST endpoints under `/api/v1`. The OpenAPI source of trut
 
 The Web layer uses typed API clients and Blazor pages for contacts, organizations, and tags. Components keep local UI state and delegate API access to services.
 
+## Configurable Sender And Template Model
+
+Phase 2 adds the configurable content layer used by later draft and sending workflows:
+
+- `SenderProfile` stores sender identity fields such as name, email, phone, organization name, website, and signature.
+- `EmailTemplate` stores reusable subject/body templates as data, not hardcoded copy.
+- `TemplateVariableService` exposes the centralized list of supported template variables for API and UI guidance.
+
+Only one active sender profile is treated as default at a time. The Application layer enforces this by clearing existing defaults before marking a new default profile.
+
+Sender profiles and email templates are deactivated instead of hard-deleted through the API. This keeps future draft and communication history references stable.
+
+The Web layer uses typed API clients for sender profiles and templates. Template rendering is intentionally deferred to the next OpenSpec change.
+
 ## Email Provider Strategy (Future Phase)
 
 - Application defines ports for outbound email sending.

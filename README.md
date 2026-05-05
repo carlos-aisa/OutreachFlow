@@ -78,6 +78,14 @@ Phase 1 completed:
 - Blazor pages for contacts, organizations, and tags
 - Domain, application, and integration tests for the core contact model
 
+Phase 2 completed:
+
+- Configurable sender profiles with active/default behavior
+- Reusable email templates with active/inactive state
+- Centralized supported template variable catalog for API and UI guidance
+- REST endpoints and Blazor pages for sender profiles and templates
+- Domain, application, and integration tests for configurable sender identity and template management
+
 ## Roadmap
 
 - Phase 1: Core contacts model (organizations, contacts, tags)
@@ -126,6 +134,10 @@ The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Phase 1 add
 - `/api/v1/contacts`
 - `/api/v1/contacts/{id}/tags/{tagId}`
 - `/api/v1/tags`
+- `/api/v1/sender-profiles`
+- `/api/v1/sender-profiles/default`
+- `/api/v1/templates`
+- `/api/v1/templates/variables`
 
 ## Run Tests
 

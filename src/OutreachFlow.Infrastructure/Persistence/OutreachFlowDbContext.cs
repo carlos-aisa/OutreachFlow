@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.Organizations;
+using OutreachFlow.Domain.SenderProfiles;
 using OutreachFlow.Domain.Tags;
 
 namespace OutreachFlow.Infrastructure.Persistence;
@@ -16,12 +18,18 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
     public DbSet<ContactTag> ContactTags => Set<ContactTag>();
 
+    public DbSet<SenderProfile> SenderProfiles => Set<SenderProfile>();
+
+    public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureOrganizations(modelBuilder);
         ConfigureContacts(modelBuilder);
         ConfigureTags(modelBuilder);
         ConfigureContactTags(modelBuilder);
+        ConfigureSenderProfiles(modelBuilder);
+        ConfigureEmailTemplates(modelBuilder);
     }
 
     private static void ConfigureOrganizations(ModelBuilder modelBuilder)
@@ -128,6 +136,62 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
                 .WithMany()
                 .HasForeignKey(contactTag => contactTag.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureSenderProfiles(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<SenderProfile>(builder =>
+        {
+            builder.ToTable("SenderProfiles");
+            builder.HasKey(senderProfile => senderProfile.Id);
+
+            builder.Property(senderProfile => senderProfile.Name)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            builder.Property(senderProfile => senderProfile.Email)
+                .HasMaxLength(320)
+                .IsRequired();
+
+            builder.Property(senderProfile => senderProfile.NormalizedEmail)
+                .HasMaxLength(320)
+                .IsRequired();
+
+            builder.Property(senderProfile => senderProfile.Phone).HasMaxLength(100);
+            builder.Property(senderProfile => senderProfile.OrganizationName).HasMaxLength(200);
+            builder.Property(senderProfile => senderProfile.Website).HasMaxLength(500);
+            builder.Property(senderProfile => senderProfile.Signature).HasMaxLength(4000);
+
+            builder.HasIndex(senderProfile => senderProfile.IsDefault);
+            builder.HasIndex(senderProfile => senderProfile.IsActive);
+            builder.HasIndex(senderProfile => senderProfile.NormalizedEmail);
+        });
+    }
+
+    private static void ConfigureEmailTemplates(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EmailTemplate>(builder =>
+        {
+            builder.ToTable("EmailTemplates");
+            builder.HasKey(emailTemplate => emailTemplate.Id);
+
+            builder.Property(emailTemplate => emailTemplate.Name)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            builder.Property(emailTemplate => emailTemplate.Description).HasMaxLength(4000);
+
+            builder.Property(emailTemplate => emailTemplate.SubjectTemplate)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            builder.Property(emailTemplate => emailTemplate.BodyTemplate)
+                .HasMaxLength(20000)
+                .IsRequired();
+
+            builder.HasIndex(emailTemplate => emailTemplate.IsActive);
+            builder.HasIndex(emailTemplate => emailTemplate.Name);
         });
     }
 }

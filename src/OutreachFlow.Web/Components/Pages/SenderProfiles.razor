@@ -1,0 +1,269 @@
+@page "/sender-profiles"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using OutreachFlow.Application.SenderProfiles
+@using OutreachFlow.Web.SenderProfiles
+@inject SenderProfileApiClient SenderProfileClient
+
+<PageTitle>Sender Profiles</PageTitle>
+
+<h1>Sender Profiles</h1>
+
+<p class="text-muted">
+    Configure reusable sender identities without hardcoded business details.
+</p>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<section class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">@(editingId is null ? "Create sender profile" : "Edit sender profile")</h2>
+        @if (editingId is not null)
+        {
+            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="ResetForm">Cancel edit</button>
+        }
+    </div>
+    <div class="card-body">
+        <EditForm Model="form" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="sender-name">Name</label>
+                    <InputText id="sender-name" class="form-control" @bind-Value="form.Name" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="sender-email">Email</label>
+                    <InputText id="sender-email" class="form-control" @bind-Value="form.Email" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="sender-phone">Phone</label>
+                    <InputText id="sender-phone" class="form-control" @bind-Value="form.Phone" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="sender-organization">Organization name</label>
+                    <InputText id="sender-organization" class="form-control" @bind-Value="form.OrganizationName" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="sender-website">Website</label>
+                    <InputText id="sender-website" class="form-control" @bind-Value="form.Website" />
+                </div>
+                <div class="col-md-4 d-flex align-items-end gap-4">
+                    <div class="form-check">
+                        <InputCheckbox id="sender-default" class="form-check-input" @bind-Value="form.IsDefault" />
+                        <label class="form-check-label" for="sender-default">Default</label>
+                    </div>
+                    <div class="form-check">
+                        <InputCheckbox id="sender-active" class="form-check-input" @bind-Value="form.IsActive" />
+                        <label class="form-check-label" for="sender-active">Active</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="sender-signature">Signature</label>
+                    <InputTextArea id="sender-signature" class="form-control" @bind-Value="form.Signature" />
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success" disabled="@isSaving">Save sender profile</button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Sender profile list</h2>
+        <span class="badge text-bg-secondary">@senderProfiles.Count profiles</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Organization</th>
+                    <th scope="col">Default</th>
+                    <th scope="col">Active</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (isLoading)
+                {
+                    <tr><td colspan="6">Loading sender profiles...</td></tr>
+                }
+                else if (senderProfiles.Count == 0)
+                {
+                    <tr><td colspan="6">No sender profiles have been created yet.</td></tr>
+                }
+                else
+                {
+                    @foreach (var senderProfile in senderProfiles)
+                    {
+                        <tr>
+                            <td>@senderProfile.Name</td>
+                            <td>@senderProfile.Email</td>
+                            <td>@(senderProfile.OrganizationName ?? "-")</td>
+                            <td>@(senderProfile.IsDefault ? "Yes" : "No")</td>
+                            <td>@(senderProfile.IsActive ? "Yes" : "No")</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-primary me-2" @onclick="() => Edit(senderProfile)">Edit</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => DeactivateAsync(senderProfile.Id)" disabled="@(!senderProfile.IsActive)">Deactivate</button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private IReadOnlyList<SenderProfileDto> senderProfiles = [];
+    private SenderProfileFormModel form = new();
+    private Guid? editingId;
+    private string? errorMessage;
+    private bool isLoading;
+    private bool isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            senderProfiles = await SenderProfileClient.ListAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            if (editingId is Guid id)
+            {
+                await SenderProfileClient.UpdateAsync(id, new UpdateSenderProfileRequest(
+                    form.Name,
+                    form.Email,
+                    form.Phone,
+                    form.OrganizationName,
+                    form.Website,
+                    form.Signature,
+                    form.IsDefault,
+                    form.IsActive));
+            }
+            else
+            {
+                await SenderProfileClient.CreateAsync(new CreateSenderProfileRequest(
+                    form.Name,
+                    form.Email,
+                    form.Phone,
+                    form.OrganizationName,
+                    form.Website,
+                    form.Signature,
+                    form.IsDefault));
+            }
+
+            ResetForm();
+            await LoadAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void Edit(SenderProfileDto senderProfile)
+    {
+        editingId = senderProfile.Id;
+        form = new SenderProfileFormModel
+        {
+            Name = senderProfile.Name,
+            Email = senderProfile.Email,
+            Phone = senderProfile.Phone,
+            OrganizationName = senderProfile.OrganizationName,
+            Website = senderProfile.Website,
+            Signature = senderProfile.Signature,
+            IsDefault = senderProfile.IsDefault,
+            IsActive = senderProfile.IsActive
+        };
+    }
+
+    private async Task DeactivateAsync(Guid id)
+    {
+        try
+        {
+            await SenderProfileClient.DeactivateAsync(id);
+            await LoadAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+    }
+
+    private void ResetForm()
+    {
+        editingId = null;
+        form = new SenderProfileFormModel();
+    }
+
+    private sealed class SenderProfileFormModel
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        public string? Phone { get; set; }
+
+        public string? OrganizationName { get; set; }
+
+        public string? Website { get; set; }
+
+        public string? Signature { get; set; }
+
+        public bool IsDefault { get; set; }
+
+        public bool IsActive { get; set; } = true;
+    }
+}
