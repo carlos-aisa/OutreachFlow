@@ -1,0 +1,199 @@
+@page "/organizations"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using OutreachFlow.Application.Organizations
+@using OutreachFlow.Web.Organizations
+@inject OrganizationApiClient OrganizationClient
+
+<PageTitle>Organizations</PageTitle>
+
+<h1>Organizations</h1>
+
+<p class="text-muted">
+    Create and review generic organizations that can be associated with contacts.
+</p>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<section class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">Create organization</h2>
+    </div>
+    <div class="card-body">
+        <EditForm Model="newOrganization" OnValidSubmit="CreateOrganizationAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="organization-name">Name</label>
+                    <InputText id="organization-name" class="form-control" @bind-Value="newOrganization.Name" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="organization-type">Type</label>
+                    <InputText id="organization-type" class="form-control" @bind-Value="newOrganization.Type" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="organization-website">Website</label>
+                    <InputText id="organization-website" class="form-control" @bind-Value="newOrganization.Website" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="organization-city">City</label>
+                    <InputText id="organization-city" class="form-control" @bind-Value="newOrganization.City" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="organization-province">Province</label>
+                    <InputText id="organization-province" class="form-control" @bind-Value="newOrganization.Province" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="organization-country">Country</label>
+                    <InputText id="organization-country" class="form-control" @bind-Value="newOrganization.Country" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="organization-notes">Notes</label>
+                    <InputTextArea id="organization-notes" class="form-control" @bind-Value="newOrganization.Notes" />
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success" disabled="@isSaving">Create organization</button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Organization list</h2>
+        <span class="badge text-bg-secondary">@organizations.Count organizations</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Website</th>
+                    <th scope="col">City</th>
+                    <th scope="col">Country</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (isLoading)
+                {
+                    <tr>
+                        <td colspan="5">Loading organizations...</td>
+                    </tr>
+                }
+                else if (organizations.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5">No organizations have been created yet.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var organization in organizations)
+                    {
+                        <tr>
+                            <td>@organization.Name</td>
+                            <td>@(organization.Type ?? "-")</td>
+                            <td>@(organization.Website ?? "-")</td>
+                            <td>@(organization.City ?? "-")</td>
+                            <td>@(organization.Country ?? "-")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private IReadOnlyList<OrganizationDto> organizations = [];
+    private OrganizationFormModel newOrganization = new();
+    private string? errorMessage;
+    private bool isLoading;
+    private bool isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrganizationsAsync();
+    }
+
+    private async Task LoadOrganizationsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            organizations = await OrganizationClient.ListAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CreateOrganizationAsync()
+    {
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            await OrganizationClient.CreateAsync(new CreateOrganizationRequest(
+                newOrganization.Name,
+                newOrganization.Type,
+                newOrganization.Website,
+                newOrganization.City,
+                newOrganization.Province,
+                newOrganization.Country,
+                newOrganization.Notes));
+
+            newOrganization = new OrganizationFormModel();
+            await LoadOrganizationsAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private sealed class OrganizationFormModel
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        public string? Type { get; set; }
+
+        public string? Website { get; set; }
+
+        public string? City { get; set; }
+
+        public string? Province { get; set; }
+
+        public string? Country { get; set; }
+
+        public string? Notes { get; set; }
+    }
+}

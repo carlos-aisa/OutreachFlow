@@ -1,10 +1,23 @@
 using OutreachFlow.Web.Components;
+using OutreachFlow.Web.Contacts;
+using OutreachFlow.Web.Organizations;
+using OutreachFlow.Web.Tags;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+var apiBaseUrl = builder.Configuration["OutreachFlowApi:BaseUrl"] ??
+    throw new InvalidOperationException("OutreachFlow API base URL is not configured.");
+
+builder.Services.AddHttpClient<ContactApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<OrganizationApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<TagApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();
 

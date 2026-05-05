@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\src\OutreachFlow.Infrastructure\OutreachFlow.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\OutreachFlow.Application\OutreachFlow.Application.csproj" />
     <ProjectReference Include="..\..\src\OutreachFlow.Domain\OutreachFlow.Domain.csproj" />
+    <ProjectReference Include="..\..\src\OutreachFlow.Web\OutreachFlow.Web.csproj" />
   </ItemGroup>
 
 </Project>

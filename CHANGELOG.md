@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.2.0] - 2026-05-05
+
+### Added
+
+- Core contact management model with organizations, contacts, tags, and contact-tag assignments.
+- Domain rules for required fields, email validation, contact status changes, do-not-contact behavior, and idempotent tag assignment.
+- EF Core SQLite mappings, relational foreign keys, unique indexes, repositories, and `CoreContactsModel` migration.
+- Application DTOs and services for organization, contact, and tag CRUD, contact filtering, duplicate prevention, and tag assignment/removal.
+- REST endpoints and OpenAPI documentation for organizations, contacts, tags, and contact tag assignments.
+- Blazor pages and typed API clients for contacts, organizations, and tags.
+- Domain, application, and integration tests for the core contact model, API endpoints, EF persistence, and Web API client error handling.
+- OpenSpec archive for `p01-core-contacts-model`.
+
+### Changed
+
+- Web API client error handling now converts non-JSON API errors into controlled UI errors instead of surfacing `JsonException` during rendering.
+- Test result directories are ignored recursively to keep coverage output out of commits.
+- README and architecture documentation now describe Phase 1 behavior and local API configuration.
+
 ## [0.1.0] - 2026-05-05
 
 ### Added

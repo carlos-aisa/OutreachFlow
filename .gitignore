@@ -26,5 +26,6 @@ Thumbs.db
 
 # Test results
 /TestResults/
+**/TestResults/
 /coverage/
 /coverage-report/
