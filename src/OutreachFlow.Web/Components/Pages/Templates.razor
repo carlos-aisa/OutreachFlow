@@ -1,17 +1,20 @@
 @page "/templates"
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
+@using OutreachFlow.Application.Attachments
 @using OutreachFlow.Application.EmailTemplates
 @using OutreachFlow.Application.Templates
+@using OutreachFlow.Web.Attachments
 @using OutreachFlow.Web.EmailTemplates
 @inject EmailTemplateApiClient TemplateClient
+@inject AttachmentAssetApiClient AttachmentClient
 
 <PageTitle>Email Templates</PageTitle>
 
 <h1>Email Templates</h1>
 
 <p class="text-muted">
-    Store reusable subject and body templates as configurable data. Rendering and validation arrive in the next phase.
+    Store reusable subject and body templates as configurable data, including default attachment selection.
 </p>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -60,6 +63,58 @@
                         <div class="col-12">
                             <button type="submit" class="btn btn-success" disabled="@isSaving">Save template</button>
                         </div>
+
+                        @if (editingId is not null)
+                        {
+                            <div class="col-12">
+                                <hr />
+                                <h3 class="h6">Default attachments</h3>
+                                <p class="text-muted small mb-2">
+                                    Choose reusable files that should be preselected for this template.
+                                </p>
+
+                                @if (attachments.Count == 0)
+                                {
+                                    <p class="small mb-0">No active attachments available. Upload attachments first.</p>
+                                }
+                                else
+                                {
+                                    <div class="list-group">
+                                        @foreach (var attachment in attachments)
+                                        {
+                                            var isAssigned = form.DefaultAttachmentIds.Contains(attachment.Id);
+
+                                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong>@attachment.Name</strong>
+                                                    <div class="small text-muted">@attachment.FileName</div>
+                                                </div>
+                                                @if (isAssigned)
+                                                {
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        @onclick="() => RemoveDefaultAttachmentAsync(attachment.Id)"
+                                                        disabled="@isManagingAttachments">
+                                                        Remove
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-outline-primary"
+                                                        @onclick="() => AssignDefaultAttachmentAsync(attachment.Id)"
+                                                        disabled="@isManagingAttachments">
+                                                        Add
+                                                    </button>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
                     </div>
                 </EditForm>
             </div>
@@ -76,6 +131,7 @@
                         <tr>
                             <th scope="col">Name</th>
                             <th scope="col">Subject</th>
+                            <th scope="col">Default attachments</th>
                             <th scope="col">Active</th>
                             <th scope="col">Actions</th>
                         </tr>
@@ -83,11 +139,11 @@
                     <tbody>
                         @if (isLoading)
                         {
-                            <tr><td colspan="4">Loading templates...</td></tr>
+                            <tr><td colspan="5">Loading templates...</td></tr>
                         }
                         else if (templates.Count == 0)
                         {
-                            <tr><td colspan="4">No templates have been created yet.</td></tr>
+                            <tr><td colspan="5">No templates have been created yet.</td></tr>
                         }
                         else
                         {
@@ -96,6 +152,7 @@
                                 <tr>
                                     <td>@template.Name</td>
                                     <td>@template.SubjectTemplate</td>
+                                    <td>@template.DefaultAttachmentIds.Count</td>
                                     <td>@(template.IsActive ? "Yes" : "No")</td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-outline-primary me-2" @onclick="() => Edit(template)">Edit</button>
@@ -143,11 +200,13 @@
 @code {
     private IReadOnlyList<EmailTemplateDto> templates = [];
     private IReadOnlyList<TemplateVariableDto> variables = [];
+    private IReadOnlyList<AttachmentAssetDto> attachments = [];
     private EmailTemplateFormModel form = new();
     private Guid? editingId;
     private string? errorMessage;
     private bool isLoading;
     private bool isSaving;
+    private bool isManagingAttachments;
 
     protected override async Task OnInitializedAsync()
     {
@@ -163,6 +222,7 @@
         {
             templates = await TemplateClient.ListAsync();
             variables = await TemplateClient.ListVariablesAsync();
+            attachments = await AttachmentClient.ListAsync(activeOnly: true);
         }
         catch (InvalidOperationException exception)
         {
@@ -229,7 +289,8 @@
             Description = template.Description,
             SubjectTemplate = template.SubjectTemplate,
             BodyTemplate = template.BodyTemplate,
-            IsActive = template.IsActive
+            IsActive = template.IsActive,
+            DefaultAttachmentIds = template.DefaultAttachmentIds.ToHashSet()
         };
     }
 
@@ -256,6 +317,76 @@
         form = new EmailTemplateFormModel();
     }
 
+    private async Task AssignDefaultAttachmentAsync(Guid attachmentId)
+    {
+        if (editingId is not Guid templateId)
+        {
+            return;
+        }
+
+        isManagingAttachments = true;
+        errorMessage = null;
+
+        try
+        {
+            var updatedTemplate = await TemplateClient.AssignDefaultAttachmentAsync(templateId, attachmentId);
+            ApplyUpdatedTemplate(updatedTemplate);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isManagingAttachments = false;
+        }
+    }
+
+    private async Task RemoveDefaultAttachmentAsync(Guid attachmentId)
+    {
+        if (editingId is not Guid templateId)
+        {
+            return;
+        }
+
+        isManagingAttachments = true;
+        errorMessage = null;
+
+        try
+        {
+            var updatedTemplate = await TemplateClient.RemoveDefaultAttachmentAsync(templateId, attachmentId);
+            ApplyUpdatedTemplate(updatedTemplate);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isManagingAttachments = false;
+        }
+    }
+
+    private void ApplyUpdatedTemplate(EmailTemplateDto updatedTemplate)
+    {
+        templates = templates
+            .Select(template => template.Id == updatedTemplate.Id ? updatedTemplate : template)
+            .ToArray();
+
+        if (editingId == updatedTemplate.Id)
+        {
+            form.DefaultAttachmentIds = updatedTemplate.DefaultAttachmentIds.ToHashSet();
+        }
+    }
+
     private sealed class EmailTemplateFormModel
     {
         [Required]
@@ -270,5 +401,7 @@
         public string BodyTemplate { get; set; } = string.Empty;
 
         public bool IsActive { get; set; } = true;
+
+        public HashSet<Guid> DefaultAttachmentIds { get; set; } = [];
     }
 }

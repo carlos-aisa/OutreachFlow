@@ -94,6 +94,26 @@ Phase 3 introduces deterministic template rendering for personalized email gener
 
 The renderer intentionally supports substitution only. Expression-like tokens are treated as unknown variables and are never executed.
 
+## Attachment Assets
+
+Phase 4 adds reusable attachment management and template defaults:
+
+- `AttachmentAsset` stores attachment metadata and lifecycle (`IsActive`) in Domain.
+- `EmailTemplateAttachment` models many-to-many default attachment assignments for templates.
+- `IAttachmentFileStorage` is the Application port for binary storage operations.
+- `LocalAttachmentFileStorage` is the Infrastructure adapter for MVP local disk storage.
+- `AttachmentStorage:RootPath` config controls the safe storage root used by the local adapter.
+
+Files are stored outside the database. EF Core persists metadata and template associations in:
+
+- `AttachmentAssets`
+- `EmailTemplateAttachments`
+
+Template assignment rules are enforced through the Domain model:
+
+- inactive attachments cannot be assigned as defaults;
+- duplicate default assignments are ignored idempotently.
+
 ## Email Provider Strategy (Future Phase)
 
 - Application defines ports for outbound email sending.

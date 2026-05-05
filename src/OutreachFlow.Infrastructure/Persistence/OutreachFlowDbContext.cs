@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.Organizations;
@@ -22,6 +23,10 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
     public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
 
+    public DbSet<AttachmentAsset> AttachmentAssets => Set<AttachmentAsset>();
+
+    public DbSet<EmailTemplateAttachment> EmailTemplateAttachments => Set<EmailTemplateAttachment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureOrganizations(modelBuilder);
@@ -29,7 +34,9 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
         ConfigureTags(modelBuilder);
         ConfigureContactTags(modelBuilder);
         ConfigureSenderProfiles(modelBuilder);
+        ConfigureAttachmentAssets(modelBuilder);
         ConfigureEmailTemplates(modelBuilder);
+        ConfigureEmailTemplateAttachments(modelBuilder);
     }
 
     private static void ConfigureOrganizations(ModelBuilder modelBuilder)
@@ -192,6 +199,66 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
             builder.HasIndex(emailTemplate => emailTemplate.IsActive);
             builder.HasIndex(emailTemplate => emailTemplate.Name);
+
+            builder.HasMany(emailTemplate => emailTemplate.DefaultAttachments)
+                .WithOne()
+                .HasForeignKey(emailTemplateAttachment => emailTemplateAttachment.EmailTemplateId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Navigation(emailTemplate => emailTemplate.DefaultAttachments)
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+    }
+
+    private static void ConfigureAttachmentAssets(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<AttachmentAsset>(builder =>
+        {
+            builder.ToTable("AttachmentAssets");
+            builder.HasKey(attachmentAsset => attachmentAsset.Id);
+
+            builder.Property(attachmentAsset => attachmentAsset.Name)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            builder.Property(attachmentAsset => attachmentAsset.FileName)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            builder.Property(attachmentAsset => attachmentAsset.ContentType)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            builder.Property(attachmentAsset => attachmentAsset.StoragePath)
+                .HasMaxLength(1000)
+                .IsRequired();
+
+            builder.Property(attachmentAsset => attachmentAsset.Description)
+                .HasMaxLength(4000);
+
+            builder.HasIndex(attachmentAsset => attachmentAsset.IsActive);
+            builder.HasIndex(attachmentAsset => attachmentAsset.Name);
+            builder.HasIndex(attachmentAsset => attachmentAsset.FileName);
+        });
+    }
+
+    private static void ConfigureEmailTemplateAttachments(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EmailTemplateAttachment>(builder =>
+        {
+            builder.ToTable("EmailTemplateAttachments");
+            builder.HasKey(emailTemplateAttachment => new
+            {
+                emailTemplateAttachment.EmailTemplateId,
+                emailTemplateAttachment.AttachmentAssetId
+            });
+
+            builder.HasIndex(emailTemplateAttachment => emailTemplateAttachment.AttachmentAssetId);
+
+            builder.HasOne<AttachmentAsset>()
+                .WithMany()
+                .HasForeignKey(emailTemplateAttachment => emailTemplateAttachment.AttachmentAssetId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

@@ -10,5 +10,15 @@ public interface IEmailTemplateService
 
     Task<IReadOnlyList<EmailTemplateDto>> ListAsync(bool? activeOnly, CancellationToken cancellationToken = default);
 
+    Task<EmailTemplateDto> AssignDefaultAttachmentAsync(
+        Guid id,
+        Guid attachmentAssetId,
+        CancellationToken cancellationToken = default);
+
+    Task<EmailTemplateDto> RemoveDefaultAttachmentAsync(
+        Guid id,
+        Guid attachmentAssetId,
+        CancellationToken cancellationToken = default);
+
     Task DeactivateAsync(Guid id, CancellationToken cancellationToken = default);
 }

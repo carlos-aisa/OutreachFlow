@@ -48,6 +48,7 @@ app.MapContactEndpoints();
 app.MapTagEndpoints();
 app.MapSenderProfileEndpoints();
 app.MapEmailTemplateEndpoints();
+app.MapAttachmentAssetEndpoints();
 
 app.Run();
 

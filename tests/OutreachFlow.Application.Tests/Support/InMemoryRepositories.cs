@@ -1,9 +1,11 @@
 using OutreachFlow.Application.Common;
+using OutreachFlow.Application.Attachments;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tags;
+using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.Organizations;
@@ -314,5 +316,59 @@ internal sealed class InMemoryEmailTemplateRepository : IEmailTemplateRepository
     public void Remove(EmailTemplate emailTemplate)
     {
         _emailTemplates.Remove(emailTemplate);
+    }
+}
+
+internal sealed class InMemoryAttachmentAssetRepository : IAttachmentAssetRepository
+{
+    private readonly List<AttachmentAsset> _attachmentAssets = [];
+
+    public IReadOnlyList<AttachmentAsset> AttachmentAssets => _attachmentAssets;
+
+    public Task AddAsync(AttachmentAsset attachmentAsset, CancellationToken cancellationToken = default)
+    {
+        _attachmentAssets.Add(attachmentAsset);
+        return Task.CompletedTask;
+    }
+
+    public Task<AttachmentAsset?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_attachmentAssets.FirstOrDefault(attachmentAsset => attachmentAsset.Id == id));
+    }
+
+    public Task<IReadOnlyList<AttachmentAsset>> ListAsync(
+        bool? activeOnly,
+        CancellationToken cancellationToken = default)
+    {
+        IEnumerable<AttachmentAsset> query = _attachmentAssets;
+
+        if (activeOnly is not null)
+        {
+            query = query.Where(attachmentAsset => attachmentAsset.IsActive == activeOnly);
+        }
+
+        return Task.FromResult<IReadOnlyList<AttachmentAsset>>(
+            query.OrderBy(attachmentAsset => attachmentAsset.Name).ToArray());
+    }
+}
+
+internal sealed class InMemoryAttachmentFileStorage : IAttachmentFileStorage
+{
+    private readonly Func<AttachmentFileSaveRequest, StoredAttachmentFile> _saveHandler;
+
+    public InMemoryAttachmentFileStorage(Func<AttachmentFileSaveRequest, StoredAttachmentFile>? saveHandler = null)
+    {
+        _saveHandler = saveHandler ?? (request => new StoredAttachmentFile(
+            request.FileName,
+            request.ContentType,
+            $"storage/{request.FileName}",
+            request.SizeBytes));
+    }
+
+    public Task<StoredAttachmentFile> SaveAsync(
+        AttachmentFileSaveRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_saveHandler(request));
     }
 }

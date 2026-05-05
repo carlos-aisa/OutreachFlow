@@ -14,6 +14,9 @@ internal sealed class OutreachFlowApiFactory : WebApplicationFactory<Program>
     private readonly string _databasePath = Path.Combine(
         Path.GetTempPath(),
         $"outreachflow-tests-{Guid.NewGuid():N}.db");
+    private readonly string _attachmentsRootPath = Path.Combine(
+        Path.GetTempPath(),
+        $"outreachflow-test-attachments-{Guid.NewGuid():N}");
 
     public async Task InitializeDatabaseAsync()
     {
@@ -31,6 +34,7 @@ internal sealed class OutreachFlowApiFactory : WebApplicationFactory<Program>
             var overrides = new Dictionary<string, string?>
             {
                 ["ConnectionStrings:OutreachFlow"] = $"Data Source={_databasePath}",
+                ["AttachmentStorage:RootPath"] = _attachmentsRootPath,
                 ["Logging:LogLevel:Default"] = "Warning",
                 ["Logging:LogLevel:Microsoft.EntityFrameworkCore"] = "Warning"
             };
@@ -55,6 +59,11 @@ internal sealed class OutreachFlowApiFactory : WebApplicationFactory<Program>
         if (File.Exists(_databasePath))
         {
             File.Delete(_databasePath);
+        }
+
+        if (Directory.Exists(_attachmentsRootPath))
+        {
+            Directory.Delete(_attachmentsRootPath, recursive: true);
         }
     }
 }

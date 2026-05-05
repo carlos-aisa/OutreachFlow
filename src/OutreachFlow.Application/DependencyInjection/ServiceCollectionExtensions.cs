@@ -5,6 +5,7 @@ using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tags;
 using OutreachFlow.Application.Templates;
+using OutreachFlow.Application.Attachments;
 
 namespace OutreachFlow.Application.DependencyInjection;
 
@@ -17,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<ISenderProfileService, SenderProfileService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        services.AddScoped<IAttachmentAssetService, AttachmentAssetService>();
         services.AddSingleton<ITemplateVariableService, TemplateVariableService>();
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
 

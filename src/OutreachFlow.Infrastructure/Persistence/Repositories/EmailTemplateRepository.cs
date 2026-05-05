@@ -14,6 +14,7 @@ public sealed class EmailTemplateRepository(OutreachFlowDbContext dbContext) : I
     public async Task<EmailTemplate?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await dbContext.EmailTemplates
+            .Include(emailTemplate => emailTemplate.DefaultAttachments)
             .FirstOrDefaultAsync(emailTemplate => emailTemplate.Id == id, cancellationToken);
     }
 
@@ -29,6 +30,7 @@ public sealed class EmailTemplateRepository(OutreachFlowDbContext dbContext) : I
         }
 
         return await query
+            .Include(emailTemplate => emailTemplate.DefaultAttachments)
             .OrderBy(emailTemplate => emailTemplate.Name)
             .ToArrayAsync(cancellationToken);
     }

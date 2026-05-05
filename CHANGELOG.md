@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.5.0] - 2026-05-05
+
+### Added
+
+- Attachment asset domain model with reusable metadata and active/inactive lifecycle behavior.
+- `EmailTemplateAttachment` relationship model and domain rules for default attachment assignment.
+- Application attachment contracts and services (`IAttachmentAssetService`, `IAttachmentFileStorage`, upload/update/list/deactivate use cases).
+- Local disk storage adapter with safe root enforcement and path traversal rejection.
+- EF Core tables, mappings, and migration for `AttachmentAssets` and `EmailTemplateAttachments`.
+- REST endpoints for attachment upload/list/read/update/deactivate and template default attachment assignment/removal.
+- Blazor attachment management page and template default attachment controls.
+- Domain, application, and integration tests for attachment persistence, upload behavior, unsafe path rejection, and template association.
+- OpenSpec archive for `p04-attachment-assets`.
+
+### Changed
+
+- Email template DTOs and API responses now include `defaultAttachmentIds`.
+- Template repository queries now include default attachment associations.
+- README, architecture, and OpenAPI documentation now include attachment storage configuration and API contracts.
+
 ## [0.4.0] - 2026-05-05
 
 ### Added

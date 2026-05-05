@@ -73,6 +73,32 @@ public static class EmailTemplateEndpoints
             .WithName("DeactivateEmailTemplate")
             .WithOpenApi();
 
+        group.MapPost("/{id:guid}/attachments/{attachmentId:guid}", async (
+            Guid id,
+            Guid attachmentId,
+            IEmailTemplateService service,
+            CancellationToken cancellationToken) =>
+            await ApiEndpoint.HandleAsync(async () =>
+                Results.Ok(await service.AssignDefaultAttachmentAsync(
+                    id,
+                    attachmentId,
+                    cancellationToken))))
+            .WithName("AssignDefaultTemplateAttachment")
+            .WithOpenApi();
+
+        group.MapDelete("/{id:guid}/attachments/{attachmentId:guid}", async (
+            Guid id,
+            Guid attachmentId,
+            IEmailTemplateService service,
+            CancellationToken cancellationToken) =>
+            await ApiEndpoint.HandleAsync(async () =>
+                Results.Ok(await service.RemoveDefaultAttachmentAsync(
+                    id,
+                    attachmentId,
+                    cancellationToken))))
+            .WithName("RemoveDefaultTemplateAttachment")
+            .WithOpenApi();
+
         return endpoints;
     }
 }

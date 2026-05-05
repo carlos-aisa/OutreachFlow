@@ -580,6 +580,151 @@ paths:
           description: Email template deactivated successfully
         "404":
           $ref: "#/components/responses/NotFoundError"
+  /api/v1/templates/{id}/attachments/{attachmentId}:
+    post:
+      operationId: assignDefaultTemplateAttachment
+      summary: Assigns a default attachment to an email template
+      tags:
+        - EmailTemplates
+      parameters:
+        - $ref: "#/components/parameters/EmailTemplateId"
+        - $ref: "#/components/parameters/AttachmentAssetIdInTemplate"
+      responses:
+        "200":
+          description: Default attachment assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplate"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      operationId: removeDefaultTemplateAttachment
+      summary: Removes a default attachment from an email template
+      tags:
+        - EmailTemplates
+      parameters:
+        - $ref: "#/components/parameters/EmailTemplateId"
+        - $ref: "#/components/parameters/AttachmentAssetIdInTemplate"
+      responses:
+        "200":
+          description: Default attachment removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplate"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/attachments:
+    get:
+      operationId: listAttachmentAssets
+      summary: Lists attachment assets
+      tags:
+        - AttachmentAssets
+      parameters:
+        - name: activeOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Attachment assets returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttachmentAsset"
+    post:
+      operationId: uploadAttachmentAsset
+      summary: Uploads an attachment asset
+      tags:
+        - AttachmentAssets
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - file
+              properties:
+                name:
+                  type: string
+                  example: Service brochure
+                description:
+                  type: string
+                  nullable: true
+                  example: General introduction document.
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Attachment asset uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttachmentAsset"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /api/v1/attachments/{id}:
+    get:
+      operationId: getAttachmentAsset
+      summary: Gets an attachment asset by id
+      tags:
+        - AttachmentAssets
+      parameters:
+        - $ref: "#/components/parameters/AttachmentAssetId"
+      responses:
+        "200":
+          description: Attachment asset returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttachmentAsset"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    put:
+      operationId: updateAttachmentAsset
+      summary: Updates attachment metadata and active state
+      tags:
+        - AttachmentAssets
+      parameters:
+        - $ref: "#/components/parameters/AttachmentAssetId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAttachmentAssetRequest"
+      responses:
+        "200":
+          description: Attachment asset updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttachmentAsset"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      operationId: deactivateAttachmentAsset
+      summary: Deactivates an attachment asset
+      tags:
+        - AttachmentAssets
+      parameters:
+        - $ref: "#/components/parameters/AttachmentAssetId"
+      responses:
+        "204":
+          description: Attachment asset deactivated successfully
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 components:
   parameters:
     ContactId:
@@ -619,6 +764,20 @@ components:
         format: uuid
     EmailTemplateId:
       name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AttachmentAssetId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    AttachmentAssetIdInTemplate:
+      name: attachmentId
       in: path
       required: true
       schema:
@@ -994,6 +1153,7 @@ components:
         - name
         - subjectTemplate
         - bodyTemplate
+        - defaultAttachmentIds
         - isActive
         - createdAt
         - updatedAt
@@ -1016,6 +1176,11 @@ components:
           example: Hello {{contact.displayName}},
 
 {{sender.signature}}
+        defaultAttachmentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
         isActive:
           type: boolean
           example: true
@@ -1072,3 +1237,60 @@ components:
         example:
           type: string
           example: "{{contact.displayName}}"
+    AttachmentAsset:
+      type: object
+      required:
+        - id
+        - name
+        - fileName
+        - contentType
+        - storagePath
+        - sizeBytes
+        - isActive
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Service brochure
+        fileName:
+          type: string
+          example: brochure.pdf
+        contentType:
+          type: string
+          example: application/pdf
+        storagePath:
+          type: string
+          example: 2026/05/abc123.pdf
+        sizeBytes:
+          type: integer
+          format: int64
+          example: 2048
+        description:
+          type: string
+          nullable: true
+          example: General introduction document.
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+    UpdateAttachmentAssetRequest:
+      type: object
+      required:
+        - name
+        - isActive
+      properties:
+        name:
+          type: string
+          example: Service brochure
+        description:
+          type: string
+          nullable: true
+          example: Updated description.
+        isActive:
+          type: boolean
+          example: true
