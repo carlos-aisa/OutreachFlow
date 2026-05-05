@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+
+using OutreachFlow.Api.Endpoints;
 using OutreachFlow.Application.DependencyInjection;
 using OutreachFlow.Infrastructure.DependencyInjection;
 
@@ -5,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -29,6 +34,10 @@ app.MapGet("/api/v1/health", () =>
     }))
     .WithName("GetHealth")
     .WithOpenApi();
+
+app.MapOrganizationEndpoints();
+app.MapContactEndpoints();
+app.MapTagEndpoints();
 
 app.Run();
 

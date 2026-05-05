@@ -1,0 +1,157 @@
+@page "/tags"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using OutreachFlow.Application.Tags
+@using OutreachFlow.Web.Tags
+@inject TagApiClient TagClient
+
+<PageTitle>Tags</PageTitle>
+
+<h1>Tags</h1>
+
+<p class="text-muted">
+    Create flexible tags for segmenting contacts without hardcoded categories.
+</p>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<section class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">Create tag</h2>
+    </div>
+    <div class="card-body">
+        <EditForm Model="newTag" OnValidSubmit="CreateTagAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label" for="tag-name">Name</label>
+                    <InputText id="tag-name" class="form-control" @bind-Value="newTag.Name" />
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label" for="tag-category">Category</label>
+                    <InputText id="tag-category" class="form-control" @bind-Value="newTag.Category" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success w-100" disabled="@isSaving">Create tag</button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Tag list</h2>
+        <span class="badge text-bg-secondary">@tags.Count tags</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (isLoading)
+                {
+                    <tr>
+                        <td colspan="3">Loading tags...</td>
+                    </tr>
+                }
+                else if (tags.Count == 0)
+                {
+                    <tr>
+                        <td colspan="3">No tags have been created yet.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var tag in tags)
+                    {
+                        <tr>
+                            <td>@tag.Name</td>
+                            <td>@(tag.Category ?? "-")</td>
+                            <td>@tag.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private IReadOnlyList<TagDto> tags = [];
+    private TagFormModel newTag = new();
+    private string? errorMessage;
+    private bool isLoading;
+    private bool isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTagsAsync();
+    }
+
+    private async Task LoadTagsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            tags = await TagClient.ListAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CreateTagAsync()
+    {
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            await TagClient.CreateAsync(new CreateTagRequest(newTag.Name, newTag.Category));
+            newTag = new TagFormModel();
+            await LoadTagsAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private sealed class TagFormModel
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        public string? Category { get; set; }
+    }
+}

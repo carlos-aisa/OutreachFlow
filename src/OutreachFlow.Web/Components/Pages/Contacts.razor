@@ -1,9 +1,366 @@
 @page "/contacts"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using OutreachFlow.Application.Contacts
+@using OutreachFlow.Application.Organizations
+@using OutreachFlow.Application.Tags
+@using OutreachFlow.Domain.Contacts
+@using OutreachFlow.Web.Contacts
+@using OutreachFlow.Web.Organizations
+@using OutreachFlow.Web.Tags
+@inject ContactApiClient ContactClient
+@inject OrganizationApiClient OrganizationClient
+@inject TagApiClient TagClient
 
 <PageTitle>Contacts</PageTitle>
 
 <h1>Contacts</h1>
 
-<p>
-    Contacts management screen will be implemented in Phase 1.
+<p class="text-muted">
+    Manage contacts, apply lightweight filters, and create new records without business-specific assumptions.
 </p>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<section class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">Filters</h2>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label" for="contact-search">Search</label>
+                <input id="contact-search" class="form-control" @bind="search" placeholder="Name, email, or role" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="contact-status">Status</label>
+                <select id="contact-status" class="form-select" @bind="selectedStatus">
+                    <option value="">Any status</option>
+                    @foreach (var status in StatusValues)
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="contact-organization-filter">Organization</label>
+                <select id="contact-organization-filter" class="form-select" @bind="selectedOrganizationId">
+                    <option value="">Any organization</option>
+                    @foreach (var organization in organizations)
+                    {
+                        <option value="@organization.Id">@organization.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="contact-tag-filter">Tag</label>
+                <select id="contact-tag-filter" class="form-select" @bind="selectedTagId">
+                    <option value="">Any tag</option>
+                    @foreach (var tag in tags)
+                    {
+                        <option value="@tag.Id">@FormatTag(tag)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="contact-dnc-filter">Do not contact</label>
+                <select id="contact-dnc-filter" class="form-select" @bind="selectedDoNotContact">
+                    <option value="">Any</option>
+                    <option value="true">Only do not contact</option>
+                    <option value="false">Exclude do not contact</option>
+                </select>
+            </div>
+            <div class="col-md-9 d-flex gap-2">
+                <button type="button" class="btn btn-primary" @onclick="LoadContactsAsync" disabled="@isLoading">Apply filters</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@isLoading">Clear</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">Create contact</h2>
+    </div>
+    <div class="card-body">
+        <EditForm Model="newContact" OnValidSubmit="CreateContactAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="new-contact-name">Display name</label>
+                    <InputText id="new-contact-name" class="form-control" @bind-Value="newContact.DisplayName" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="new-contact-email">Email</label>
+                    <InputText id="new-contact-email" class="form-control" @bind-Value="newContact.Email" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="new-contact-organization">Organization</label>
+                    <InputSelect id="new-contact-organization" class="form-select" @bind-Value="newContact.OrganizationId">
+                        <option value="">No organization</option>
+                        @foreach (var organization in organizations)
+                        {
+                            <option value="@organization.Id">@organization.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="new-contact-phone">Phone</label>
+                    <InputText id="new-contact-phone" class="form-control" @bind-Value="newContact.Phone" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="new-contact-role">Role</label>
+                    <InputText id="new-contact-role" class="form-control" @bind-Value="newContact.Role" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="new-contact-source">Source</label>
+                    <InputText id="new-contact-source" class="form-control" @bind-Value="newContact.Source" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="new-contact-status">Status</label>
+                    <InputSelect id="new-contact-status" class="form-select" @bind-Value="newContact.Status">
+                        @foreach (var status in StatusValues)
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <InputCheckbox id="new-contact-dnc" class="form-check-input" @bind-Value="newContact.DoNotContact" />
+                        <label class="form-check-label" for="new-contact-dnc">Do not contact</label>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end justify-content-md-end">
+                    <button type="submit" class="btn btn-success" disabled="@isSaving">Create contact</button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Contact list</h2>
+        <span class="badge text-bg-secondary">@contacts.Count contacts</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Organization</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Do not contact</th>
+                    <th scope="col">Tags</th>
+                    <th scope="col">Last contacted</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (isLoading)
+                {
+                    <tr>
+                        <td colspan="7">Loading contacts...</td>
+                    </tr>
+                }
+                else if (contacts.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7">No contacts match the current filters.</td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var contact in contacts)
+                    {
+                        <tr>
+                            <td>@contact.DisplayName</td>
+                            <td>@contact.Email</td>
+                            <td>@(contact.OrganizationName ?? "-")</td>
+                            <td>@contact.Status</td>
+                            <td>@(contact.DoNotContact ? "Yes" : "No")</td>
+                            <td>@FormatContactTags(contact.Tags)</td>
+                            <td>@FormatDate(contact.LastContactedAt)</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private static readonly ContactStatus[] StatusValues = Enum.GetValues<ContactStatus>();
+
+    private IReadOnlyList<ContactDto> contacts = [];
+    private IReadOnlyList<OrganizationDto> organizations = [];
+    private IReadOnlyList<TagDto> tags = [];
+    private ContactFormModel newContact = new();
+    private string? search;
+    private string? selectedStatus;
+    private string? selectedOrganizationId;
+    private string? selectedTagId;
+    private string? selectedDoNotContact;
+    private string? errorMessage;
+    private bool isLoading;
+    private bool isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReferenceDataAsync();
+        await LoadContactsAsync();
+    }
+
+    private async Task LoadReferenceDataAsync()
+    {
+        try
+        {
+            organizations = await OrganizationClient.ListAsync();
+            tags = await TagClient.ListAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+    }
+
+    private async Task LoadContactsAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            contacts = await ContactClient.ListAsync(new ContactFilterRequest(
+                search,
+                ParseGuid(selectedTagId),
+                ParseStatus(selectedStatus),
+                ParseBoolean(selectedDoNotContact),
+                ParseGuid(selectedOrganizationId),
+                null,
+                null));
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ClearFiltersAsync()
+    {
+        search = null;
+        selectedStatus = null;
+        selectedOrganizationId = null;
+        selectedTagId = null;
+        selectedDoNotContact = null;
+        await LoadContactsAsync();
+    }
+
+    private async Task CreateContactAsync()
+    {
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            await ContactClient.CreateAsync(new CreateContactRequest(
+                ParseGuid(newContact.OrganizationId),
+                newContact.DisplayName,
+                newContact.Email,
+                newContact.Phone,
+                newContact.Role,
+                newContact.Source,
+                newContact.Status,
+                newContact.DoNotContact));
+
+            newContact = new ContactFormModel();
+            await LoadReferenceDataAsync();
+            await LoadContactsAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private static Guid? ParseGuid(string? value)
+    {
+        return Guid.TryParse(value, out var id) ? id : null;
+    }
+
+    private static ContactStatus? ParseStatus(string? value)
+    {
+        return Enum.TryParse<ContactStatus>(value, out var status) ? status : null;
+    }
+
+    private static bool? ParseBoolean(string? value)
+    {
+        return bool.TryParse(value, out var result) ? result : null;
+    }
+
+    private static string FormatTag(TagDto tag)
+    {
+        return string.IsNullOrWhiteSpace(tag.Category) ? tag.Name : $"{tag.Category}: {tag.Name}";
+    }
+
+    private static string FormatContactTags(IReadOnlyList<ContactTagDto> contactTags)
+    {
+        return contactTags.Count == 0
+            ? "-"
+            : string.Join(", ", contactTags.Select(tag =>
+                string.IsNullOrWhiteSpace(tag.Category) ? tag.Name : $"{tag.Category}: {tag.Name}"));
+    }
+
+    private static string FormatDate(DateTimeOffset? value)
+    {
+        return value is null ? "-" : value.Value.ToString("yyyy-MM-dd");
+    }
+
+    private sealed class ContactFormModel
+    {
+        public string? OrganizationId { get; set; }
+
+        [Required]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        public string? Phone { get; set; }
+
+        public string? Role { get; set; }
+
+        public string? Source { get; set; }
+
+        public ContactStatus Status { get; set; } = ContactStatus.New;
+
+        public bool DoNotContact { get; set; }
+    }
+}

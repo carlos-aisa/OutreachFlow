@@ -1,7 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OutreachFlow.Application.Common;
+using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.Organizations;
+using OutreachFlow.Application.Tags;
 using OutreachFlow.Infrastructure.Persistence;
+using OutreachFlow.Infrastructure.Persistence.Queries;
+using OutreachFlow.Infrastructure.Persistence.Repositories;
 
 namespace OutreachFlow.Infrastructure.DependencyInjection;
 
@@ -21,6 +27,12 @@ public static class ServiceCollectionExtensions
 
         services.AddDbContext<OutreachFlowDbContext>(options =>
             options.UseSqlite(connectionString));
+
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IContactRepository, ContactRepository>();
+        services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
+        services.AddScoped<IContactLookupService, ContactLookupService>();
 
         return services;
     }

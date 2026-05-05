@@ -1,10 +1,10 @@
 openapi: 3.0.3
 info:
   title: OutreachFlow API
-  version: 0.1.0
+  version: 0.2.0
   description: API contract for OutreachFlow v1.
 servers:
-  - url: http://localhost:5054
+  - url: http://localhost:5131
     description: Local development server
 paths:
   /api/v1/health:
@@ -20,8 +20,410 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
+  /api/v1/organizations:
+    get:
+      operationId: listOrganizations
+      summary: Lists organizations ordered by name
+      tags:
+        - Organizations
+      responses:
+        "200":
+          description: Organizations returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Organization"
+    post:
+      operationId: createOrganization
+      summary: Creates an organization
+      tags:
+        - Organizations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrganizationRequest"
+      responses:
+        "201":
+          description: Organization created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /api/v1/organizations/{id}:
+    get:
+      operationId: getOrganization
+      summary: Gets an organization by id
+      tags:
+        - Organizations
+      parameters:
+        - $ref: "#/components/parameters/OrganizationId"
+      responses:
+        "200":
+          description: Organization returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    put:
+      operationId: updateOrganization
+      summary: Updates an organization
+      tags:
+        - Organizations
+      parameters:
+        - $ref: "#/components/parameters/OrganizationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrganizationRequest"
+      responses:
+        "200":
+          description: Organization updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      operationId: deleteOrganization
+      summary: Deletes an organization
+      tags:
+        - Organizations
+      parameters:
+        - $ref: "#/components/parameters/OrganizationId"
+      responses:
+        "204":
+          description: Organization deleted successfully
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/contacts:
+    get:
+      operationId: listContacts
+      summary: Lists contacts with optional filters
+      tags:
+        - Contacts
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Text search against display name, email, or role.
+        - name: tagId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/ContactStatus"
+        - name: doNotContact
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: organizationId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: lastContactedFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: lastContactedTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Contacts returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contact"
+    post:
+      operationId: createContact
+      summary: Creates a contact
+      tags:
+        - Contacts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContactRequest"
+      responses:
+        "201":
+          description: Contact created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+  /api/v1/contacts/{id}:
+    get:
+      operationId: getContact
+      summary: Gets a contact by id
+      tags:
+        - Contacts
+      parameters:
+        - $ref: "#/components/parameters/ContactId"
+      responses:
+        "200":
+          description: Contact returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    put:
+      operationId: updateContact
+      summary: Updates a contact
+      tags:
+        - Contacts
+      parameters:
+        - $ref: "#/components/parameters/ContactId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateContactRequest"
+      responses:
+        "200":
+          description: Contact updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+    delete:
+      operationId: deleteContact
+      summary: Deletes a contact
+      tags:
+        - Contacts
+      parameters:
+        - $ref: "#/components/parameters/ContactId"
+      responses:
+        "204":
+          description: Contact deleted successfully
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/contacts/{id}/tags/{tagId}:
+    post:
+      operationId: assignContactTag
+      summary: Assigns a tag to a contact
+      tags:
+        - Contacts
+      parameters:
+        - $ref: "#/components/parameters/ContactId"
+        - $ref: "#/components/parameters/TagId"
+      responses:
+        "204":
+          description: Tag assigned successfully
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      operationId: removeContactTag
+      summary: Removes a tag from a contact
+      tags:
+        - Contacts
+      parameters:
+        - $ref: "#/components/parameters/ContactId"
+        - $ref: "#/components/parameters/TagId"
+      responses:
+        "204":
+          description: Tag removed successfully
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/tags:
+    get:
+      operationId: listTags
+      summary: Lists tags ordered by category and name
+      tags:
+        - Tags
+      responses:
+        "200":
+          description: Tags returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tag"
+    post:
+      operationId: createTag
+      summary: Creates a tag
+      tags:
+        - Tags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTagRequest"
+      responses:
+        "201":
+          description: Tag created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+  /api/v1/tags/{id}:
+    get:
+      operationId: getTag
+      summary: Gets a tag by id
+      tags:
+        - Tags
+      parameters:
+        - $ref: "#/components/parameters/TagIdAsId"
+      responses:
+        "200":
+          description: Tag returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    put:
+      operationId: updateTag
+      summary: Updates a tag
+      tags:
+        - Tags
+      parameters:
+        - $ref: "#/components/parameters/TagIdAsId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTagRequest"
+      responses:
+        "200":
+          description: Tag updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+    delete:
+      operationId: deleteTag
+      summary: Deletes a tag
+      tags:
+        - Tags
+      parameters:
+        - $ref: "#/components/parameters/TagIdAsId"
+      responses:
+        "204":
+          description: Tag deleted successfully
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 components:
+  parameters:
+    ContactId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    OrganizationId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TagId:
+      name: tagId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TagIdAsId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    NotFoundError:
+      description: Requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    ConflictError:
+      description: Request conflicts with existing data
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
   schemas:
+    ApiError:
+      type: object
+      required:
+        - errorCode
+        - message
+      properties:
+        errorCode:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: The request could not be processed.
     HealthResponse:
       type: object
       required:
@@ -34,3 +436,234 @@ components:
         utcNow:
           type: string
           format: date-time
+    ContactStatus:
+      type: string
+      enum:
+        - New
+        - Contacted
+        - Replied
+        - MeetingScheduled
+        - NotInterested
+        - DoNotContact
+        - Archived
+    ContactTag:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Priority
+        category:
+          type: string
+          nullable: true
+          example: Workflow
+    Contact:
+      type: object
+      required:
+        - id
+        - displayName
+        - email
+        - status
+        - doNotContact
+        - createdAt
+        - updatedAt
+        - tags
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+          format: uuid
+          nullable: true
+        organizationName:
+          type: string
+          nullable: true
+          example: Northwind Studio
+        displayName:
+          type: string
+          example: Alex Morgan
+        email:
+          type: string
+          format: email
+          example: alex@example.com
+        phone:
+          type: string
+          nullable: true
+          example: +34 600 000 000
+        role:
+          type: string
+          nullable: true
+          example: Operations Manager
+        source:
+          type: string
+          nullable: true
+          example: Manual
+        status:
+          $ref: "#/components/schemas/ContactStatus"
+        doNotContact:
+          type: boolean
+          example: false
+        lastContactedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContactTag"
+    CreateContactRequest:
+      type: object
+      required:
+        - displayName
+        - email
+        - status
+        - doNotContact
+      properties:
+        organizationId:
+          type: string
+          format: uuid
+          nullable: true
+        displayName:
+          type: string
+          example: Alex Morgan
+        email:
+          type: string
+          format: email
+          example: alex@example.com
+        phone:
+          type: string
+          nullable: true
+        role:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/ContactStatus"
+        doNotContact:
+          type: boolean
+          example: false
+    UpdateContactRequest:
+      allOf:
+        - $ref: "#/components/schemas/CreateContactRequest"
+    Organization:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Northwind Studio
+        type:
+          type: string
+          nullable: true
+          example: Customer
+        website:
+          type: string
+          nullable: true
+          example: https://example.com
+        city:
+          type: string
+          nullable: true
+          example: Madrid
+        province:
+          type: string
+          nullable: true
+          example: Madrid
+        country:
+          type: string
+          nullable: true
+          example: Spain
+        notes:
+          type: string
+          nullable: true
+          example: Initial outreach target.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateOrganizationRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Northwind Studio
+        type:
+          type: string
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        province:
+          type: string
+          nullable: true
+        country:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+    UpdateOrganizationRequest:
+      allOf:
+        - $ref: "#/components/schemas/CreateOrganizationRequest"
+    Tag:
+      type: object
+      required:
+        - id
+        - name
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Priority
+        category:
+          type: string
+          nullable: true
+          example: Workflow
+        createdAt:
+          type: string
+          format: date-time
+    CreateTagRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Priority
+        category:
+          type: string
+          nullable: true
+          example: Workflow
+    UpdateTagRequest:
+      allOf:
+        - $ref: "#/components/schemas/CreateTagRequest"

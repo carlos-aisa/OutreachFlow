@@ -69,6 +69,15 @@ Phase 0 completed:
 - Initial migration created
 - CI pipeline for restore, build, test
 
+Phase 1 completed:
+
+- Generic organizations, contacts, tags, and contact-tag assignments
+- Application services and DTOs for CRUD, filtering, duplicate prevention, and tagging
+- EF Core mappings, SQLite migration, unique constraints, and relational foreign keys
+- REST endpoints for organizations, contacts, tags, and contact tag assignment
+- Blazor pages for contacts, organizations, and tags
+- Domain, application, and integration tests for the core contact model
+
 ## Roadmap
 
 - Phase 1: Core contacts model (organizations, contacts, tags)
@@ -106,6 +115,17 @@ dotnet run --project src/OutreachFlow.Api
 ```bash
 dotnet run --project src/OutreachFlow.Web
 ```
+
+The Web UI calls the API configured by `OutreachFlowApi:BaseUrl`. The default local value is `http://localhost:5131`, matching the API `http` launch profile.
+
+## API Surface
+
+The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Phase 1 adds:
+
+- `/api/v1/organizations`
+- `/api/v1/contacts`
+- `/api/v1/contacts/{id}/tags/{tagId}`
+- `/api/v1/tags`
 
 ## Run Tests
 
