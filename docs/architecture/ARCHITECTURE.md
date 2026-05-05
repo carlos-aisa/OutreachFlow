@@ -78,7 +78,21 @@ Only one active sender profile is treated as default at a time. The Application 
 
 Sender profiles and email templates are deactivated instead of hard-deleted through the API. This keeps future draft and communication history references stable.
 
-The Web layer uses typed API clients for sender profiles and templates. Template rendering is intentionally deferred to the next OpenSpec change.
+The Web layer uses typed API clients for sender profiles and templates, and now consumes the centralized template variable catalog exposed by the API.
+
+## Template Rendering Engine
+
+Phase 3 introduces deterministic template rendering for personalized email generation:
+
+- `TemplateVariableRegistry` is the single source of truth for supported variable names and value resolvers.
+- `ITemplateRenderer` defines rendering as an Application-layer contract.
+- `TemplateRenderer` resolves `{{variable.path}}` tokens in subject and body using `TemplateContext`.
+- Rendering diagnostics are returned through `RenderedEmail`:
+  - `MissingVariables`: supported variables with null/whitespace values in context.
+  - `UnknownVariables`: tokens not present in the registry.
+  - `HasErrors`: true when unknown, missing, or unresolved tokens remain.
+
+The renderer intentionally supports substitution only. Expression-like tokens are treated as unknown variables and are never executed.
 
 ## Email Provider Strategy (Future Phase)
 

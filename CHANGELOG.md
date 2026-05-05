@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.4.0] - 2026-05-05
+
+### Added
+
+- Template rendering contracts: `ITemplateRenderer`, `TemplateContext`, and `RenderedEmail`.
+- Centralized `TemplateVariableRegistry` with explicit supported variables and value resolvers.
+- `TemplateRenderer` implementation for subject/body token substitution using `{{variable.path}}` syntax.
+- Rendering diagnostics for unknown variables, missing values, and unresolved tokens.
+- Application tests covering successful rendering, unknown variables, missing values, unsupported expressions, and unresolved tokens.
+- OpenSpec archive for `p03-template-rendering-engine`.
+
+### Changed
+
+- Application DI now registers `ITemplateRenderer`.
+- Template variable listing now reads from the shared variable registry.
+- API startup now applies pending EF Core migrations automatically, preventing missing-table failures in local environments.
+- Integration tests now verify organizations can be listed without manual database initialization.
+- README and architecture documentation now include Phase 3 rendering behavior and supported template variables.
+
 ## [0.3.0] - 2026-05-05
 
 ### Added
