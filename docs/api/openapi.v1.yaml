@@ -725,6 +725,73 @@ paths:
           description: Attachment asset deactivated successfully
         "404":
           $ref: "#/components/responses/NotFoundError"
+  /api/v1/drafts/generate:
+    post:
+      operationId: generateEmailDrafts
+      summary: Generates personalized email drafts
+      tags:
+        - EmailDrafts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateEmailDraftsRequest"
+      responses:
+        "200":
+          description: Draft generation completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateEmailDraftsResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/drafts:
+    get:
+      operationId: listEmailDrafts
+      summary: Lists generated email drafts
+      tags:
+        - EmailDrafts
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/EmailDraftStatus"
+        - name: contactId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Email drafts returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EmailDraft"
+  /api/v1/drafts/{id}:
+    get:
+      operationId: getEmailDraft
+      summary: Gets an email draft by id
+      tags:
+        - EmailDrafts
+      parameters:
+        - $ref: "#/components/parameters/EmailDraftId"
+      responses:
+        "200":
+          description: Email draft returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailDraft"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 components:
   parameters:
     ContactId:
@@ -778,6 +845,13 @@ components:
         format: uuid
     AttachmentAssetIdInTemplate:
       name: attachmentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    EmailDraftId:
+      name: id
       in: path
       required: true
       schema:
@@ -837,6 +911,16 @@ components:
         - NotInterested
         - DoNotContact
         - Archived
+    EmailDraftStatus:
+      type: string
+      enum:
+        - Draft
+        - NeedsReview
+        - Approved
+        - Queued
+        - Sent
+        - Failed
+        - Cancelled
     ContactTag:
       type: object
       required:
@@ -1294,3 +1378,167 @@ components:
         isActive:
           type: boolean
           example: true
+    EmailDraft:
+      type: object
+      required:
+        - id
+        - contactId
+        - contactDisplayName
+        - contactEmail
+        - senderProfileId
+        - subject
+        - body
+        - status
+        - hasRenderErrors
+        - missingVariables
+        - unknownVariables
+        - attachmentAssetIds
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        contactId:
+          type: string
+          format: uuid
+        contactDisplayName:
+          type: string
+          example: Alex Morgan
+        contactEmail:
+          type: string
+          format: email
+          example: alex@example.com
+        organizationId:
+          type: string
+          format: uuid
+          nullable: true
+        templateId:
+          type: string
+          format: uuid
+          nullable: true
+        senderProfileId:
+          type: string
+          format: uuid
+        subject:
+          type: string
+          example: Subject for Alex Morgan
+        body:
+          type: string
+          example: Hello Alex Morgan.
+        status:
+          $ref: "#/components/schemas/EmailDraftStatus"
+        hasRenderErrors:
+          type: boolean
+          example: false
+        missingVariables:
+          type: array
+          items:
+            type: string
+        unknownVariables:
+          type: array
+          items:
+            type: string
+        attachmentAssetIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    GenerateEmailDraftsRequest:
+      type: object
+      required:
+        - templateId
+        - senderProfileId
+      properties:
+        search:
+          type: string
+          nullable: true
+        tagId:
+          type: string
+          format: uuid
+          nullable: true
+        status:
+          $ref: "#/components/schemas/ContactStatus"
+        doNotContact:
+          type: boolean
+          nullable: true
+        organizationId:
+          type: string
+          format: uuid
+          nullable: true
+        lastContactedFrom:
+          type: string
+          format: date-time
+          nullable: true
+        lastContactedTo:
+          type: string
+          format: date-time
+          nullable: true
+        templateId:
+          type: string
+          format: uuid
+        senderProfileId:
+          type: string
+          format: uuid
+        attachmentAssetIds:
+          type: array
+          nullable: true
+          items:
+            type: string
+            format: uuid
+    SkippedDraftContact:
+      type: object
+      required:
+        - contactId
+        - displayName
+        - email
+        - reason
+      properties:
+        contactId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+          example: Jamie Smith
+        email:
+          type: string
+          format: email
+          example: jamie@example.com
+        reason:
+          type: string
+          example: Contact is marked as Do Not Contact.
+    GenerateEmailDraftsResult:
+      type: object
+      required:
+        - requestedContacts
+        - generatedDrafts
+        - skippedContacts
+        - drafts
+        - skipped
+      properties:
+        requestedContacts:
+          type: integer
+          format: int32
+          example: 12
+        generatedDrafts:
+          type: integer
+          format: int32
+          example: 10
+        skippedContacts:
+          type: integer
+          format: int32
+          example: 2
+        drafts:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailDraft"
+        skipped:
+          type: array
+          items:
+            $ref: "#/components/schemas/SkippedDraftContact"

@@ -1,0 +1,493 @@
+@page "/drafts/generate"
+@rendermode InteractiveServer
+@using OutreachFlow.Application.Attachments
+@using OutreachFlow.Application.Contacts
+@using OutreachFlow.Application.EmailDrafts
+@using OutreachFlow.Application.EmailTemplates
+@using OutreachFlow.Application.Organizations
+@using OutreachFlow.Application.SenderProfiles
+@using OutreachFlow.Application.Tags
+@using OutreachFlow.Domain.Contacts
+@using OutreachFlow.Web.Attachments
+@using OutreachFlow.Web.Contacts
+@using OutreachFlow.Web.EmailDrafts
+@using OutreachFlow.Web.EmailTemplates
+@using OutreachFlow.Web.Organizations
+@using OutreachFlow.Web.SenderProfiles
+@using OutreachFlow.Web.Tags
+@inject ContactApiClient ContactClient
+@inject EmailTemplateApiClient TemplateClient
+@inject SenderProfileApiClient SenderProfileClient
+@inject AttachmentAssetApiClient AttachmentClient
+@inject EmailDraftApiClient DraftClient
+@inject OrganizationApiClient OrganizationClient
+@inject TagApiClient TagClient
+
+<PageTitle>Draft Generation</PageTitle>
+
+<h1>Draft Generation</h1>
+
+<p class="text-muted">
+    Generate personalized drafts from selected contacts with template rendering diagnostics and controlled attachment selection.
+</p>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<section class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">Step @currentStep of 5</h2>
+    </div>
+    <div class="card-body">
+        @if (currentStep == 1)
+        {
+            <h3 class="h6 mb-3">Recipients filters</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input class="form-control" @bind="search" placeholder="Name, email, or role" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" @bind="selectedStatus">
+                        <option value="">Any</option>
+                        @foreach (var status in statusValues)
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Do Not Contact</label>
+                    <select class="form-select" @bind="selectedDoNotContact">
+                        <option value="">Any</option>
+                        <option value="true">Only Do Not Contact</option>
+                        <option value="false">Exclude Do Not Contact</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Organization</label>
+                    <select class="form-select" @bind="selectedOrganizationId">
+                        <option value="">Any</option>
+                        @foreach (var organization in organizations)
+                        {
+                            <option value="@organization.Id">@organization.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Tag</label>
+                    <select class="form-select" @bind="selectedTagId">
+                        <option value="">Any</option>
+                        @foreach (var tag in tags)
+                        {
+                            <option value="@tag.Id">@FormatTag(tag)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        }
+        else if (currentStep == 2)
+        {
+            <h3 class="h6 mb-3">Template and sender profile</h3>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Template</label>
+                    <select class="form-select" @bind="selectedTemplateId">
+                        <option value="">Select template</option>
+                        @foreach (var template in templates)
+                        {
+                            <option value="@template.Id">@template.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Sender profile</label>
+                    <select class="form-select" @bind="selectedSenderProfileId">
+                        <option value="">Select sender</option>
+                        @foreach (var senderProfile in senderProfiles)
+                        {
+                            <option value="@senderProfile.Id">@senderProfile.Name (@senderProfile.Email)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        }
+        else if (currentStep == 3)
+        {
+            <h3 class="h6 mb-3">Optional attachments</h3>
+            @if (attachments.Count == 0)
+            {
+                <p class="mb-0">No active attachments available.</p>
+            }
+            else
+            {
+                <div class="list-group">
+                    @foreach (var attachment in attachments)
+                    {
+                        <label class="list-group-item d-flex align-items-center gap-2">
+                            <input
+                                class="form-check-input mt-0"
+                                type="checkbox"
+                                checked="@selectedAttachmentIds.Contains(attachment.Id)"
+                                @onchange="args => ToggleAttachment(attachment.Id, args.Value)" />
+                            <span>
+                                <strong>@attachment.Name</strong>
+                                <span class="text-muted">(@attachment.FileName)</span>
+                            </span>
+                        </label>
+                    }
+                </div>
+            }
+        }
+        else if (currentStep == 4)
+        {
+            <h3 class="h6 mb-3">Preview</h3>
+            <p class="mb-2">
+                Template: <strong>@SelectedTemplateName</strong>
+            </p>
+            <p class="mb-2">
+                Sender: <strong>@SelectedSenderName</strong>
+            </p>
+            <p class="mb-3">
+                Optional attachments: <strong>@selectedAttachmentIds.Count</strong>
+            </p>
+
+            @if (isLoadingPreview)
+            {
+                <p>Loading preview contacts...</p>
+            }
+            else
+            {
+                <p class="mb-2">
+                    Contacts matching filters: <strong>@previewContacts.Count</strong>
+                </p>
+
+                @if (previewContacts.Count > 0)
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Do Not Contact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var contact in previewContacts)
+                                {
+                                    <tr>
+                                        <td>@contact.DisplayName</td>
+                                        <td>@contact.Email</td>
+                                        <td>@contact.Status</td>
+                                        <td>@(contact.DoNotContact ? "Yes" : "No")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+
+            <button class="btn btn-success" @onclick="GenerateAsync" disabled="@isGenerating">
+                Generate drafts
+            </button>
+        }
+        else
+        {
+            <h3 class="h6 mb-3">Generation result</h3>
+
+            @if (generationResult is null)
+            {
+                <p>No generation has been executed yet.</p>
+            }
+            else
+            {
+                <p class="mb-1">Requested contacts: <strong>@generationResult.RequestedContacts</strong></p>
+                <p class="mb-1">Generated drafts: <strong>@generationResult.GeneratedDrafts</strong></p>
+                <p class="mb-3">Skipped contacts: <strong>@generationResult.SkippedContacts</strong></p>
+
+                @if (generationResult.Drafts.Count > 0)
+                {
+                    <h4 class="h6">Generated drafts</h4>
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Contact</th>
+                                    <th>Status</th>
+                                    <th>Missing</th>
+                                    <th>Unknown</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var draft in generationResult.Drafts)
+                                {
+                                    <tr>
+                                        <td>@draft.ContactDisplayName</td>
+                                        <td>@draft.Status</td>
+                                        <td>@FormatVariables(draft.MissingVariables)</td>
+                                        <td>@FormatVariables(draft.UnknownVariables)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                @if (generationResult.Skipped.Count > 0)
+                {
+                    <h4 class="h6">Skipped contacts</h4>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Contact</th>
+                                    <th>Email</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var skipped in generationResult.Skipped)
+                                {
+                                    <tr>
+                                        <td>@skipped.DisplayName</td>
+                                        <td>@skipped.Email</td>
+                                        <td>@skipped.Reason</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+        }
+    </div>
+    <div class="card-footer d-flex gap-2">
+        <button class="btn btn-outline-secondary" @onclick="PreviousStep" disabled="@(currentStep == 1 || isBusy)">Back</button>
+        @if (currentStep < 4)
+        {
+            <button class="btn btn-primary" @onclick="NextStepAsync" disabled="@isBusy">Next</button>
+        }
+        else if (currentStep == 5)
+        {
+            <button class="btn btn-primary" @onclick="RestartWizard">Generate more drafts</button>
+        }
+    </div>
+</section>
+
+@code {
+    private readonly ContactStatus[] statusValues = Enum.GetValues<ContactStatus>();
+
+    private IReadOnlyList<OrganizationDto> organizations = [];
+    private IReadOnlyList<TagDto> tags = [];
+    private IReadOnlyList<EmailTemplateDto> templates = [];
+    private IReadOnlyList<SenderProfileDto> senderProfiles = [];
+    private IReadOnlyList<AttachmentAssetDto> attachments = [];
+    private IReadOnlyList<ContactDto> previewContacts = [];
+
+    private int currentStep = 1;
+    private string? search;
+    private string? selectedStatus;
+    private string? selectedDoNotContact;
+    private string? selectedOrganizationId;
+    private string? selectedTagId;
+    private string? selectedTemplateId;
+    private string? selectedSenderProfileId;
+    private readonly HashSet<Guid> selectedAttachmentIds = [];
+    private GenerateEmailDraftsResult? generationResult;
+    private string? errorMessage;
+    private bool isLoadingPreview;
+    private bool isGenerating;
+
+    private bool isBusy => isLoadingPreview || isGenerating;
+
+    private string SelectedTemplateName =>
+        templates.FirstOrDefault(item => item.Id == ParseGuid(selectedTemplateId))?.Name ?? "-";
+
+    private string SelectedSenderName =>
+        senderProfiles.FirstOrDefault(item => item.Id == ParseGuid(selectedSenderProfileId))?.Name ?? "-";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReferenceDataAsync();
+    }
+
+    private async Task LoadReferenceDataAsync()
+    {
+        errorMessage = null;
+
+        try
+        {
+            organizations = await OrganizationClient.ListAsync();
+            tags = await TagClient.ListAsync();
+            templates = await TemplateClient.ListAsync(activeOnly: true);
+            senderProfiles = await SenderProfileClient.ListAsync(activeOnly: true);
+            attachments = await AttachmentClient.ListAsync(activeOnly: true);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+    }
+
+    private async Task NextStepAsync()
+    {
+        errorMessage = null;
+
+        if (currentStep == 2)
+        {
+            if (ParseGuid(selectedTemplateId) is null || ParseGuid(selectedSenderProfileId) is null)
+            {
+                errorMessage = "Select both a template and a sender profile before continuing.";
+                return;
+            }
+        }
+
+        if (currentStep == 3)
+        {
+            currentStep = 4;
+            await LoadPreviewAsync();
+            return;
+        }
+
+        currentStep++;
+    }
+
+    private void PreviousStep()
+    {
+        if (currentStep > 1)
+        {
+            currentStep--;
+        }
+    }
+
+    private async Task LoadPreviewAsync()
+    {
+        isLoadingPreview = true;
+        errorMessage = null;
+
+        try
+        {
+            previewContacts = await ContactClient.ListAsync(BuildContactFilter());
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isLoadingPreview = false;
+        }
+    }
+
+    private async Task GenerateAsync()
+    {
+        if (ParseGuid(selectedTemplateId) is not Guid templateId ||
+            ParseGuid(selectedSenderProfileId) is not Guid senderProfileId)
+        {
+            errorMessage = "Select both a template and a sender profile before generating drafts.";
+            return;
+        }
+
+        isGenerating = true;
+        errorMessage = null;
+
+        try
+        {
+            generationResult = await DraftClient.GenerateAsync(new GenerateEmailDraftsRequest(
+                search,
+                ParseGuid(selectedTagId),
+                ParseStatus(selectedStatus),
+                ParseBoolean(selectedDoNotContact),
+                ParseGuid(selectedOrganizationId),
+                null,
+                null,
+                templateId,
+                senderProfileId,
+                selectedAttachmentIds.ToArray()));
+
+            currentStep = 5;
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isGenerating = false;
+        }
+    }
+
+    private void RestartWizard()
+    {
+        currentStep = 1;
+        previewContacts = [];
+        generationResult = null;
+        errorMessage = null;
+    }
+
+    private void ToggleAttachment(Guid attachmentId, object? value)
+    {
+        if (value is bool isChecked && isChecked)
+        {
+            selectedAttachmentIds.Add(attachmentId);
+            return;
+        }
+
+        selectedAttachmentIds.Remove(attachmentId);
+    }
+
+    private ContactFilterRequest BuildContactFilter()
+    {
+        return new ContactFilterRequest(
+            search,
+            ParseGuid(selectedTagId),
+            ParseStatus(selectedStatus),
+            ParseBoolean(selectedDoNotContact),
+            ParseGuid(selectedOrganizationId),
+            null,
+            null);
+    }
+
+    private static Guid? ParseGuid(string? value)
+    {
+        return Guid.TryParse(value, out var id) ? id : null;
+    }
+
+    private static ContactStatus? ParseStatus(string? value)
+    {
+        return Enum.TryParse<ContactStatus>(value, out var status) ? status : null;
+    }
+
+    private static bool? ParseBoolean(string? value)
+    {
+        return bool.TryParse(value, out var result) ? result : null;
+    }
+
+    private static string FormatTag(TagDto tag)
+    {
+        return string.IsNullOrWhiteSpace(tag.Category) ? tag.Name : $"{tag.Category}: {tag.Name}";
+    }
+
+    private static string FormatVariables(IReadOnlyList<string> variables)
+    {
+        return variables.Count == 0 ? "-" : string.Join(", ", variables);
+    }
+}

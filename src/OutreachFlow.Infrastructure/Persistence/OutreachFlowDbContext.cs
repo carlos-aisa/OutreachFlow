@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
@@ -27,6 +28,10 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
     public DbSet<EmailTemplateAttachment> EmailTemplateAttachments => Set<EmailTemplateAttachment>();
 
+    public DbSet<EmailDraft> EmailDrafts => Set<EmailDraft>();
+
+    public DbSet<EmailDraftAttachment> EmailDraftAttachments => Set<EmailDraftAttachment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureOrganizations(modelBuilder);
@@ -37,6 +42,8 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
         ConfigureAttachmentAssets(modelBuilder);
         ConfigureEmailTemplates(modelBuilder);
         ConfigureEmailTemplateAttachments(modelBuilder);
+        ConfigureEmailDrafts(modelBuilder);
+        ConfigureEmailDraftAttachments(modelBuilder);
     }
 
     private static void ConfigureOrganizations(ModelBuilder modelBuilder)
@@ -258,6 +265,84 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
             builder.HasOne<AttachmentAsset>()
                 .WithMany()
                 .HasForeignKey(emailTemplateAttachment => emailTemplateAttachment.AttachmentAssetId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureEmailDrafts(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EmailDraft>(builder =>
+        {
+            builder.ToTable("EmailDrafts");
+            builder.HasKey(emailDraft => emailDraft.Id);
+
+            builder.Property(emailDraft => emailDraft.Subject)
+                .HasMaxLength(500)
+                .IsRequired();
+
+            builder.Property(emailDraft => emailDraft.Body)
+                .HasMaxLength(20000)
+                .IsRequired();
+
+            builder.Property(emailDraft => emailDraft.MissingVariablesJson)
+                .HasMaxLength(4000);
+
+            builder.Property(emailDraft => emailDraft.UnknownVariablesJson)
+                .HasMaxLength(4000);
+
+            builder.HasIndex(emailDraft => emailDraft.ContactId);
+            builder.HasIndex(emailDraft => emailDraft.OrganizationId);
+            builder.HasIndex(emailDraft => emailDraft.TemplateId);
+            builder.HasIndex(emailDraft => emailDraft.SenderProfileId);
+            builder.HasIndex(emailDraft => emailDraft.Status);
+            builder.HasIndex(emailDraft => emailDraft.CreatedAt);
+
+            builder.HasOne<Contact>()
+                .WithMany()
+                .HasForeignKey(emailDraft => emailDraft.ContactId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<Organization>()
+                .WithMany()
+                .HasForeignKey(emailDraft => emailDraft.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasOne<EmailTemplate>()
+                .WithMany()
+                .HasForeignKey(emailDraft => emailDraft.TemplateId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasOne<SenderProfile>()
+                .WithMany()
+                .HasForeignKey(emailDraft => emailDraft.SenderProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(emailDraft => emailDraft.Attachments)
+                .WithOne()
+                .HasForeignKey(emailDraftAttachment => emailDraftAttachment.EmailDraftId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Navigation(emailDraft => emailDraft.Attachments)
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+    }
+
+    private static void ConfigureEmailDraftAttachments(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EmailDraftAttachment>(builder =>
+        {
+            builder.ToTable("EmailDraftAttachments");
+            builder.HasKey(emailDraftAttachment => new
+            {
+                emailDraftAttachment.EmailDraftId,
+                emailDraftAttachment.AttachmentAssetId
+            });
+
+            builder.HasIndex(emailDraftAttachment => emailDraftAttachment.AttachmentAssetId);
+
+            builder.HasOne<AttachmentAsset>()
+                .WithMany()
+                .HasForeignKey(emailDraftAttachment => emailDraftAttachment.AttachmentAssetId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

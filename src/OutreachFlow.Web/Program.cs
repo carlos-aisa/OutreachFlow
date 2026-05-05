@@ -1,5 +1,6 @@
 using OutreachFlow.Web.Components;
 using OutreachFlow.Web.Contacts;
+using OutreachFlow.Web.EmailDrafts;
 using OutreachFlow.Web.Attachments;
 using OutreachFlow.Web.EmailTemplates;
 using OutreachFlow.Web.Organizations;
@@ -26,6 +27,8 @@ builder.Services.AddHttpClient<SenderProfileApiClient>(client =>
 builder.Services.AddHttpClient<EmailTemplateApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<AttachmentAssetApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<EmailDraftApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();

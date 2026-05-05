@@ -104,6 +104,15 @@ Phase 4 completed:
 - Blazor attachment management page and template editor attachment controls
 - Domain, application, and integration tests for attachment persistence, upload, and association rules
 
+Phase 5 completed:
+
+- `EmailDraft` and `EmailDraftAttachment` models for persisted generated draft snapshots
+- Multi-contact draft generation use case with template rendering diagnostics
+- Skip reporting for ineligible contacts (for example, Do Not Contact)
+- Draft generation APIs (`POST /api/v1/drafts/generate`, list, and detail)
+- Blazor draft generation wizard with recipient filters, selections, preview, and result
+- Domain, application, and integration tests for draft persistence and generation behavior
+
 ## Roadmap
 
 - Phase 1: Core contacts model (organizations, contacts, tags)
@@ -169,6 +178,9 @@ The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Phase 1 add
 - `/api/v1/templates/{id}/attachments/{attachmentId}`
 - `/api/v1/attachments`
 - `/api/v1/attachments/{id}`
+- `/api/v1/drafts/generate`
+- `/api/v1/drafts`
+- `/api/v1/drafts/{id}`
 
 ## Supported Template Variables
 
