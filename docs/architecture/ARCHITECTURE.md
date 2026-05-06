@@ -176,7 +176,9 @@ Phase 7 introduces controlled sending without provider coupling:
 - `IEmailSender` is the Application boundary for email delivery.
 - `SendEmailCommand` and `EmailSendResult` define provider-agnostic send input/output.
 - `FakeEmailSender` is the default Infrastructure implementation for local/dev/test execution.
+- `SmtpEmailSender` is available for real local sending when `EmailSending:Provider=SMTP`.
 - `IEmailSendingPolicy` centralizes duplicate-equivalent send window settings.
+- SMTP configuration is bound from `EmailSending:Smtp:*` and validated before provider activation.
 
 Send workflow (`SendApprovedDraftAsync`) enforces:
 
@@ -193,8 +195,8 @@ Persistence additions:
 
 A successful send also updates `Contact.LastContactedAt` to keep outreach history consistent for later filtering and follow-up planning.
 
-## Email Provider Strategy (Future Phase)
+## Email Provider Strategy
 
 - Application defines ports for outbound email sending.
-- Infrastructure provides concrete providers (Fake, SMTP, Gmail API, Graph) over time.
+- Infrastructure currently provides `Fake` and `SMTP`; Gmail API and Graph remain future providers.
 - No provider-specific behavior in Domain or Application core logic.

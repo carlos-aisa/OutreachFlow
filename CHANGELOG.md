@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.10.0] - 2026-05-06
+
+### Added
+
+- Real SMTP provider support through `SmtpEmailSender` behind `IEmailSender`.
+- SMTP configuration model and validator:
+  - `EmailSending:Smtp:Host`
+  - `EmailSending:Smtp:Port`
+  - `EmailSending:Smtp:UseSsl`
+  - `EmailSending:Smtp:Username`
+  - `EmailSending:Smtp:Password`
+  - `EmailSending:Smtp:TimeoutSeconds`
+- Conditional provider resolution in Infrastructure DI for `Fake` and `SMTP`.
+- SMTP transport abstraction and system transport factory for network send execution.
+- Integration tests for:
+  - SMTP option validation,
+  - provider selection,
+  - SMTP failure mapping without real network calls,
+  - API integration factory staying on `FakeEmailSender`.
+- OpenSpec archive for `p09-real-email-provider-smtp`.
+
+### Changed
+
+- API appsettings now include placeholder SMTP configuration keys (no secrets).
+- README and architecture docs now include SMTP setup and limitations guidance.
+
 ## [0.9.0] - 2026-05-06
 
 ### Added
