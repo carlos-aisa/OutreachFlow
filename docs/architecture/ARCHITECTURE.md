@@ -250,3 +250,14 @@ Phase 11 adds controlled CSV contact import with preview-first behavior:
   - tag selection,
   - commit summary,
   - recent import jobs listing.
+
+## Future Integrations Foundation
+
+Phase 12 formalizes extension boundaries without changing MVP behavior:
+
+- Email provider integrations beyond `Fake` and `SMTP` remain opt-in and disabled by default.
+- External contact systems (`Google Contacts`, `Outlook Contacts`) are read-only from OutreachFlow perspective in early versions.
+- Automatic write-back to external systems is explicitly out of scope until a dedicated OpenSpec change is approved.
+- Post-MVP options (`PostgreSQL`, `Docker Compose`, background jobs, `OpenTelemetry`) are documented as future tracks only.
+
+Detailed guidance: `docs/architecture/FUTURE_INTEGRATIONS.md`.

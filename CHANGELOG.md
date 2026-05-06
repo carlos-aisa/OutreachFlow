@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.13.0] - 2026-05-06
+
+### Added
+
+- Future integrations foundation documentation:
+  - `docs/architecture/FUTURE_INTEGRATIONS.md`
+  - architecture section updates for provider boundaries and post-MVP options
+- Configuration placeholders (disabled by default) for future integrations:
+  - `EmailSending:GmailApi:Enabled`
+  - `EmailSending:MicrosoftGraph:Enabled`
+  - `ContactSync:GoogleContacts:Enabled`
+  - `ContactSync:OutlookContacts:Enabled`
+- OpenSpec archive for `p12-future-integrations-foundation`.
+
+### Changed
+
+- README roadmap and documentation map now reference the future integration foundation.
+- Explicitly documented safety rule: no automatic modification of external contact systems in early versions.
+
 ## [0.12.0] - 2026-05-06
 
 ### Added
