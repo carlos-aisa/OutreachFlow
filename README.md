@@ -77,10 +77,10 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 - Activity timeline (contact and email events)
 - SMTP provider support (configuration-based)
 - Follow-up tasks with optional post-send automation
+- CSV contact imports with preview, duplicate detection, tag assignment, and import job tracking
 
 ### Next
 
-- CSV imports with duplicate detection and review
 - Future providers (Gmail API, Microsoft Graph)
 - Queue and throttling controls
 - PostgreSQL support profile
@@ -246,6 +246,18 @@ dotnet test tests/OutreachFlow.Domain.Tests
 dotnet test tests/OutreachFlow.Application.Tests
 dotnet test tests/OutreachFlow.IntegrationTests
 ```
+
+## CSV Import Format
+
+OutreachFlow CSV imports are review-first: preview always runs before commit.
+
+- Required headers: `displayName`, `email`
+- Optional headers: `phone`, `role`, `source`
+- Encoding: UTF-8 text CSV
+- Duplicate detection: normalized email against current database contacts and repeated emails in the same CSV file
+- Commit behavior: only valid non-duplicate rows are created
+- Tag assignment: selected existing tag ids are assigned to each imported contact
+- Scope limits: no Excel import, no Google/Outlook contacts sync, and no background batch processing in current phase
 
 ## Release Strategy
 

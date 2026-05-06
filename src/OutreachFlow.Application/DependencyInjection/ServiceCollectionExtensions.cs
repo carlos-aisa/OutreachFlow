@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.ContactActivities;
+using OutreachFlow.Application.ContactImports;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
@@ -17,6 +18,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<IContactService, ContactService>();
+        services.AddScoped<IContactImportService, ContactImportService>();
         services.AddScoped<IOrganizationService, OrganizationService>();
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<IContactActivityService, ContactActivityService>();

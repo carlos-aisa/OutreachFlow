@@ -2,6 +2,7 @@ using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Attachments;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.ContactActivities;
+using OutreachFlow.Application.ContactImports;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
@@ -12,6 +13,7 @@ using OutreachFlow.Application.Tags;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.ContactActivities;
+using OutreachFlow.Domain.ContactImports;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
@@ -264,6 +266,31 @@ internal sealed class InMemoryContactActivityRepository : IContactActivityReposi
             .ToArray();
 
         return Task.FromResult<IReadOnlyList<ContactActivity>>(activities);
+    }
+}
+
+internal sealed class InMemoryImportJobRepository : IImportJobRepository
+{
+    private readonly List<ImportJob> _importJobs = [];
+
+    public IReadOnlyList<ImportJob> ImportJobs => _importJobs;
+
+    public Task AddAsync(ImportJob importJob, CancellationToken cancellationToken = default)
+    {
+        _importJobs.Add(importJob);
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<ImportJob>> ListAsync(int? limit, CancellationToken cancellationToken = default)
+    {
+        IEnumerable<ImportJob> query = _importJobs.OrderByDescending(importJob => importJob.CreatedAt);
+
+        if (limit is int limitValue && limitValue > 0)
+        {
+            query = query.Take(limitValue);
+        }
+
+        return Task.FromResult<IReadOnlyList<ImportJob>>(query.ToArray());
     }
 }
 

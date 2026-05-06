@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: OutreachFlow API
-  version: 0.11.0
+  version: 0.12.0
   description: API contract for OutreachFlow v1.
 servers:
   - url: http://localhost:5131
@@ -1019,6 +1019,73 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "404":
           $ref: "#/components/responses/NotFoundError"
+  /api/v1/contact-imports/preview:
+    post:
+      operationId: previewContactImport
+      summary: Parses CSV content and returns preview validation without persisting contacts
+      tags:
+        - ContactImports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactImportPreviewRequest"
+      responses:
+        "200":
+          description: Import preview returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactImportPreviewResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /api/v1/contact-imports/commit:
+    post:
+      operationId: commitContactImport
+      summary: Commits a CSV import and creates valid non-duplicate contacts
+      tags:
+        - ContactImports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactImportCommitRequest"
+      responses:
+        "200":
+          description: Import committed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactImportCommitResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/contact-imports/jobs:
+    get:
+      operationId: listContactImportJobs
+      summary: Lists contact import jobs for audit and traceability
+      tags:
+        - ContactImports
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        "200":
+          description: Import jobs returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ImportJob"
 components:
   parameters:
     ContactId:
@@ -1165,6 +1232,12 @@ components:
         - Email
         - Call
         - Meeting
+    ImportJobStatus:
+      type: string
+      enum:
+        - Pending
+        - Completed
+        - Failed
     EmailDraftStatus:
       type: string
       enum:
@@ -1312,6 +1385,179 @@ components:
           $ref: "#/components/schemas/FollowUpTaskType"
         notes:
           type: string
+          nullable: true
+    ContactImportPreviewRequest:
+      type: object
+      required:
+        - fileName
+        - csvContent
+      properties:
+        fileName:
+          type: string
+          example: contacts.csv
+        csvContent:
+          type: string
+          example: |
+            displayName,email
+            Alex Morgan,alex@example.com
+    ContactImportCommitRequest:
+      type: object
+      required:
+        - fileName
+        - csvContent
+      properties:
+        fileName:
+          type: string
+          example: contacts.csv
+        csvContent:
+          type: string
+          example: |
+            displayName,email
+            Alex Morgan,alex@example.com
+        tagIds:
+          type: array
+          nullable: true
+          items:
+            type: string
+            format: uuid
+    ContactImportPreviewRow:
+      type: object
+      required:
+        - rowNumber
+        - isValid
+        - isDuplicate
+      properties:
+        rowNumber:
+          type: integer
+          format: int32
+          example: 2
+        displayName:
+          type: string
+          nullable: true
+          example: Alex Morgan
+        email:
+          type: string
+          nullable: true
+          example: alex@example.com
+        phone:
+          type: string
+          nullable: true
+        role:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+        isValid:
+          type: boolean
+        isDuplicate:
+          type: boolean
+        message:
+          type: string
+          nullable: true
+          example: Duplicate email found in the CSV file.
+    ContactImportPreviewResult:
+      type: object
+      required:
+        - totalRows
+        - validRows
+        - duplicateRows
+        - invalidRows
+        - rows
+      properties:
+        totalRows:
+          type: integer
+          format: int32
+          example: 12
+        validRows:
+          type: integer
+          format: int32
+          example: 9
+        duplicateRows:
+          type: integer
+          format: int32
+          example: 2
+        invalidRows:
+          type: integer
+          format: int32
+          example: 1
+        rows:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContactImportPreviewRow"
+    ContactImportCommitResult:
+      type: object
+      required:
+        - importJobId
+        - totalRows
+        - createdCount
+        - duplicateCount
+        - invalidCount
+      properties:
+        importJobId:
+          type: string
+          format: uuid
+        totalRows:
+          type: integer
+          format: int32
+          example: 12
+        createdCount:
+          type: integer
+          format: int32
+          example: 9
+        duplicateCount:
+          type: integer
+          format: int32
+          example: 2
+        invalidCount:
+          type: integer
+          format: int32
+          example: 1
+    ImportJob:
+      type: object
+      required:
+        - id
+        - fileName
+        - status
+        - totalRows
+        - validRows
+        - createdCount
+        - duplicateRows
+        - invalidRows
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        fileName:
+          type: string
+          example: contacts.csv
+        status:
+          $ref: "#/components/schemas/ImportJobStatus"
+        totalRows:
+          type: integer
+          format: int32
+        validRows:
+          type: integer
+          format: int32
+        createdCount:
+          type: integer
+          format: int32
+        duplicateRows:
+          type: integer
+          format: int32
+        invalidRows:
+          type: integer
+          format: int32
+        failureReason:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
           nullable: true
     Contact:
       type: object

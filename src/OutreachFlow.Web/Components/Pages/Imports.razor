@@ -1,0 +1,333 @@
+@page "/imports"
+@rendermode InteractiveServer
+@using System.Text
+@using OutreachFlow.Application.ContactImports
+@using OutreachFlow.Application.Tags
+@using OutreachFlow.Web.ContactImports
+@using OutreachFlow.Web.Tags
+@inject ContactImportApiClient ImportClient
+@inject TagApiClient TagClient
+
+<PageTitle>Contact Imports</PageTitle>
+
+<h1>Contact Imports</h1>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success" role="alert">@successMessage</div>
+}
+
+<section class="card mb-4">
+    <div class="card-header">
+        <h2 class="h5 mb-0">CSV Import</h2>
+    </div>
+    <div class="card-body">
+        <div class="mb-3">
+            <label class="form-label" for="csv-file">CSV file</label>
+            <InputFile id="csv-file" OnChange="OnFileSelectedAsync" accept=".csv,text/csv" />
+            @if (!string.IsNullOrWhiteSpace(fileName))
+            {
+                <div class="form-text">Selected file: @fileName</div>
+            }
+            <div class="form-text">Required headers: <code>displayName,email</code>. Optional: <code>phone,role,source</code>.</div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" @onclick="PreviewAsync" disabled="@isBusy">Preview</button>
+            <button class="btn btn-outline-secondary" @onclick="ClearPreview" disabled="@isBusy">Clear</button>
+        </div>
+    </div>
+</section>
+
+@if (preview is not null)
+{
+    <section class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Preview Summary</h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3"><strong>Total rows:</strong> @preview.TotalRows</div>
+                <div class="col-md-3 text-success"><strong>Valid:</strong> @preview.ValidRows</div>
+                <div class="col-md-3 text-warning"><strong>Duplicates:</strong> @preview.DuplicateRows</div>
+                <div class="col-md-3 text-danger"><strong>Invalid:</strong> @preview.InvalidRows</div>
+            </div>
+
+            <h3 class="h6">Assign tags to imported contacts</h3>
+            <div class="row g-2 mb-3">
+                @if (tags.Count == 0)
+                {
+                    <div class="col-12 text-muted">No tags available. Create tags first if needed.</div>
+                }
+                else
+                {
+                    @foreach (var tag in tags)
+                    {
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="@($"tag-{tag.Id}")"
+                                       checked="@selectedTagIds.Contains(tag.Id)"
+                                       @onchange="eventArgs => OnTagSelectionChanged(tag.Id, eventArgs.Value)" />
+                                <label class="form-check-label" for="@($"tag-{tag.Id}")">
+                                    @tag.Name
+                                    @if (!string.IsNullOrWhiteSpace(tag.Category))
+                                    {
+                                        <span class="text-muted">(@tag.Category)</span>
+                                    }
+                                </label>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <button class="btn btn-success" @onclick="CommitAsync" disabled="@isBusy || preview.ValidRows == 0">
+                Commit import
+            </button>
+        </div>
+    </section>
+
+    <section class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Preview Rows</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Row</th>
+                        <th scope="col">Display Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in preview.Rows)
+                    {
+                        <tr>
+                            <td>@row.RowNumber</td>
+                            <td>@(string.IsNullOrWhiteSpace(row.DisplayName) ? "-" : row.DisplayName)</td>
+                            <td>@(string.IsNullOrWhiteSpace(row.Email) ? "-" : row.Email)</td>
+                            <td>
+                                @if (row.IsValid)
+                                {
+                                    <span class="badge bg-success">Valid</span>
+                                }
+                                else if (row.IsDuplicate)
+                                {
+                                    <span class="badge bg-warning text-dark">Duplicate</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Invalid</span>
+                                }
+                            </td>
+                            <td>@(string.IsNullOrWhiteSpace(row.Message) ? "-" : row.Message)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+
+<section class="card">
+    <div class="card-header">
+        <h2 class="h5 mb-0">Recent Import Jobs</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Created</th>
+                    <th scope="col">File</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Created</th>
+                    <th scope="col">Duplicates</th>
+                    <th scope="col">Invalid</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (jobs.Count == 0)
+                {
+                    <tr><td colspan="6">No import jobs found.</td></tr>
+                }
+                else
+                {
+                    @foreach (var job in jobs)
+                    {
+                        <tr>
+                            <td>@job.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@job.FileName</td>
+                            <td>@job.Status</td>
+                            <td>@job.CreatedCount</td>
+                            <td>@job.DuplicateRows</td>
+                            <td>@job.InvalidRows</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private IReadOnlyList<TagDto> tags = [];
+    private IReadOnlyList<ImportJobDto> jobs = [];
+    private ContactImportPreviewResult? preview;
+    private HashSet<Guid> selectedTagIds = [];
+    private string? fileName;
+    private string? csvContent;
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isLoading;
+    private bool isSaving;
+
+    private bool isBusy => isLoading || isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReferenceDataAsync();
+    }
+
+    private async Task LoadReferenceDataAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            tags = await TagClient.ListAsync();
+            jobs = await ImportClient.ListJobsAsync(limit: 20);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnFileSelectedAsync(InputFileChangeEventArgs eventArgs)
+    {
+        errorMessage = null;
+        successMessage = null;
+        preview = null;
+
+        var file = eventArgs.File;
+        fileName = file.Name;
+
+        try
+        {
+            await using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024);
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            csvContent = await reader.ReadToEndAsync();
+        }
+        catch (IOException exception)
+        {
+            csvContent = null;
+            errorMessage = $"Could not read the selected file: {exception.Message}";
+        }
+    }
+
+    private async Task PreviewAsync()
+    {
+        errorMessage = null;
+        successMessage = null;
+        isSaving = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(fileName) || string.IsNullOrWhiteSpace(csvContent))
+            {
+                throw new InvalidOperationException("Select a CSV file before requesting preview.");
+            }
+
+            preview = await ImportClient.PreviewAsync(new ContactImportPreviewRequest(fileName, csvContent));
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task CommitAsync()
+    {
+        errorMessage = null;
+        successMessage = null;
+        isSaving = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(fileName) || string.IsNullOrWhiteSpace(csvContent))
+            {
+                throw new InvalidOperationException("Select a CSV file before committing the import.");
+            }
+
+            var result = await ImportClient.CommitAsync(new ContactImportCommitRequest(
+                fileName,
+                csvContent,
+                selectedTagIds.ToArray()));
+
+            successMessage = $"Import completed. Created {result.CreatedCount} contact(s), {result.DuplicateCount} duplicate row(s), {result.InvalidCount} invalid row(s).";
+            preview = null;
+            selectedTagIds.Clear();
+            await LoadReferenceDataAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ClearPreview()
+    {
+        preview = null;
+        selectedTagIds.Clear();
+        successMessage = null;
+        errorMessage = null;
+    }
+
+    private void OnTagSelectionChanged(Guid tagId, object? value)
+    {
+        var isChecked = value as bool? ?? false;
+
+        if (isChecked)
+        {
+            selectedTagIds.Add(tagId);
+            return;
+        }
+
+        selectedTagIds.Remove(tagId);
+    }
+}
