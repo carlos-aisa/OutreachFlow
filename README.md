@@ -14,7 +14,7 @@ Current stable line: `v0.11.0` ([CHANGELOG](CHANGELOG.md), [Releases](https://gi
 
 - [Why OutreachFlow](#why-outreachflow)
 - [What It Is Not](#what-it-is-not)
-- [Portfolio Highlights](#portfolio-highlights)
+- [Project Highlights](#project-highlights)
 - [Feature Scope](#feature-scope)
 - [Technology Stack](#technology-stack)
 - [Architecture](#architecture)
