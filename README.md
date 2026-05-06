@@ -9,7 +9,7 @@
 
 OutreachFlow is a lightweight CRM and controlled email outreach manager for small teams and independent professionals. It helps organize contacts, classify audiences with flexible tags, generate personalized drafts from reusable templates, attach reusable assets, send through configurable providers, and keep a complete communication history.
 
-Current stable line: `v0.12.0` ([CHANGELOG](CHANGELOG.md), [Releases](https://github.com/carlos-aisa/OutreachFlow/releases)).
+Current stable line: `v0.13.0` ([CHANGELOG](CHANGELOG.md), [Releases](https://github.com/carlos-aisa/OutreachFlow/releases)).
 
 ## Table of Contents
 
@@ -277,13 +277,14 @@ Versioning follows Semantic Versioning (`vX.Y.Z`).
 - Architecture baseline: [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)
 - OpenAPI contract: [docs/api/openapi.v1.yaml](docs/api/openapi.v1.yaml)
 - Engineering standards: [docs/standards](docs/standards)
+- Future integration boundaries: [docs/architecture/FUTURE_INTEGRATIONS.md](docs/architecture/FUTURE_INTEGRATIONS.md)
 - Change proposals and archived delivery history: [openspec](openspec)
 - Release history: [CHANGELOG.md](CHANGELOG.md)
 
 ## Roadmap
 
-- Phase 11: CSV imports with duplicate review and tag assignment
-- Phase 12+: Contacts integrations, provider integrations, queueing, observability, PostgreSQL profile
+- Phase 12: Future integration foundation (boundaries, safety rules, and disabled-by-default configuration placeholders)
+- Phase 13+: Email signatures, localization, installer packaging, contact/provider integrations, queueing, observability, PostgreSQL profile
 
 ## Contributing
 
