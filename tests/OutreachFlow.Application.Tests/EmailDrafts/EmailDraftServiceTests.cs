@@ -12,6 +12,7 @@ using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
+using OutreachFlow.Domain.FollowUps;
 using OutreachFlow.Domain.SenderProfiles;
 
 namespace OutreachFlow.Application.Tests.EmailDrafts;
@@ -27,6 +28,7 @@ public sealed class EmailDraftServiceTests
             out var senderProfileRepository,
             out var attachmentRepository,
             out var draftRepository,
+            out _,
             out _,
             out var contactActivityRepository,
             out var unitOfWork);
@@ -106,6 +108,7 @@ public sealed class EmailDraftServiceTests
             out _,
             out _,
             out _,
+            out _,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
@@ -145,6 +148,7 @@ public sealed class EmailDraftServiceTests
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
+            out _,
             out _,
             out _,
             out _,
@@ -205,6 +209,7 @@ public sealed class EmailDraftServiceTests
             out _,
             out _,
             out _,
+            out _,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
@@ -243,6 +248,7 @@ public sealed class EmailDraftServiceTests
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
+            out _,
             out _,
             out _,
             out _,
@@ -288,6 +294,7 @@ public sealed class EmailDraftServiceTests
             out _,
             out _,
             out var emailMessageRepository,
+            out _,
             out var contactActivityRepository,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
@@ -329,6 +336,49 @@ public sealed class EmailDraftServiceTests
     }
 
     [Fact]
+    public async Task ShouldCreateFollowUpTaskAutomaticallyAfterSuccessfulSendWhenEnabled()
+    {
+        var service = CreateEmailDraftService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _,
+            out _,
+            out _,
+            out var followUpTaskRepository,
+            out _,
+            out _,
+            autoCreateFollowUp: true);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Body");
+        await emailTemplateRepository.AddAsync(template);
+
+        var generationResult = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+        var draftId = generationResult.Drafts.Single().Id;
+        await service.ApproveAsync(draftId);
+
+        _ = await service.SendApprovedDraftAsync(draftId);
+
+        followUpTaskRepository.Tasks.Should().ContainSingle(task =>
+            task.ContactId == contact.Id &&
+            task.Type == FollowUpTaskType.Email &&
+            !task.IsCompleted);
+    }
+
+    [Fact]
     public async Task ShouldPersistFailedEmailMessageWhenSenderFails()
     {
         var service = CreateEmailDraftService(
@@ -338,6 +388,7 @@ public sealed class EmailDraftServiceTests
             out _,
             out _,
             out var emailMessageRepository,
+            out _,
             out var contactActivityRepository,
             out _,
             sendHandler: _ => new EmailSendResult(
@@ -389,6 +440,7 @@ public sealed class EmailDraftServiceTests
             out _,
             out _,
             out _,
+            out _,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
@@ -425,6 +477,7 @@ public sealed class EmailDraftServiceTests
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
+            out _,
             out _,
             out _,
             out _,
@@ -489,6 +542,7 @@ public sealed class EmailDraftServiceTests
             out _,
             out _,
             out _,
+            out _,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
@@ -525,10 +579,12 @@ public sealed class EmailDraftServiceTests
         out InMemoryAttachmentAssetRepository attachmentRepository,
         out InMemoryEmailDraftRepository draftRepository,
         out InMemoryEmailMessageRepository emailMessageRepository,
+        out InMemoryFollowUpTaskRepository followUpTaskRepository,
         out InMemoryContactActivityRepository contactActivityRepository,
         out InMemoryUnitOfWork unitOfWork,
         Func<SendEmailCommand, EmailSendResult>? sendHandler = null,
-        TimeSpan? equivalentEmailWindow = null)
+        TimeSpan? equivalentEmailWindow = null,
+        bool autoCreateFollowUp = false)
     {
         contactRepository = new InMemoryContactRepository();
         var organizationRepository = new InMemoryOrganizationRepository();
@@ -537,10 +593,15 @@ public sealed class EmailDraftServiceTests
         attachmentRepository = new InMemoryAttachmentAssetRepository();
         draftRepository = new InMemoryEmailDraftRepository();
         emailMessageRepository = new InMemoryEmailMessageRepository();
+        followUpTaskRepository = new InMemoryFollowUpTaskRepository();
         contactActivityRepository = new InMemoryContactActivityRepository();
         unitOfWork = new InMemoryUnitOfWork();
         var emailSender = new InMemoryEmailSender(sendHandler);
         var policy = new FixedEmailSendingPolicy(equivalentEmailWindow ?? TimeSpan.FromDays(7));
+        var followUpPolicy = new FixedFollowUpAutomationPolicy(
+            autoCreateFollowUp,
+            autoCreateDueDays: 7,
+            FollowUpTaskType.Email);
         var contactActivityService = new ContactActivityService(contactRepository, contactActivityRepository);
 
         return new EmailDraftService(
@@ -551,8 +612,10 @@ public sealed class EmailDraftServiceTests
             attachmentRepository,
             draftRepository,
             emailMessageRepository,
+            followUpTaskRepository,
             emailSender,
             policy,
+            followUpPolicy,
             contactActivityService,
             new TemplateRenderer(),
             unitOfWork);

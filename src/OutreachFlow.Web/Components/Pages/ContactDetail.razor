@@ -2,8 +2,11 @@
 @rendermode InteractiveServer
 @using OutreachFlow.Application.ContactActivities
 @using OutreachFlow.Application.Contacts
+@using OutreachFlow.Application.FollowUps
 @using OutreachFlow.Web.Contacts
+@using OutreachFlow.Web.FollowUps
 @inject ContactApiClient ContactClient
+@inject FollowUpTaskApiClient FollowUpClient
 
 <PageTitle>Contact Detail</PageTitle>
 
@@ -101,6 +104,45 @@ else
             }
         </div>
     </section>
+
+    <section class="card mt-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0">Follow-up tasks</h2>
+            <a class="btn btn-sm btn-outline-primary" href="/follow-ups">Manage follow-ups</a>
+        </div>
+        <div class="card-body">
+            @if (followUps.Count == 0)
+            {
+                <p class="mb-0">No follow-up tasks for this contact.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Due</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Notes</th>
+                                <th scope="col">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var task in followUps)
+                            {
+                                <tr>
+                                    <td>@FormatDate(task.DueAt)</td>
+                                    <td>@task.Type</td>
+                                    <td>@(string.IsNullOrWhiteSpace(task.Notes) ? "-" : task.Notes)</td>
+                                    <td>@(task.IsCompleted ? "Completed" : "Pending")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </section>
 }
 
 @code {
@@ -109,6 +151,7 @@ else
 
     private ContactDto? contact;
     private IReadOnlyList<ContactActivityDto> activities = [];
+    private IReadOnlyList<FollowUpTaskDto> followUps = [];
     private bool isLoading;
     private string? errorMessage;
 
@@ -126,18 +169,26 @@ else
         {
             contact = await ContactClient.GetByIdAsync(ContactId);
             activities = await ContactClient.ListActivitiesAsync(ContactId);
+            followUps = await FollowUpClient.ListAsync(new FollowUpTaskFilterRequest(
+                ContactId,
+                IsCompleted: null,
+                DueFrom: null,
+                DueTo: null,
+                Limit: 20));
         }
         catch (InvalidOperationException exception)
         {
             errorMessage = exception.Message;
             contact = null;
             activities = [];
+            followUps = [];
         }
         catch (HttpRequestException exception)
         {
             errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
             contact = null;
             activities = [];
+            followUps = [];
         }
         finally
         {

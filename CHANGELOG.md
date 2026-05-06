@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.11.0] - 2026-05-06
+
+### Added
+
+- Follow-up task domain support:
+  - `FollowUpTask`
+  - `FollowUpTaskType`
+- Follow-up task application contracts and services:
+  - `IFollowUpTaskRepository`
+  - `IFollowUpTaskService`
+  - `FollowUpTaskService`
+- Optional follow-up automation policy for post-send task creation:
+  - `IFollowUpAutomationPolicy`
+  - `ConfiguredFollowUpAutomationPolicy`
+- Follow-up persistence table and migration (`FollowUpTasks`) with contact/due-date indexes.
+- Follow-up API endpoints:
+  - `GET /api/v1/follow-ups`
+  - `POST /api/v1/follow-ups`
+  - `GET /api/v1/follow-ups/{id}`
+  - `PUT /api/v1/follow-ups/{id}`
+  - `POST /api/v1/follow-ups/{id}/complete`
+- Blazor follow-up page (`/follow-ups`) with creation, listing, and completion actions.
+- Dashboard pending follow-up summary and contact detail follow-up section.
+- Follow-up activity timeline events (`FollowUpCreated`, `FollowUpCompleted`).
+- Domain, application, and integration tests for follow-up CRUD/completion, filtering/order, and API behavior.
+- OpenSpec archive for `p10-follow-up-tasks`.
+
+### Changed
+
+- Successful draft sends can optionally auto-create follow-up tasks through `FollowUpAutomation` settings.
+- README, architecture docs, and OpenAPI now document follow-up behavior and configuration.
+
 ## [0.10.0] - 2026-05-06
 
 ### Added

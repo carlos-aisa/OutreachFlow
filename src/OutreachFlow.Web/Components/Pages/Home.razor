@@ -1,13 +1,136 @@
 @page "/"
+@rendermode InteractiveServer
+@using OutreachFlow.Application.Contacts
+@using OutreachFlow.Application.EmailDrafts
+@using OutreachFlow.Application.FollowUps
+@using OutreachFlow.Domain.Contacts
+@using OutreachFlow.Domain.EmailDrafts
+@using OutreachFlow.Web.Contacts
+@using OutreachFlow.Web.EmailDrafts
+@using OutreachFlow.Web.FollowUps
+@inject ContactApiClient ContactClient
+@inject EmailDraftApiClient DraftClient
+@inject FollowUpTaskApiClient FollowUpClient
 
 <PageTitle>Dashboard</PageTitle>
 
-<h1>OutreachFlow</h1>
+<h1>Dashboard</h1>
 
-<p>
-    Lightweight CRM and controlled email outreach manager.
-</p>
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
 
-<p>
-    Phase 0 is ready. Domain features start in Phase 1 with organizations, contacts, and tags.
-</p>
+<section class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted">New contacts</h2>
+                <p class="display-6 mb-0">@newContactsCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted">Needs review drafts</h2>
+                <p class="display-6 mb-0">@needsReviewDraftsCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted">Approved drafts</h2>
+                <p class="display-6 mb-0">@approvedDraftsCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h2 class="h6 text-muted">Failed sends</h2>
+                <p class="display-6 mb-0">@failedDraftsCount</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h2 class="h5 mb-0">Pending follow-ups</h2>
+        <a class="btn btn-sm btn-outline-primary" href="/follow-ups">Open follow-ups</a>
+    </div>
+    <div class="card-body">
+        @if (pendingFollowUps.Count == 0)
+        {
+            <p class="mb-0">No pending follow-up tasks.</p>
+        }
+        else
+        {
+            <ul class="mb-0">
+                @foreach (var task in pendingFollowUps)
+                {
+                    <li>
+                        <strong>@task.DueAt.ToLocalTime().ToString("yyyy-MM-dd")</strong>
+                        - <a href="@($"/contacts/{task.ContactId}")">@task.ContactDisplayName</a>
+                        (@task.Type)
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>
+
+@code {
+    private int newContactsCount;
+    private int needsReviewDraftsCount;
+    private int approvedDraftsCount;
+    private int failedDraftsCount;
+    private IReadOnlyList<FollowUpTaskDto> pendingFollowUps = [];
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardAsync();
+    }
+
+    private async Task LoadDashboardAsync()
+    {
+        errorMessage = null;
+
+        try
+        {
+            var newContacts = await ContactClient.ListAsync(new ContactFilterRequest(
+                Search: null,
+                TagId: null,
+                Status: ContactStatus.New,
+                DoNotContact: null,
+                OrganizationId: null,
+                LastContactedFrom: null,
+                LastContactedTo: null));
+            var needsReviewDrafts = await DraftClient.ListAsync(EmailDraftStatus.NeedsReview);
+            var approvedDrafts = await DraftClient.ListAsync(EmailDraftStatus.Approved);
+            var failedDrafts = await DraftClient.ListAsync(EmailDraftStatus.Failed);
+            pendingFollowUps = await FollowUpClient.ListAsync(new FollowUpTaskFilterRequest(
+                ContactId: null,
+                IsCompleted: false,
+                DueFrom: null,
+                DueTo: null,
+                Limit: 10));
+
+            newContactsCount = newContacts.Count;
+            needsReviewDraftsCount = needsReviewDrafts.Count;
+            approvedDraftsCount = approvedDrafts.Count;
+            failedDraftsCount = failedDrafts.Count;
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+    }
+}

@@ -148,6 +148,22 @@ Phase 8 completed:
 - Contact detail page with activity timeline in Blazor
 - Domain, application, and integration tests for activity persistence and retrieval order
 
+Phase 9 completed:
+
+- Real SMTP provider support (`SmtpEmailSender`) behind `IEmailSender`
+- Provider selection and required SMTP configuration validation when `EmailSending:Provider=SMTP`
+- SMTP setup guidance with user secrets and placeholder configuration values
+- Integration tests for SMTP option validation, provider selection, failure mapping, and fake provider enforcement in API integration tests
+
+Phase 10 completed:
+
+- `FollowUpTask` domain model with completion lifecycle (`IsCompleted`, `CompletedAt`)
+- Follow-up task CRUD and completion APIs
+- Follow-up management page in Blazor (`/follow-ups`)
+- Pending follow-up visibility on dashboard and contact detail
+- Optional automatic post-send follow-up creation via `FollowUpAutomation` configuration
+- Follow-up activity tracking (`FollowUpCreated`, `FollowUpCompleted`)
+
 ## Roadmap
 
 - Phase 1: Core contacts model (organizations, contacts, tags)
@@ -158,7 +174,9 @@ Phase 8 completed:
 - Phase 6: Draft review and approval
 - Phase 7: Controlled sending abstraction
 - Phase 8: Contact activity history
-- Phase 9+: SMTP and future integrations
+- Phase 9: SMTP real provider
+- Phase 10: Follow-up tasks
+- Phase 11+: Imports and future integrations
 
 ## Run Locally
 
@@ -196,13 +214,21 @@ dotnet user-secrets set "EmailSending:Smtp:Password" "your-smtp-password" --proj
 dotnet user-secrets set "EmailSending:Smtp:TimeoutSeconds" "30" --project src/OutreachFlow.Api
 ```
 
-5. Run API:
+5. Optional: configure automatic follow-up creation after successful sends:
+
+```bash
+dotnet user-secrets set "FollowUpAutomation:AutoCreateAfterSuccessfulSend" "true" --project src/OutreachFlow.Api
+dotnet user-secrets set "FollowUpAutomation:DueDaysAfterSend" "7" --project src/OutreachFlow.Api
+dotnet user-secrets set "FollowUpAutomation:DefaultType" "Email" --project src/OutreachFlow.Api
+```
+
+6. Run API:
 
 ```bash
 dotnet run --project src/OutreachFlow.Api
 ```
 
-6. Run Web UI:
+7. Run Web UI:
 
 ```bash
 dotnet run --project src/OutreachFlow.Web
@@ -233,6 +259,9 @@ The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Current end
 - `/api/v1/drafts/{id}/approve`
 - `/api/v1/drafts/{id}/cancel`
 - `/api/v1/drafts/{id}/send`
+- `/api/v1/follow-ups`
+- `/api/v1/follow-ups/{id}`
+- `/api/v1/follow-ups/{id}/complete`
 
 ## Supported Template Variables
 
@@ -297,5 +326,6 @@ Use one branch per change. Do not implement multiple OpenSpec changes in the sam
 - SMTP configuration requires `Host`, `Port`, `Username`, `Password`, and positive `TimeoutSeconds`.
 - Fake sender failures can be simulated using `EmailSending:FakeFailureKeyword` in subject/body/recipient (default: `[fail-send]`).
 - SMTP delivery and provider-level throttling/reputation behavior depend on your external provider and are intentionally outside the app logic.
+- Follow-up auto creation after send is opt-in (`FollowUpAutomation:AutoCreateAfterSuccessfulSend=false` by default).
 - Secrets must be managed through environment variables or user secrets, never in source control.
 - MVP focus is controlled and traceable outreach, not automation at scale.

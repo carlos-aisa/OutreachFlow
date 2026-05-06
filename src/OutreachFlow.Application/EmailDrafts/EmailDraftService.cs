@@ -7,6 +7,7 @@ using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
+using OutreachFlow.Application.FollowUps;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Templates;
@@ -17,6 +18,7 @@ using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
+using OutreachFlow.Domain.FollowUps;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
 
@@ -30,8 +32,10 @@ public sealed class EmailDraftService(
     IAttachmentAssetRepository attachmentAssetRepository,
     IEmailDraftRepository emailDraftRepository,
     IEmailMessageRepository emailMessageRepository,
+    IFollowUpTaskRepository followUpTaskRepository,
     IEmailSender emailSender,
     IEmailSendingPolicy emailSendingPolicy,
+    IFollowUpAutomationPolicy followUpAutomationPolicy,
     IContactActivityService contactActivityService,
     ITemplateRenderer templateRenderer,
     IUnitOfWork unitOfWork)
@@ -404,6 +408,27 @@ public sealed class EmailDraftService(
         }
 
         await emailMessageRepository.AddAsync(emailMessage, cancellationToken);
+        if (sendResult.Success && followUpAutomationPolicy.AutoCreateAfterSuccessfulSend)
+        {
+            var followUpTask = new FollowUpTask(
+                contact.Id,
+                draft.OrganizationId,
+                now.AddDays(followUpAutomationPolicy.AutoCreateDueDays),
+                followUpAutomationPolicy.AutoCreateType,
+                $"Auto-created after sent email: {draft.Subject}");
+
+            await followUpTaskRepository.AddAsync(followUpTask, cancellationToken);
+            await contactActivityService.RecordAsync(new CreateContactActivityRequest(
+                followUpTask.ContactId,
+                followUpTask.OrganizationId,
+                ContactActivityType.FollowUpCreated,
+                Subject: "Follow-up created",
+                BodyPreview: followUpTask.Notes,
+                MetadataJson: null,
+                followUpTask.CreatedAt),
+                cancellationToken);
+        }
+
         await contactActivityService.RecordAsync(new CreateContactActivityRequest(
             contact.Id,
             draft.OrganizationId,

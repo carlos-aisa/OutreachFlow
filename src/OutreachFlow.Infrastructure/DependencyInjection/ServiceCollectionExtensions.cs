@@ -8,10 +8,12 @@ using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
+using OutreachFlow.Application.FollowUps;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tags;
 using OutreachFlow.Infrastructure.EmailSending;
+using OutreachFlow.Infrastructure.FollowUps;
 using OutreachFlow.Infrastructure.Persistence;
 using OutreachFlow.Infrastructure.Persistence.Queries;
 using OutreachFlow.Infrastructure.Persistence.Repositories;
@@ -86,6 +88,29 @@ public static class ServiceCollectionExtensions
                 options.TimeoutSeconds = timeoutSeconds;
             }
         });
+        services.Configure<FollowUpAutomationOptions>(options =>
+        {
+            var autoCreateValue = configuration[$"{FollowUpAutomationOptions.SectionName}:AutoCreateAfterSuccessfulSend"];
+            if (bool.TryParse(autoCreateValue, out var autoCreateAfterSuccessfulSend))
+            {
+                options.AutoCreateAfterSuccessfulSend = autoCreateAfterSuccessfulSend;
+            }
+
+            var dueDaysValue = configuration[$"{FollowUpAutomationOptions.SectionName}:DueDaysAfterSend"];
+            if (int.TryParse(dueDaysValue, out var dueDaysAfterSend) && dueDaysAfterSend > 0)
+            {
+                options.DueDaysAfterSend = dueDaysAfterSend;
+            }
+
+            var defaultTypeValue = configuration[$"{FollowUpAutomationOptions.SectionName}:DefaultType"];
+            if (Enum.TryParse<OutreachFlow.Domain.FollowUps.FollowUpTaskType>(
+                defaultTypeValue,
+                ignoreCase: true,
+                out var defaultType))
+            {
+                options.DefaultType = defaultType;
+            }
+        });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IContactRepository, ContactRepository>();
@@ -96,6 +121,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
         services.AddScoped<IEmailDraftRepository, EmailDraftRepository>();
         services.AddScoped<IEmailMessageRepository, EmailMessageRepository>();
+        services.AddScoped<IFollowUpTaskRepository, FollowUpTaskRepository>();
         services.AddScoped<IAttachmentAssetRepository, AttachmentAssetRepository>();
         services.AddScoped<IAttachmentFileStorage, LocalAttachmentFileStorage>();
         services.AddScoped<IContactLookupService, ContactLookupService>();
@@ -128,6 +154,7 @@ public static class ServiceCollectionExtensions
             var hours = options.EquivalentEmailWindowHours <= 0 ? 168 : options.EquivalentEmailWindowHours;
             return new ConfiguredEmailSendingPolicy(TimeSpan.FromHours(hours));
         });
+        services.AddSingleton<IFollowUpAutomationPolicy, ConfiguredFollowUpAutomationPolicy>();
 
         return services;
     }

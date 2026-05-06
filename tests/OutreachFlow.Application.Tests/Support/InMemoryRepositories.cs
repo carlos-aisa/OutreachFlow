@@ -5,6 +5,7 @@ using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
+using OutreachFlow.Application.FollowUps;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tags;
@@ -14,6 +15,7 @@ using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
+using OutreachFlow.Domain.FollowUps;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
 using OutreachFlow.Domain.Tags;
@@ -470,6 +472,60 @@ internal sealed class InMemoryEmailMessageRepository : IEmailMessageRepository
     }
 }
 
+internal sealed class InMemoryFollowUpTaskRepository : IFollowUpTaskRepository
+{
+    private readonly List<FollowUpTask> _tasks = [];
+
+    public IReadOnlyList<FollowUpTask> Tasks => _tasks;
+
+    public Task AddAsync(FollowUpTask task, CancellationToken cancellationToken = default)
+    {
+        _tasks.Add(task);
+        return Task.CompletedTask;
+    }
+
+    public Task<FollowUpTask?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_tasks.FirstOrDefault(task => task.Id == id));
+    }
+
+    public Task<IReadOnlyList<FollowUpTask>> ListAsync(
+        FollowUpTaskFilterRequest filter,
+        CancellationToken cancellationToken = default)
+    {
+        IEnumerable<FollowUpTask> query = _tasks;
+
+        if (filter.ContactId is not null)
+        {
+            query = query.Where(task => task.ContactId == filter.ContactId);
+        }
+
+        if (filter.IsCompleted is not null)
+        {
+            query = query.Where(task => task.IsCompleted == filter.IsCompleted);
+        }
+
+        if (filter.DueFrom is not null)
+        {
+            query = query.Where(task => task.DueAt >= filter.DueFrom);
+        }
+
+        if (filter.DueTo is not null)
+        {
+            query = query.Where(task => task.DueAt <= filter.DueTo);
+        }
+
+        query = query.OrderBy(task => task.DueAt);
+
+        if (filter.Limit is int limit && limit > 0)
+        {
+            query = query.Take(limit);
+        }
+
+        return Task.FromResult<IReadOnlyList<FollowUpTask>>(query.ToArray());
+    }
+}
+
 internal sealed class InMemoryEmailSender(
     Func<SendEmailCommand, EmailSendResult>? sendHandler = null) : IEmailSender
 {
@@ -490,4 +546,16 @@ internal sealed class InMemoryEmailSender(
 internal sealed class FixedEmailSendingPolicy(TimeSpan equivalentEmailWindow) : IEmailSendingPolicy
 {
     public TimeSpan EquivalentEmailWindow { get; } = equivalentEmailWindow;
+}
+
+internal sealed class FixedFollowUpAutomationPolicy(
+    bool autoCreateAfterSuccessfulSend,
+    int autoCreateDueDays,
+    FollowUpTaskType autoCreateType) : IFollowUpAutomationPolicy
+{
+    public bool AutoCreateAfterSuccessfulSend { get; } = autoCreateAfterSuccessfulSend;
+
+    public int AutoCreateDueDays { get; } = autoCreateDueDays;
+
+    public FollowUpTaskType AutoCreateType { get; } = autoCreateType;
 }
