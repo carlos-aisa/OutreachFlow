@@ -4,6 +4,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.12.0] - 2026-05-06
+
+### Added
+
+- Contact import domain support:
+  - `ImportJob`
+  - `ImportJobStatus`
+- CSV import application services and contracts:
+  - `IContactImportService`
+  - `ContactImportService`
+  - `IContactImportCsvParser`
+  - `StructuredCsvContactImportParser`
+  - `IImportJobRepository`
+- Contact import persistence:
+  - `ImportJobs` table
+  - EF Core migration `ContactImports`
+  - `ImportJobRepository`
+- Contact import API endpoints:
+  - `POST /api/v1/contact-imports/preview`
+  - `POST /api/v1/contact-imports/commit`
+  - `GET /api/v1/contact-imports/jobs`
+- Blazor imports page (`/imports`) with:
+  - CSV upload,
+  - row-level preview diagnostics,
+  - tag selection,
+  - commit summary,
+  - recent import jobs list.
+- Domain, application, and integration tests for import parsing, validation, duplicate detection, tag assignment, job tracking, and API behavior.
+- OpenSpec archive for `p11-contact-imports`.
+
+### Changed
+
+- OpenAPI contract updated to `0.12.0` with contact import schemas and endpoints.
+- README and architecture docs updated with CSV import format, behavior, and limitations.
+
 ## [0.11.0] - 2026-05-06
 
 ### Added
