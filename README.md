@@ -51,7 +51,7 @@ Many small organizations need outreach discipline but not enterprise CRM complex
 
 OutreachFlow is not a spam engine and is not designed for aggressive bulk mailing, scraping, or invasive automation.
 
-## Portfolio Highlights
+## Project Highlights
 
 - Clean layered architecture with strict dependency direction
 - Explicit business rules in Domain and Application layers
