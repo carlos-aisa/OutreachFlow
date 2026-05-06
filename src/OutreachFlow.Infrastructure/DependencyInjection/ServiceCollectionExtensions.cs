@@ -61,6 +61,31 @@ public static class ServiceCollectionExtensions
                 options.FakeFailureKeyword = fakeFailureKeyword;
             }
         });
+        services.Configure<SmtpEmailSenderOptions>(options =>
+        {
+            options.Host = configuration[$"{SmtpEmailSenderOptions.SectionName}:Host"] ?? options.Host;
+
+            var portValue = configuration[$"{SmtpEmailSenderOptions.SectionName}:Port"];
+            if (int.TryParse(portValue, out var port) && port > 0)
+            {
+                options.Port = port;
+            }
+
+            var useSslValue = configuration[$"{SmtpEmailSenderOptions.SectionName}:UseSsl"];
+            if (bool.TryParse(useSslValue, out var useSsl))
+            {
+                options.UseSsl = useSsl;
+            }
+
+            options.Username = configuration[$"{SmtpEmailSenderOptions.SectionName}:Username"] ?? options.Username;
+            options.Password = configuration[$"{SmtpEmailSenderOptions.SectionName}:Password"] ?? options.Password;
+
+            var timeoutValue = configuration[$"{SmtpEmailSenderOptions.SectionName}:TimeoutSeconds"];
+            if (int.TryParse(timeoutValue, out var timeoutSeconds) && timeoutSeconds > 0)
+            {
+                options.TimeoutSeconds = timeoutSeconds;
+            }
+        });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IContactRepository, ContactRepository>();
@@ -75,6 +100,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAttachmentFileStorage, LocalAttachmentFileStorage>();
         services.AddScoped<IContactLookupService, ContactLookupService>();
         services.AddScoped<FakeEmailSender>();
+        services.AddScoped<SmtpEmailSender>();
+        services.AddSingleton<ISmtpTransportFactory, SystemSmtpTransportFactory>();
         services.AddScoped<IEmailSender>(serviceProvider =>
         {
             var options = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<EmailSendingOptions>>().Value;
@@ -83,6 +110,13 @@ public static class ServiceCollectionExtensions
                 options.Provider.Equals("Fake", StringComparison.OrdinalIgnoreCase))
             {
                 return serviceProvider.GetRequiredService<FakeEmailSender>();
+            }
+
+            if (options.Provider.Equals("SMTP", StringComparison.OrdinalIgnoreCase))
+            {
+                var smtpOptions = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<SmtpEmailSenderOptions>>().Value;
+                SmtpEmailSenderOptionsValidator.ValidateConfigured(smtpOptions);
+                return serviceProvider.GetRequiredService<SmtpEmailSender>();
             }
 
             throw new InvalidOperationException(

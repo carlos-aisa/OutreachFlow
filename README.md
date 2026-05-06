@@ -184,13 +184,25 @@ dotnet ef database update --project src/OutreachFlow.Infrastructure --startup-pr
 }
 ```
 
-4. Run API:
+4. Optional: configure SMTP sender (use secrets, never commit credentials):
+
+```bash
+dotnet user-secrets set "EmailSending:Provider" "SMTP" --project src/OutreachFlow.Api
+dotnet user-secrets set "EmailSending:Smtp:Host" "smtp.example.com" --project src/OutreachFlow.Api
+dotnet user-secrets set "EmailSending:Smtp:Port" "587" --project src/OutreachFlow.Api
+dotnet user-secrets set "EmailSending:Smtp:UseSsl" "true" --project src/OutreachFlow.Api
+dotnet user-secrets set "EmailSending:Smtp:Username" "your-smtp-user" --project src/OutreachFlow.Api
+dotnet user-secrets set "EmailSending:Smtp:Password" "your-smtp-password" --project src/OutreachFlow.Api
+dotnet user-secrets set "EmailSending:Smtp:TimeoutSeconds" "30" --project src/OutreachFlow.Api
+```
+
+5. Run API:
 
 ```bash
 dotnet run --project src/OutreachFlow.Api
 ```
 
-5. Run Web UI:
+6. Run Web UI:
 
 ```bash
 dotnet run --project src/OutreachFlow.Web
@@ -281,6 +293,9 @@ Use one branch per change. Do not implement multiple OpenSpec changes in the sam
 
 - Provider-specific email sending is abstracted for future SMTP/Gmail/Graph implementations.
 - The default provider is `Fake` (`EmailSending:Provider`).
+- SMTP is supported for local/manual configuration (`EmailSending:Provider=SMTP`) with settings under `EmailSending:Smtp:*`.
+- SMTP configuration requires `Host`, `Port`, `Username`, `Password`, and positive `TimeoutSeconds`.
 - Fake sender failures can be simulated using `EmailSending:FakeFailureKeyword` in subject/body/recipient (default: `[fail-send]`).
+- SMTP delivery and provider-level throttling/reputation behavior depend on your external provider and are intentionally outside the app logic.
 - Secrets must be managed through environment variables or user secrets, never in source control.
 - MVP focus is controlled and traceable outreach, not automation at scale.
