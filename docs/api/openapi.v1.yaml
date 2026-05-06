@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: OutreachFlow API
-  version: 0.10.0
+  version: 0.11.0
   description: API contract for OutreachFlow v1.
 servers:
   - url: http://localhost:5131
@@ -892,6 +892,133 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "404":
           $ref: "#/components/responses/NotFoundError"
+  /api/v1/follow-ups:
+    get:
+      operationId: listFollowUpTasks
+      summary: Lists follow-up tasks with optional filters
+      tags:
+        - FollowUps
+      parameters:
+        - name: contactId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: isCompleted
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: dueFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: dueTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Follow-up tasks returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FollowUpTask"
+    post:
+      operationId: createFollowUpTask
+      summary: Creates a follow-up task
+      tags:
+        - FollowUps
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFollowUpTaskRequest"
+      responses:
+        "201":
+          description: Follow-up task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowUpTask"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/follow-ups/{id}:
+    get:
+      operationId: getFollowUpTask
+      summary: Gets a follow-up task by id
+      tags:
+        - FollowUps
+      parameters:
+        - $ref: "#/components/parameters/FollowUpTaskId"
+      responses:
+        "200":
+          description: Follow-up task returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowUpTask"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    put:
+      operationId: updateFollowUpTask
+      summary: Updates a follow-up task
+      tags:
+        - FollowUps
+      parameters:
+        - $ref: "#/components/parameters/FollowUpTaskId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFollowUpTaskRequest"
+      responses:
+        "200":
+          description: Follow-up task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowUpTask"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/follow-ups/{id}/complete:
+    post:
+      operationId: completeFollowUpTask
+      summary: Marks a follow-up task as completed
+      tags:
+        - FollowUps
+      parameters:
+        - $ref: "#/components/parameters/FollowUpTaskId"
+      responses:
+        "200":
+          description: Follow-up task completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowUpTask"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 components:
   parameters:
     ContactId:
@@ -951,6 +1078,13 @@ components:
         type: string
         format: uuid
     EmailDraftId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    FollowUpTaskId:
       name: id
       in: path
       required: true
@@ -1024,6 +1158,13 @@ components:
         - StatusChanged
         - FollowUpCreated
         - FollowUpCompleted
+    FollowUpTaskType:
+      type: string
+      enum:
+        - General
+        - Email
+        - Call
+        - Meeting
     EmailDraftStatus:
       type: string
       enum:
@@ -1085,6 +1226,93 @@ components:
         occurredAt:
           type: string
           format: date-time
+    FollowUpTask:
+      type: object
+      required:
+        - id
+        - contactId
+        - contactDisplayName
+        - contactEmail
+        - dueAt
+        - type
+        - isCompleted
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        contactId:
+          type: string
+          format: uuid
+        contactDisplayName:
+          type: string
+          example: Alex Morgan
+        contactEmail:
+          type: string
+          format: email
+          example: alex@example.com
+        organizationId:
+          type: string
+          format: uuid
+          nullable: true
+        dueAt:
+          type: string
+          format: date-time
+        type:
+          $ref: "#/components/schemas/FollowUpTaskType"
+        notes:
+          type: string
+          nullable: true
+          example: Check in next week.
+        isCompleted:
+          type: boolean
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateFollowUpTaskRequest:
+      type: object
+      required:
+        - contactId
+        - dueAt
+        - type
+      properties:
+        contactId:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+          format: uuid
+          nullable: true
+        dueAt:
+          type: string
+          format: date-time
+        type:
+          $ref: "#/components/schemas/FollowUpTaskType"
+        notes:
+          type: string
+          nullable: true
+    UpdateFollowUpTaskRequest:
+      type: object
+      required:
+        - dueAt
+        - type
+      properties:
+        dueAt:
+          type: string
+          format: date-time
+        type:
+          $ref: "#/components/schemas/FollowUpTaskType"
+        notes:
+          type: string
+          nullable: true
     Contact:
       type: object
       required:

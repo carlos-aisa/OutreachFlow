@@ -5,6 +5,7 @@ using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
+using OutreachFlow.Domain.FollowUps;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
 using OutreachFlow.Domain.Tags;
@@ -38,6 +39,8 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
     public DbSet<EmailMessage> EmailMessages => Set<EmailMessage>();
 
+    public DbSet<FollowUpTask> FollowUpTasks => Set<FollowUpTask>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureOrganizations(modelBuilder);
@@ -52,6 +55,7 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
         ConfigureEmailDrafts(modelBuilder);
         ConfigureEmailDraftAttachments(modelBuilder);
         ConfigureEmailMessages(modelBuilder);
+        ConfigureFollowUpTasks(modelBuilder);
     }
 
     private static void ConfigureOrganizations(ModelBuilder modelBuilder)
@@ -445,6 +449,34 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
             builder.HasOne<EmailDraft>()
                 .WithMany()
                 .HasForeignKey(emailMessage => emailMessage.EmailDraftId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureFollowUpTasks(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<FollowUpTask>(builder =>
+        {
+            builder.ToTable("FollowUpTasks");
+            builder.HasKey(task => task.Id);
+
+            builder.Property(task => task.Notes)
+                .HasMaxLength(4000);
+
+            builder.HasIndex(task => task.ContactId);
+            builder.HasIndex(task => task.OrganizationId);
+            builder.HasIndex(task => task.DueAt);
+            builder.HasIndex(task => task.IsCompleted);
+            builder.HasIndex(task => new { task.ContactId, task.DueAt, task.IsCompleted });
+
+            builder.HasOne<Contact>()
+                .WithMany()
+                .HasForeignKey(task => task.ContactId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne<Organization>()
+                .WithMany()
+                .HasForeignKey(task => task.OrganizationId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
     }

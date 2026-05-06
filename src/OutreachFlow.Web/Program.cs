@@ -6,6 +6,7 @@ using OutreachFlow.Web.EmailTemplates;
 using OutreachFlow.Web.Organizations;
 using OutreachFlow.Web.SenderProfiles;
 using OutreachFlow.Web.Tags;
+using OutreachFlow.Web.FollowUps;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,8 @@ builder.Services.AddHttpClient<EmailTemplateApiClient>(client =>
 builder.Services.AddHttpClient<AttachmentAssetApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<EmailDraftApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<FollowUpTaskApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();

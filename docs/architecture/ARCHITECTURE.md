@@ -200,3 +200,27 @@ A successful send also updates `Contact.LastContactedAt` to keep outreach histor
 - Application defines ports for outbound email sending.
 - Infrastructure currently provides `Fake` and `SMTP`; Gmail API and Graph remain future providers.
 - No provider-specific behavior in Domain or Application core logic.
+
+## Contact Activity Timeline
+
+Phase 8 adds traceability events linked to contacts:
+
+- `ContactActivity` stores timeline entries (`Type`, `Subject`, `BodyPreview`, `MetadataJson`, `OccurredAt`).
+- `ContactActivityService` centralizes activity recording/query behavior.
+- Activity is recorded for contact create/update/status changes, draft generation, send success/failure, and follow-up events.
+- API exposes `GET /api/v1/contacts/{id}/activities`.
+- Web contact detail includes the activity timeline.
+
+## Follow-Up Tasks
+
+Phase 10 adds task planning after outreach interactions:
+
+- `FollowUpTask` stores due date, type, notes, completion state, and completion timestamp.
+- `FollowUpTaskService` provides create/update/list/get/complete use cases.
+- `FollowUpAutomation` configuration controls optional auto-creation after successful sends.
+- Follow-up operations emit timeline activities (`FollowUpCreated`, `FollowUpCompleted`).
+- API exposes follow-up endpoints under `/api/v1/follow-ups`.
+- Web adds:
+  - follow-up management page,
+  - pending follow-ups on dashboard,
+  - follow-up section in contact detail.

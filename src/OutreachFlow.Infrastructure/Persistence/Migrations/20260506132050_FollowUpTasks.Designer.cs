@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OutreachFlow.Infrastructure.Persistence;
 
@@ -10,9 +11,11 @@ using OutreachFlow.Infrastructure.Persistence;
 namespace OutreachFlow.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(OutreachFlowDbContext))]
-    partial class OutreachFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260506132050_FollowUpTasks")]
+    partial class FollowUpTasks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.26");
