@@ -72,6 +72,7 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 
 - Organizations, contacts, tags, and status management
 - Sender profiles and email templates with variable catalog
+- Sender profile signatures (HTML/RTF) with validation and draft-body append behavior
 - Attachment assets and template default attachments
 - Draft generation, review, approval, cancellation, and controlled send
 - Activity timeline (contact and email events)
@@ -284,7 +285,7 @@ Versioning follows Semantic Versioning (`vX.Y.Z`).
 ## Roadmap
 
 - Phase 12: Future integration foundation (boundaries, safety rules, and disabled-by-default configuration placeholders)
-- Phase 13+: Email signatures, localization, installer packaging, contact/provider integrations, queueing, observability, PostgreSQL profile
+- Phase 14+: Localization, installer packaging, contact/provider integrations, queueing, observability, PostgreSQL profile
 
 ## Contributing
 

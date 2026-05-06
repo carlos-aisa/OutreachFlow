@@ -10,6 +10,7 @@ using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.EmailDrafts;
+using OutreachFlow.Domain.SenderProfiles;
 
 namespace OutreachFlow.IntegrationTests.Api;
 
@@ -56,8 +57,9 @@ public sealed class EmailDraftGenerationEndpointTests
                 null,
                 "Northwind Studio",
                 null,
-                "Best regards",
-                true));
+                "<p>Best regards</p>",
+                true,
+                SenderSignatureFormat.Html));
         var template = await PostAsync<EmailTemplateDto>(
             client,
             "/api/v1/templates",
@@ -126,8 +128,9 @@ public sealed class EmailDraftGenerationEndpointTests
                 null,
                 null,
                 null,
-                "Best regards",
-                true));
+                "<p>Best regards</p>",
+                true,
+                SenderSignatureFormat.Html));
         var template = await PostAsync<EmailTemplateDto>(
             client,
             "/api/v1/templates",

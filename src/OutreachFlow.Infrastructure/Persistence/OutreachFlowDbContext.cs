@@ -224,7 +224,8 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
             builder.Property(senderProfile => senderProfile.Phone).HasMaxLength(100);
             builder.Property(senderProfile => senderProfile.OrganizationName).HasMaxLength(200);
             builder.Property(senderProfile => senderProfile.Website).HasMaxLength(500);
-            builder.Property(senderProfile => senderProfile.Signature).HasMaxLength(4000);
+            builder.Property(senderProfile => senderProfile.Signature).HasMaxLength(12000);
+            builder.Property(senderProfile => senderProfile.SignatureFormat);
 
             builder.HasIndex(senderProfile => senderProfile.IsDefault);
             builder.HasIndex(senderProfile => senderProfile.IsActive);

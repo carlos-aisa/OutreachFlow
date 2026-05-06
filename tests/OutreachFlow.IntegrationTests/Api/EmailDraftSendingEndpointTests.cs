@@ -9,6 +9,7 @@ using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.EmailDrafts;
+using OutreachFlow.Domain.SenderProfiles;
 
 namespace OutreachFlow.IntegrationTests.Api;
 
@@ -37,14 +38,7 @@ public sealed class EmailDraftSendingEndpointTests
         var senderProfile = await PostAsync<SenderProfileDto>(
             client,
             "/api/v1/sender-profiles",
-            new CreateSenderProfileRequest(
-                "Primary sender",
-                "sender@example.com",
-                null,
-                null,
-                null,
-                "Best regards",
-                true));
+            BuildSenderProfileRequest());
         var template = await PostAsync<EmailTemplateDto>(
             client,
             "/api/v1/templates",
@@ -85,14 +79,7 @@ public sealed class EmailDraftSendingEndpointTests
         var senderProfile = await PostAsync<SenderProfileDto>(
             client,
             "/api/v1/sender-profiles",
-            new CreateSenderProfileRequest(
-                "Primary sender",
-                "sender@example.com",
-                null,
-                null,
-                null,
-                "Best regards",
-                true));
+            BuildSenderProfileRequest());
         var template = await PostAsync<EmailTemplateDto>(
             client,
             "/api/v1/templates",
@@ -132,14 +119,7 @@ public sealed class EmailDraftSendingEndpointTests
         var senderProfile = await PostAsync<SenderProfileDto>(
             client,
             "/api/v1/sender-profiles",
-            new CreateSenderProfileRequest(
-                "Primary sender",
-                "sender@example.com",
-                null,
-                null,
-                null,
-                "Best regards",
-                true));
+            BuildSenderProfileRequest());
         var template = await PostAsync<EmailTemplateDto>(
             client,
             "/api/v1/templates",
@@ -180,14 +160,7 @@ public sealed class EmailDraftSendingEndpointTests
         var senderProfile = await PostAsync<SenderProfileDto>(
             client,
             "/api/v1/sender-profiles",
-            new CreateSenderProfileRequest(
-                "Primary sender",
-                "sender@example.com",
-                null,
-                null,
-                null,
-                "Best regards",
-                true));
+            BuildSenderProfileRequest());
         var template = await PostAsync<EmailTemplateDto>(
             client,
             "/api/v1/templates",
@@ -231,14 +204,7 @@ public sealed class EmailDraftSendingEndpointTests
         var senderProfile = await PostAsync<SenderProfileDto>(
             client,
             "/api/v1/sender-profiles",
-            new CreateSenderProfileRequest(
-                "Primary sender",
-                "sender@example.com",
-                null,
-                null,
-                null,
-                "Best regards",
-                true));
+            BuildSenderProfileRequest());
         var template = await PostAsync<EmailTemplateDto>(
             client,
             "/api/v1/templates",
@@ -278,6 +244,19 @@ public sealed class EmailDraftSendingEndpointTests
 
         result.Drafts.Should().ContainSingle();
         return result.Drafts.Single();
+    }
+
+    private static CreateSenderProfileRequest BuildSenderProfileRequest()
+    {
+        return new CreateSenderProfileRequest(
+            "Primary sender",
+            "sender@example.com",
+            null,
+            null,
+            null,
+            "<p>Best regards</p>",
+            true,
+            SenderSignatureFormat.Html);
     }
 
     private static async Task<T> GetAsync<T>(HttpClient client, string uri)

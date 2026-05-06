@@ -18,7 +18,8 @@ public sealed class SenderProfilesAndTemplatesPersistenceTests
             "Primary sender",
             "sender@example.com",
             organizationName: "Northwind Studio",
-            signature: "Best regards",
+            signature: "<p>Best regards</p>",
+            signatureFormat: SenderSignatureFormat.Html,
             isDefault: true);
         var template = new EmailTemplate(
             "Intro",
@@ -36,7 +37,39 @@ public sealed class SenderProfilesAndTemplatesPersistenceTests
         var savedTemplate = await context.EmailTemplates.SingleAsync();
         savedSenderProfile.IsDefault.Should().BeTrue();
         savedSenderProfile.IsActive.Should().BeTrue();
+        savedSenderProfile.SignatureFormat.Should().Be(SenderSignatureFormat.Html);
         savedTemplate.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ShouldPersistHtmlAndRtfSignatures()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = await CreateMigratedContextAsync(connection);
+
+        context.SenderProfiles.Add(new SenderProfile(
+            "Html sender",
+            "html.sender@example.com",
+            signature: "<p>Best regards</p>",
+            signatureFormat: SenderSignatureFormat.Html));
+        context.SenderProfiles.Add(new SenderProfile(
+            "Rtf sender",
+            "rtf.sender@example.com",
+            signature: @"{\rtf1\ansi Best regards}",
+            signatureFormat: SenderSignatureFormat.Rtf));
+        await context.SaveChangesAsync();
+
+        context.ChangeTracker.Clear();
+
+        var senderProfiles = await context.SenderProfiles
+            .OrderBy(senderProfile => senderProfile.Email)
+            .ToArrayAsync();
+
+        senderProfiles.Should().HaveCount(2);
+        senderProfiles.Single(item => item.Email == "html.sender@example.com")
+            .SignatureFormat.Should().Be(SenderSignatureFormat.Html);
+        senderProfiles.Single(item => item.Email == "rtf.sender@example.com")
+            .SignatureFormat.Should().Be(SenderSignatureFormat.Rtf);
     }
 
     [Fact]
