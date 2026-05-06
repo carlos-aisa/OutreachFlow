@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.9.0] - 2026-05-06
+
+### Added
+
+- `ContactActivity` domain model and `ContactActivityType` enum for contact timeline events.
+- Application activity services/contracts:
+  - `IContactActivityRepository`
+  - `IContactActivityService`
+  - `ContactActivityService`
+- Automatic activity recording in core flows:
+  - contact creation/update/status transitions,
+  - draft generation,
+  - draft send success/failure.
+- EF Core `ContactActivityHistory` migration with indexes and foreign keys.
+- Contact activity API endpoint: `GET /api/v1/contacts/{id}/activities`.
+- Blazor contact detail page with activity timeline view.
+- Domain, application, persistence, and API integration tests for activity history behavior.
+- OpenSpec archive for `p08-contact-activity-history`.
+
+### Changed
+
+- OpenAPI and README now include contact activity history and traceability surface.
+
 ## [0.8.0] - 2026-05-05
 
 ### Added

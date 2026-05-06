@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using OutreachFlow.Application.Attachments;
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
@@ -12,6 +13,7 @@ using OutreachFlow.Application.Templates;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Common;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
@@ -30,6 +32,7 @@ public sealed class EmailDraftService(
     IEmailMessageRepository emailMessageRepository,
     IEmailSender emailSender,
     IEmailSendingPolicy emailSendingPolicy,
+    IContactActivityService contactActivityService,
     ITemplateRenderer templateRenderer,
     IUnitOfWork unitOfWork)
     : IEmailDraftService
@@ -147,6 +150,14 @@ public sealed class EmailDraftService(
             }
 
             drafts.Add(draft);
+            await contactActivityService.RecordAsync(new CreateContactActivityRequest(
+                draft.ContactId,
+                draft.OrganizationId,
+                ContactActivityType.EmailDraftCreated,
+                Subject: draft.Subject,
+                BodyPreview: BuildBodyPreview(draft.Body),
+                MetadataJson: null),
+                cancellationToken);
         }
 
         if (drafts.Count > 0)
@@ -393,6 +404,14 @@ public sealed class EmailDraftService(
         }
 
         await emailMessageRepository.AddAsync(emailMessage, cancellationToken);
+        await contactActivityService.RecordAsync(new CreateContactActivityRequest(
+            contact.Id,
+            draft.OrganizationId,
+            sendResult.Success ? ContactActivityType.EmailSent : ContactActivityType.EmailFailed,
+            Subject: draft.Subject,
+            BodyPreview: BuildBodyPreview(draft.Body),
+            MetadataJson: SerializeActivityMetadata(provider, sendResult.ProviderMessageId, draft.FailureReason)),
+            cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Map(draft, contact);
@@ -496,6 +515,29 @@ public sealed class EmailDraftService(
         {
             throw new ApplicationValidationException("Draft contains unresolved template variables.");
         }
+    }
+
+    private static string BuildBodyPreview(string body)
+    {
+        if (body.Length <= 240)
+        {
+            return body;
+        }
+
+        return $"{body[..240]}...";
+    }
+
+    private static string SerializeActivityMetadata(
+        string provider,
+        string? providerMessageId,
+        string? failureReason)
+    {
+        return JsonSerializer.Serialize(new
+        {
+            provider,
+            providerMessageId,
+            failureReason
+        }, JsonOptions);
     }
 
     private static EmailDraftDto Map(EmailDraft draft, Contact contact)

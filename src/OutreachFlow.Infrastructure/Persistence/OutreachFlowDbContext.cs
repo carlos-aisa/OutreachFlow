@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
@@ -20,6 +21,8 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
     public DbSet<Tag> Tags => Set<Tag>();
 
     public DbSet<ContactTag> ContactTags => Set<ContactTag>();
+
+    public DbSet<ContactActivity> ContactActivities => Set<ContactActivity>();
 
     public DbSet<SenderProfile> SenderProfiles => Set<SenderProfile>();
 
@@ -41,6 +44,7 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
         ConfigureContacts(modelBuilder);
         ConfigureTags(modelBuilder);
         ConfigureContactTags(modelBuilder);
+        ConfigureContactActivities(modelBuilder);
         ConfigureSenderProfiles(modelBuilder);
         ConfigureAttachmentAssets(modelBuilder);
         ConfigureEmailTemplates(modelBuilder);
@@ -154,6 +158,39 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
                 .WithMany()
                 .HasForeignKey(contactTag => contactTag.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureContactActivities(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ContactActivity>(builder =>
+        {
+            builder.ToTable("ContactActivities");
+            builder.HasKey(contactActivity => contactActivity.Id);
+
+            builder.Property(contactActivity => contactActivity.Subject)
+                .HasMaxLength(500);
+
+            builder.Property(contactActivity => contactActivity.BodyPreview)
+                .HasMaxLength(2000);
+
+            builder.Property(contactActivity => contactActivity.MetadataJson)
+                .HasMaxLength(4000);
+
+            builder.HasIndex(contactActivity => contactActivity.ContactId);
+            builder.HasIndex(contactActivity => contactActivity.OccurredAt);
+            builder.HasIndex(contactActivity => contactActivity.Type);
+            builder.HasIndex(contactActivity => new { contactActivity.ContactId, contactActivity.OccurredAt });
+
+            builder.HasOne<Contact>()
+                .WithMany()
+                .HasForeignKey(contactActivity => contactActivity.ContactId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne<Organization>()
+                .WithMany()
+                .HasForeignKey(contactActivity => contactActivity.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 

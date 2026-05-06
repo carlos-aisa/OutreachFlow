@@ -1,0 +1,152 @@
+@page "/contacts/{ContactId:guid}"
+@rendermode InteractiveServer
+@using OutreachFlow.Application.ContactActivities
+@using OutreachFlow.Application.Contacts
+@using OutreachFlow.Web.Contacts
+@inject ContactApiClient ContactClient
+
+<PageTitle>Contact Detail</PageTitle>
+
+<h1>Contact Detail</h1>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+@if (isLoading)
+{
+    <p>Loading contact detail...</p>
+}
+else if (contact is null)
+{
+    <p>Contact not found.</p>
+}
+else
+{
+    <section class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0">Contact summary</h2>
+            <a class="btn btn-sm btn-outline-primary" href="/contacts">Back to contacts</a>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Display name</dt>
+                <dd class="col-sm-9">@contact.DisplayName</dd>
+
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9">@contact.Email</dd>
+
+                <dt class="col-sm-3">Organization</dt>
+                <dd class="col-sm-9">@(contact.OrganizationName ?? "-")</dd>
+
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">@contact.Status</dd>
+
+                <dt class="col-sm-3">Do not contact</dt>
+                <dd class="col-sm-9">@(contact.DoNotContact ? "Yes" : "No")</dd>
+
+                <dt class="col-sm-3">Role</dt>
+                <dd class="col-sm-9">@(contact.Role ?? "-")</dd>
+
+                <dt class="col-sm-3">Source</dt>
+                <dd class="col-sm-9">@(contact.Source ?? "-")</dd>
+
+                <dt class="col-sm-3">Phone</dt>
+                <dd class="col-sm-9">@(contact.Phone ?? "-")</dd>
+
+                <dt class="col-sm-3">Last contacted</dt>
+                <dd class="col-sm-9">@FormatDate(contact.LastContactedAt)</dd>
+            </dl>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-0">Activity timeline</h2>
+            <span class="badge text-bg-secondary">@activities.Count events</span>
+        </div>
+        <div class="card-body">
+            @if (activities.Count == 0)
+            {
+                <p class="mb-0">No activity has been recorded for this contact yet.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Occurred</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Subject</th>
+                                <th scope="col">Body preview</th>
+                                <th scope="col">Metadata</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var activity in activities)
+                            {
+                                <tr>
+                                    <td>@FormatDate(activity.OccurredAt)</td>
+                                    <td>@activity.Type</td>
+                                    <td>@(string.IsNullOrWhiteSpace(activity.Subject) ? "-" : activity.Subject)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(activity.BodyPreview) ? "-" : activity.BodyPreview)</td>
+                                    <td><code>@(string.IsNullOrWhiteSpace(activity.MetadataJson) ? "-" : activity.MetadataJson)</code></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@code {
+    [Parameter]
+    public Guid ContactId { get; set; }
+
+    private ContactDto? contact;
+    private IReadOnlyList<ContactActivityDto> activities = [];
+    private bool isLoading;
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            contact = await ContactClient.GetByIdAsync(ContactId);
+            activities = await ContactClient.ListActivitiesAsync(ContactId);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+            contact = null;
+            activities = [];
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            contact = null;
+            activities = [];
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private static string FormatDate(DateTimeOffset? value)
+    {
+        return value is null ? "-" : value.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+    }
+}

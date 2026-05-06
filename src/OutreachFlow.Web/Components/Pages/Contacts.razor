@@ -180,7 +180,9 @@
                     @foreach (var contact in contacts)
                     {
                         <tr>
-                            <td>@contact.DisplayName</td>
+                            <td>
+                                <a href="@($"/contacts/{contact.Id}")">@contact.DisplayName</a>
+                            </td>
                             <td>@contact.Email</td>
                             <td>@(contact.OrganizationName ?? "-")</td>
                             <td>@contact.Status</td>

@@ -1,4 +1,5 @@
 using OutreachFlow.Api.Errors;
+using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Domain.Contacts;
 
@@ -109,6 +110,15 @@ public static class ContactEndpoints
                 return Results.NoContent();
             }))
             .WithName("RemoveContactTag")
+            .WithOpenApi();
+
+        group.MapGet("/{id:guid}/activities", async (
+            Guid id,
+            IContactActivityService service,
+            CancellationToken cancellationToken) =>
+            await ApiEndpoint.HandleAsync(async () =>
+                Results.Ok(await service.ListByContactIdAsync(id, cancellationToken))))
+            .WithName("ListContactActivities")
             .WithOpenApi();
 
         return endpoints;

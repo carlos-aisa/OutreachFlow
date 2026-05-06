@@ -1,8 +1,12 @@
+using System.Text.Json;
+
 using OutreachFlow.Application.Common;
+using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.Tags;
 using OutreachFlow.Domain.Common;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.ContactActivities;
 
 namespace OutreachFlow.Application.Contacts;
 
@@ -10,6 +14,7 @@ public sealed class ContactService(
     IContactRepository contactRepository,
     IOrganizationRepository organizationRepository,
     ITagRepository tagRepository,
+    IContactActivityService contactActivityService,
     IContactLookupService contactLookupService,
     IUnitOfWork unitOfWork)
     : IContactService
@@ -23,6 +28,14 @@ public sealed class ContactService(
 
         var contact = CreateContact(request);
         await contactRepository.AddAsync(contact, cancellationToken);
+        await contactActivityService.RecordAsync(new CreateContactActivityRequest(
+            contact.Id,
+            contact.OrganizationId,
+            ContactActivityType.ContactCreated,
+            Subject: "Contact created",
+            BodyPreview: null,
+            MetadataJson: null),
+            cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return await contactLookupService.MapAsync(contact, cancellationToken);
@@ -35,6 +48,8 @@ public sealed class ContactService(
     {
         var contact = await contactRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new ApplicationNotFoundException("Contact was not found.");
+        var previousStatus = contact.Status;
+        var previousDoNotContact = contact.DoNotContact;
 
         await EnsureOrganizationExistsAsync(request.OrganizationId, cancellationToken);
         await EnsureEmailIsUniqueAsync(request.Email, id, cancellationToken);
@@ -55,6 +70,35 @@ public sealed class ContactService(
         catch (DomainException exception)
         {
             throw new ApplicationValidationException(exception.Message);
+        }
+
+        await contactActivityService.RecordAsync(new CreateContactActivityRequest(
+            contact.Id,
+            contact.OrganizationId,
+            ContactActivityType.ContactUpdated,
+            Subject: "Contact updated",
+            BodyPreview: null,
+            MetadataJson: null),
+            cancellationToken);
+
+        if (previousStatus != contact.Status || previousDoNotContact != contact.DoNotContact)
+        {
+            var metadataJson = JsonSerializer.Serialize(new
+            {
+                previousStatus,
+                newStatus = contact.Status,
+                previousDoNotContact,
+                newDoNotContact = contact.DoNotContact
+            });
+
+            await contactActivityService.RecordAsync(new CreateContactActivityRequest(
+                contact.Id,
+                contact.OrganizationId,
+                ContactActivityType.StatusChanged,
+                Subject: "Contact status changed",
+                BodyPreview: null,
+                MetadataJson: metadataJson),
+                cancellationToken);
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

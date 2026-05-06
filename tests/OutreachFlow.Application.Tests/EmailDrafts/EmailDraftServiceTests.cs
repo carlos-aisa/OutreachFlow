@@ -1,5 +1,6 @@
 using FluentAssertions;
 using OutreachFlow.Application.Common;
+using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailSending;
@@ -7,6 +8,7 @@ using OutreachFlow.Application.Templates;
 using OutreachFlow.Application.Tests.Support;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
@@ -26,6 +28,7 @@ public sealed class EmailDraftServiceTests
             out var attachmentRepository,
             out var draftRepository,
             out _,
+            out var contactActivityRepository,
             out var unitOfWork);
         var eligibleContact = new Contact(
             "Alex Morgan",
@@ -87,6 +90,9 @@ public sealed class EmailDraftServiceTests
         generatedDraft.AttachmentAssetIds.Should().BeEquivalentTo([defaultAttachment.Id, optionalAttachment.Id]);
         draftRepository.Drafts.Should().ContainSingle();
         unitOfWork.SaveChangesCount.Should().Be(1);
+        contactActivityRepository.Activities.Should().ContainSingle(activity =>
+            activity.Type == ContactActivityType.EmailDraftCreated &&
+            activity.ContactId == eligibleContact.Id);
     }
 
     [Fact]
@@ -97,6 +103,7 @@ public sealed class EmailDraftServiceTests
             out var emailTemplateRepository,
             out var senderProfileRepository,
             out var attachmentRepository,
+            out _,
             out _,
             out _,
             out _);
@@ -138,6 +145,7 @@ public sealed class EmailDraftServiceTests
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
+            out _,
             out _,
             out _,
             out _,
@@ -196,6 +204,7 @@ public sealed class EmailDraftServiceTests
             out _,
             out _,
             out _,
+            out _,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
@@ -234,6 +243,7 @@ public sealed class EmailDraftServiceTests
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
+            out _,
             out _,
             out _,
             out _,
@@ -278,6 +288,7 @@ public sealed class EmailDraftServiceTests
             out _,
             out _,
             out var emailMessageRepository,
+            out var contactActivityRepository,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
@@ -307,6 +318,10 @@ public sealed class EmailDraftServiceTests
         sentDraft.FailureReason.Should().BeNull();
         emailMessageRepository.EmailMessages.Should().ContainSingle();
         emailMessageRepository.EmailMessages[0].Status.Should().Be(EmailMessageStatus.Sent);
+        contactActivityRepository.Activities.Should().Contain(activity =>
+            activity.Type == ContactActivityType.EmailSent &&
+            activity.ContactId == contact.Id &&
+            activity.Subject == "Subject");
 
         var updatedContact = await contactRepository.GetByIdAsync(contact.Id);
         updatedContact.Should().NotBeNull();
@@ -323,8 +338,9 @@ public sealed class EmailDraftServiceTests
             out _,
             out _,
             out var emailMessageRepository,
+            out var contactActivityRepository,
             out _,
-            _ => new EmailSendResult(
+            sendHandler: _ => new EmailSendResult(
                 Success: false,
                 Provider: "Fake",
                 ProviderMessageId: null,
@@ -356,6 +372,10 @@ public sealed class EmailDraftServiceTests
         failedDraft.FailureReason.Should().Be("Simulated failure from tests.");
         emailMessageRepository.EmailMessages.Should().ContainSingle();
         emailMessageRepository.EmailMessages[0].Status.Should().Be(EmailMessageStatus.Failed);
+        contactActivityRepository.Activities.Should().Contain(activity =>
+            activity.Type == ContactActivityType.EmailFailed &&
+            activity.ContactId == contact.Id &&
+            activity.Subject == "Subject");
     }
 
     [Fact]
@@ -365,6 +385,7 @@ public sealed class EmailDraftServiceTests
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
+            out _,
             out _,
             out _,
             out _,
@@ -404,6 +425,7 @@ public sealed class EmailDraftServiceTests
             out var contactRepository,
             out var emailTemplateRepository,
             out var senderProfileRepository,
+            out _,
             out _,
             out _,
             out _,
@@ -466,6 +488,7 @@ public sealed class EmailDraftServiceTests
             out _,
             out _,
             out _,
+            out _,
             out _);
         var contact = new Contact("Alex Morgan", "alex@example.com");
         await contactRepository.AddAsync(contact);
@@ -502,6 +525,7 @@ public sealed class EmailDraftServiceTests
         out InMemoryAttachmentAssetRepository attachmentRepository,
         out InMemoryEmailDraftRepository draftRepository,
         out InMemoryEmailMessageRepository emailMessageRepository,
+        out InMemoryContactActivityRepository contactActivityRepository,
         out InMemoryUnitOfWork unitOfWork,
         Func<SendEmailCommand, EmailSendResult>? sendHandler = null,
         TimeSpan? equivalentEmailWindow = null)
@@ -513,9 +537,11 @@ public sealed class EmailDraftServiceTests
         attachmentRepository = new InMemoryAttachmentAssetRepository();
         draftRepository = new InMemoryEmailDraftRepository();
         emailMessageRepository = new InMemoryEmailMessageRepository();
+        contactActivityRepository = new InMemoryContactActivityRepository();
         unitOfWork = new InMemoryUnitOfWork();
         var emailSender = new InMemoryEmailSender(sendHandler);
         var policy = new FixedEmailSendingPolicy(equivalentEmailWindow ?? TimeSpan.FromDays(7));
+        var contactActivityService = new ContactActivityService(contactRepository, contactActivityRepository);
 
         return new EmailDraftService(
             contactRepository,
@@ -527,6 +553,7 @@ public sealed class EmailDraftServiceTests
             emailMessageRepository,
             emailSender,
             policy,
+            contactActivityService,
             new TemplateRenderer(),
             unitOfWork);
     }

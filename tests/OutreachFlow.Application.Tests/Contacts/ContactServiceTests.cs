@@ -1,10 +1,12 @@
 using FluentAssertions;
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.Tags;
 using OutreachFlow.Application.Tests.Support;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.ContactActivities;
 
 namespace OutreachFlow.Application.Tests.Contacts;
 
@@ -39,6 +41,9 @@ public sealed class ContactServiceTests
         contact.DisplayName.Should().Be("Alex Morgan");
         contact.Email.Should().Be("alex@example.com");
         fixture.ContactRepository.Contacts.Should().ContainSingle();
+        fixture.ContactActivityRepository.Activities.Should().ContainSingle(activity =>
+            activity.Type == ContactActivityType.ContactCreated &&
+            activity.ContactId == contact.Id);
     }
 
     [Fact]
@@ -73,6 +78,12 @@ public sealed class ContactServiceTests
         updated.Role.Should().Be("Founder");
         updated.Source.Should().Be("Referral");
         updated.Status.Should().Be(ContactStatus.Contacted);
+        fixture.ContactActivityRepository.Activities.Should().Contain(activity =>
+            activity.Type == ContactActivityType.ContactUpdated &&
+            activity.ContactId == contact.Id);
+        fixture.ContactActivityRepository.Activities.Should().Contain(activity =>
+            activity.Type == ContactActivityType.StatusChanged &&
+            activity.ContactId == contact.Id);
     }
 
     [Fact]
@@ -181,6 +192,8 @@ public sealed class ContactServiceTests
             OrganizationRepository = new InMemoryOrganizationRepository();
             TagRepository = new InMemoryTagRepository();
             ContactRepository = new InMemoryContactRepository();
+            ContactActivityRepository = new InMemoryContactActivityRepository();
+            ContactActivityService = new ContactActivityService(ContactRepository, ContactActivityRepository);
             ContactLookupService = new InMemoryContactLookupService(
                 OrganizationRepository,
                 TagRepository);
@@ -191,6 +204,7 @@ public sealed class ContactServiceTests
                 ContactRepository,
                 OrganizationRepository,
                 TagRepository,
+                ContactActivityService,
                 ContactLookupService,
                 UnitOfWork);
         }
@@ -203,7 +217,11 @@ public sealed class ContactServiceTests
 
         public InMemoryContactRepository ContactRepository { get; }
 
+        public InMemoryContactActivityRepository ContactActivityRepository { get; }
+
         public InMemoryContactLookupService ContactLookupService { get; }
+
+        public ContactActivityService ContactActivityService { get; }
 
         public OrganizationService OrganizationService { get; }
 
