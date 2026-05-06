@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.16.0] - 2026-05-06
+
+### Added
+
+- Release installer packaging scripts:
+  - `scripts/release/Build-InstallerPackage.ps1`
+  - `scripts/release/Validate-InstallerPackage.ps1`
+  - `scripts/release/installer.config.json`
+- Release installer packaging documentation:
+  - `docs/release/INSTALLER_RELEASE.md`
+- OpenSpec archive for `p15-release-installer-packaging`.
+
+### Changed
+
+- `release-openspec-change` workflow now builds a versioned Windows installer package artifact:
+  - `OutreachFlow-v<version>-win-x64-installer.zip`
+- Release workflow now validates installer output existence, naming convention, and non-empty size before publishing.
+- Release workflow now uploads installer package both as a workflow artifact and as a GitHub release asset.
+- Release workflow packaging and release steps now run on `windows-latest` for deterministic Windows package generation.
+
 ## [0.13.0] - 2026-05-06
 
 ### Added

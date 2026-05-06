@@ -78,6 +78,7 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 - SMTP provider support (configuration-based)
 - Follow-up tasks with optional post-send automation
 - CSV contact imports with preview, duplicate detection, tag assignment, and import job tracking
+- Release installer packaging with versioned Windows installer assets in GitHub Releases
 
 ### Next
 
@@ -269,6 +270,7 @@ Releases are manual and controlled after an OpenSpec change is completed.
 4. Bump `VERSION` and add matching `CHANGELOG.md` section.
 5. Merge to `main` after CI passes.
 6. Run `release-openspec-change` workflow with `change_id` and `version`.
+7. Download installer asset `OutreachFlow-v<version>-win-x64-installer.zip` from the release page.
 
 Versioning follows Semantic Versioning (`vX.Y.Z`).
 
@@ -278,13 +280,14 @@ Versioning follows Semantic Versioning (`vX.Y.Z`).
 - OpenAPI contract: [docs/api/openapi.v1.yaml](docs/api/openapi.v1.yaml)
 - Engineering standards: [docs/standards](docs/standards)
 - Future integration boundaries: [docs/architecture/FUTURE_INTEGRATIONS.md](docs/architecture/FUTURE_INTEGRATIONS.md)
+- Installer packaging details: [docs/release/INSTALLER_RELEASE.md](docs/release/INSTALLER_RELEASE.md)
 - Change proposals and archived delivery history: [openspec](openspec)
 - Release history: [CHANGELOG.md](CHANGELOG.md)
 
 ## Roadmap
 
 - Phase 12: Future integration foundation (boundaries, safety rules, and disabled-by-default configuration placeholders)
-- Phase 13+: Email signatures, localization, installer packaging, contact/provider integrations, queueing, observability, PostgreSQL profile
+- Phase 16+: Contact/provider integrations, queueing, observability, PostgreSQL profile
 
 ## Contributing
 

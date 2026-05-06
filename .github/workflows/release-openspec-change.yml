@@ -17,13 +17,14 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Ensure workflow runs from main
         if: github.ref != 'refs/heads/main'
+        shell: pwsh
         run: |
-          echo "Releases must be created from main. Current ref: $GITHUB_REF" >&2
+          Write-Error "Releases must be created from main. Current ref: $env:GITHUB_REF"
           exit 1
 
       - name: Checkout
@@ -63,6 +64,31 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release --no-build
 
+      - name: Build installer package
+        id: package_installer
+        shell: pwsh
+        run: |
+          ./scripts/release/Build-InstallerPackage.ps1 `
+            -Version "${{ inputs.version }}"
+
+          $artifactPath = (Resolve-Path "artifacts/installer/OutreachFlow-v${{ inputs.version }}-win-x64-installer.zip").Path
+          "artifact_path=$artifactPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Validate installer package output
+        shell: pwsh
+        run: |
+          ./scripts/release/Validate-InstallerPackage.ps1 `
+            -Version "${{ inputs.version }}" `
+            -ArtifactPath "${{ steps.package_installer.outputs.artifact_path }}" `
+            -ExpectedArchitecture "x64"
+
+      - name: Upload installer package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-package-v${{ inputs.version }}
+          path: ${{ steps.package_installer.outputs.artifact_path }}
+          if-no-files-found: error
+
       - name: Extract release notes
         shell: pwsh
         run: >
@@ -71,41 +97,53 @@ jobs:
           -OutputPath release-notes.md
 
       - name: Create annotated tag
-        env:
-          VERSION: ${{ inputs.version }}
+        shell: pwsh
         run: |
-          tag="v${VERSION}"
+          $tag = "v${{ inputs.version }}"
 
-          if git rev-parse "$tag" >/dev/null 2>&1; then
-            tag_commit="$(git rev-list -n 1 "$tag")"
-            head_commit="$(git rev-parse HEAD)"
+          git rev-parse $tag *> $null
+          if ($LASTEXITCODE -eq 0)
+          {
+              $tagCommit = git rev-list -n 1 $tag
+              $headCommit = git rev-parse HEAD
 
-            if [ "$tag_commit" != "$head_commit" ]; then
-              echo "Tag '$tag' already exists but does not point to the current main commit." >&2
-              exit 1
-            fi
+              if ($tagCommit.Trim() -ne $headCommit.Trim())
+              {
+                  throw "Tag '$tag' already exists but does not point to the current main commit."
+              }
 
-            echo "Tag '$tag' already points to the current main commit."
-            exit 0
-          fi
+              Write-Host "Tag '$tag' already points to the current main commit."
+              exit 0
+          }
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$tag" -m "Release $tag"
-          git push origin "$tag"
+          git tag -a $tag -m "Release $tag"
+          git push origin $tag
 
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ inputs.version }}
+        shell: pwsh
         run: |
-          tag="v${VERSION}"
+          $tag = "v${{ inputs.version }}"
 
-          if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Release '$tag' already exists." >&2
-            exit 1
-          fi
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0)
+          {
+              throw "Release '$tag' already exists."
+          }
 
-          gh release create "$tag" \
-            --title "$tag" \
+          gh release create $tag `
+            --title $tag `
             --notes-file release-notes.md
+
+      - name: Upload installer package to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $tag = "v${{ inputs.version }}"
+          $artifactPath = "${{ steps.package_installer.outputs.artifact_path }}"
+
+          gh release upload $tag $artifactPath --clobber
