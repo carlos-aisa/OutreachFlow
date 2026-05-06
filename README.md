@@ -136,6 +136,18 @@ Phase 7 completed:
 - Contact `LastContactedAt` update on successful send
 - Send endpoint and UI action (`POST /api/v1/drafts/{id}/send`)
 
+Phase 8 completed:
+
+- `ContactActivity` domain model and persisted timeline events linked to contacts
+- Automatic activity recording for:
+  - contact create/update,
+  - status transitions,
+  - draft generation,
+  - email send success/failure
+- Contact activity endpoint (`GET /api/v1/contacts/{id}/activities`)
+- Contact detail page with activity timeline in Blazor
+- Domain, application, and integration tests for activity persistence and retrieval order
+
 ## Roadmap
 
 - Phase 1: Core contacts model (organizations, contacts, tags)
@@ -193,6 +205,7 @@ The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Current end
 - `/api/v1/organizations`
 - `/api/v1/contacts`
 - `/api/v1/contacts/{id}/tags/{tagId}`
+- `/api/v1/contacts/{id}/activities`
 - `/api/v1/tags`
 - `/api/v1/sender-profiles`
 - `/api/v1/sender-profiles/default`

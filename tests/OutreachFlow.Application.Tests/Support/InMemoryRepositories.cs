@@ -1,6 +1,7 @@
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Attachments;
 using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
@@ -9,6 +10,7 @@ using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tags;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
@@ -235,6 +237,31 @@ internal sealed class InMemoryContactLookupService(
             contact.CreatedAt,
             contact.UpdatedAt,
             tags);
+    }
+}
+
+internal sealed class InMemoryContactActivityRepository : IContactActivityRepository
+{
+    private readonly List<ContactActivity> _activities = [];
+
+    public IReadOnlyList<ContactActivity> Activities => _activities;
+
+    public Task AddAsync(ContactActivity activity, CancellationToken cancellationToken = default)
+    {
+        _activities.Add(activity);
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<ContactActivity>> ListByContactIdAsync(
+        Guid contactId,
+        CancellationToken cancellationToken = default)
+    {
+        var activities = _activities
+            .Where(activity => activity.ContactId == contactId)
+            .OrderByDescending(activity => activity.OccurredAt)
+            .ToArray();
+
+        return Task.FromResult<IReadOnlyList<ContactActivity>>(activities);
     }
 }
 

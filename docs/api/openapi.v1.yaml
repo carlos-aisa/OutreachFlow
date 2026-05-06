@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: OutreachFlow API
-  version: 0.3.0
+  version: 0.9.0
   description: API contract for OutreachFlow v1.
 servers:
   - url: http://localhost:5131
@@ -268,6 +268,25 @@ paths:
       responses:
         "204":
           description: Tag removed successfully
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/contacts/{id}/activities:
+    get:
+      operationId: listContactActivities
+      summary: Lists activity history for a contact
+      tags:
+        - Contacts
+      parameters:
+        - $ref: "#/components/parameters/ContactId"
+      responses:
+        "200":
+          description: Contact activity history returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContactActivity"
         "404":
           $ref: "#/components/responses/NotFoundError"
   /api/v1/tags:
@@ -992,6 +1011,19 @@ components:
         - NotInterested
         - DoNotContact
         - Archived
+    ContactActivityType:
+      type: string
+      enum:
+        - ContactCreated
+        - ContactUpdated
+        - EmailDraftCreated
+        - EmailSent
+        - EmailFailed
+        - ReplyReceived
+        - NoteAdded
+        - StatusChanged
+        - FollowUpCreated
+        - FollowUpCompleted
     EmailDraftStatus:
       type: string
       enum:
@@ -1018,6 +1050,41 @@ components:
           type: string
           nullable: true
           example: Workflow
+    ContactActivity:
+      type: object
+      required:
+        - id
+        - contactId
+        - type
+        - occurredAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        contactId:
+          type: string
+          format: uuid
+        organizationId:
+          type: string
+          format: uuid
+          nullable: true
+        type:
+          $ref: "#/components/schemas/ContactActivityType"
+        subject:
+          type: string
+          nullable: true
+          example: Contact created
+        bodyPreview:
+          type: string
+          nullable: true
+          example: Hello Alex Morgan, thank you for your time.
+        metadataJson:
+          type: string
+          nullable: true
+          example: "{\"provider\":\"Fake\"}"
+        occurredAt:
+          type: string
+          format: date-time
     Contact:
       type: object
       required:
