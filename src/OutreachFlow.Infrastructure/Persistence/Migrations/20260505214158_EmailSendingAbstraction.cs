@@ -8,6 +8,9 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
     /// <inheritdoc />
     public partial class EmailSendingAbstraction : Migration
     {
+        private static readonly string[] ContactIdSubjectStatusCreatedAtColumns =
+            ["ContactId", "Subject", "Status", "CreatedAt"];
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -73,7 +76,7 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_EmailMessages_ContactId_Subject_Status_CreatedAt",
                 table: "EmailMessages",
-                columns: new[] { "ContactId", "Subject", "Status", "CreatedAt" });
+                columns: ContactIdSubjectStatusCreatedAtColumns);
 
             migrationBuilder.CreateIndex(
                 name: "IX_EmailMessages_CreatedAt",

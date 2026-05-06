@@ -8,6 +8,9 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
     /// <inheritdoc />
     public partial class FollowUpTasks : Migration
     {
+        private static readonly string[] ContactIdDueAtIsCompletedColumns =
+            ["ContactId", "DueAt", "IsCompleted"];
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -51,7 +54,7 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_FollowUpTasks_ContactId_DueAt_IsCompleted",
                 table: "FollowUpTasks",
-                columns: new[] { "ContactId", "DueAt", "IsCompleted" });
+                columns: ContactIdDueAtIsCompletedColumns);
 
             migrationBuilder.CreateIndex(
                 name: "IX_FollowUpTasks_DueAt",

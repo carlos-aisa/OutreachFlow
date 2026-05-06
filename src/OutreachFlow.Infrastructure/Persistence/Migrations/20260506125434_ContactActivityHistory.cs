@@ -8,6 +8,8 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
     /// <inheritdoc />
     public partial class ContactActivityHistory : Migration
     {
+        private static readonly string[] ContactIdOccurredAtColumns = ["ContactId", "OccurredAt"];
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -49,7 +51,7 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ContactActivities_ContactId_OccurredAt",
                 table: "ContactActivities",
-                columns: new[] { "ContactId", "OccurredAt" });
+                columns: ContactIdOccurredAtColumns);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ContactActivities_OccurredAt",
