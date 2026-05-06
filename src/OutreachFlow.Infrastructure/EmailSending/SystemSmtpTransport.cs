@@ -8,7 +8,9 @@ public sealed class SystemSmtpTransport(SmtpClient smtpClient) : ISmtpTransport
     public async Task SendMailAsync(MailMessage message, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await smtpClient.SendMailAsync(message);
+#pragma warning disable CA2016 // SmtpClient.SendMailAsync does not accept CancellationToken.
+        await smtpClient.SendMailAsync(message).WaitAsync(cancellationToken);
+#pragma warning restore CA2016
     }
 
     public void Dispose()

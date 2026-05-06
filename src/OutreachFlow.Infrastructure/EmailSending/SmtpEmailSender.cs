@@ -10,6 +10,12 @@ public sealed class SmtpEmailSender(
     ISmtpTransportFactory smtpTransportFactory,
     ILogger<SmtpEmailSender> logger) : IEmailSender
 {
+    private static readonly Action<ILogger, string, Exception?> LogSmtpSendFailed =
+        LoggerMessage.Define<string>(
+            LogLevel.Error,
+            new EventId(1001, nameof(LogSmtpSendFailed)),
+            "SMTP send failed for recipient {Recipient}.");
+
     public async Task<EmailSendResult> SendAsync(
         SendEmailCommand command,
         CancellationToken cancellationToken = default)
@@ -32,10 +38,7 @@ public sealed class SmtpEmailSender(
         }
         catch (Exception exception)
         {
-            logger.LogError(
-                exception,
-                "SMTP send failed for recipient {Recipient}.",
-                command.To);
+            LogSmtpSendFailed(logger, command.To, exception);
 
             return new EmailSendResult(
                 Success: false,

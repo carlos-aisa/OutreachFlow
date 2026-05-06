@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Globalization;
 using Microsoft.AspNetCore.WebUtilities;
 using OutreachFlow.Application.FollowUps;
 using OutreachFlow.Web.Common;
@@ -35,7 +36,7 @@ public sealed class FollowUpTaskApiClient(HttpClient httpClient)
 
         if (filter.Limit is int limit && limit > 0)
         {
-            query["limit"] = limit.ToString();
+            query["limit"] = limit.ToString(CultureInfo.InvariantCulture);
         }
 
         var uri = query.Count == 0
