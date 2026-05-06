@@ -5,6 +5,7 @@ using OutreachFlow.Application.Attachments;
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.ContactActivities;
+using OutreachFlow.Application.ContactImports;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
@@ -13,6 +14,7 @@ using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tags;
 using OutreachFlow.Infrastructure.EmailSending;
+using OutreachFlow.Infrastructure.ContactImports;
 using OutreachFlow.Infrastructure.FollowUps;
 using OutreachFlow.Infrastructure.Persistence;
 using OutreachFlow.Infrastructure.Persistence.Queries;
@@ -114,6 +116,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IContactRepository, ContactRepository>();
+        services.AddScoped<IImportJobRepository, ImportJobRepository>();
         services.AddScoped<IContactActivityRepository, ContactActivityRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
@@ -125,6 +128,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAttachmentAssetRepository, AttachmentAssetRepository>();
         services.AddScoped<IAttachmentFileStorage, LocalAttachmentFileStorage>();
         services.AddScoped<IContactLookupService, ContactLookupService>();
+        services.AddSingleton<IContactImportCsvParser, StructuredCsvContactImportParser>();
         services.AddScoped<FakeEmailSender>();
         services.AddScoped<SmtpEmailSender>();
         services.AddSingleton<ISmtpTransportFactory, SystemSmtpTransportFactory>();

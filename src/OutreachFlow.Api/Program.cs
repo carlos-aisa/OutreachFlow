@@ -51,6 +51,7 @@ app.MapEmailTemplateEndpoints();
 app.MapAttachmentAssetEndpoints();
 app.MapEmailDraftEndpoints();
 app.MapFollowUpTaskEndpoints();
+app.MapContactImportEndpoints();
 
 app.Run();
 

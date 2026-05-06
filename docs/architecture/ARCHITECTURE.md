@@ -224,3 +224,29 @@ Phase 10 adds task planning after outreach interactions:
   - follow-up management page,
   - pending follow-ups on dashboard,
   - follow-up section in contact detail.
+
+## Contact Imports
+
+Phase 11 adds controlled CSV contact import with preview-first behavior:
+
+- `ContactImportService` orchestrates two-step imports:
+  - preview (validation + duplicate diagnostics),
+  - commit (create only valid non-duplicate contacts).
+- `StructuredCsvContactImportParser` centralizes CSV parsing behavior and header normalization.
+- `ImportJob` persists import traceability metadata:
+  - file name,
+  - status,
+  - total/valid/duplicate/invalid row counts,
+  - created count,
+  - timestamps.
+- Import duplicate detection uses normalized email against:
+  - existing contacts in the database,
+  - repeated emails within the same CSV file.
+- Import commit can assign selected existing tags to each created contact.
+- API exposes import endpoints under `/api/v1/contact-imports`.
+- Web adds `/imports` page with:
+  - CSV upload,
+  - row-level preview diagnostics,
+  - tag selection,
+  - commit summary,
+  - recent import jobs listing.

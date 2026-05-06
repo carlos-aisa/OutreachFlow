@@ -6,6 +6,7 @@ using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
 using OutreachFlow.Domain.EmailTemplates;
 using OutreachFlow.Domain.FollowUps;
+using OutreachFlow.Domain.ContactImports;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
 using OutreachFlow.Domain.Tags;
@@ -41,6 +42,8 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
     public DbSet<FollowUpTask> FollowUpTasks => Set<FollowUpTask>();
 
+    public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureOrganizations(modelBuilder);
@@ -56,6 +59,7 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
         ConfigureEmailDraftAttachments(modelBuilder);
         ConfigureEmailMessages(modelBuilder);
         ConfigureFollowUpTasks(modelBuilder);
+        ConfigureImportJobs(modelBuilder);
     }
 
     private static void ConfigureOrganizations(ModelBuilder modelBuilder)
@@ -478,6 +482,25 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
                 .WithMany()
                 .HasForeignKey(task => task.OrganizationId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+    }
+
+    private static void ConfigureImportJobs(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ImportJob>(builder =>
+        {
+            builder.ToTable("ImportJobs");
+            builder.HasKey(importJob => importJob.Id);
+
+            builder.Property(importJob => importJob.FileName)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            builder.Property(importJob => importJob.FailureReason)
+                .HasMaxLength(4000);
+
+            builder.HasIndex(importJob => importJob.CreatedAt);
+            builder.HasIndex(importJob => importJob.Status);
         });
     }
 }
