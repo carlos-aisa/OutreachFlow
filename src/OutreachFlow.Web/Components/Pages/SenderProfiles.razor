@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
 @using OutreachFlow.Application.SenderProfiles
+@using OutreachFlow.Domain.SenderProfiles
 @using OutreachFlow.Web.SenderProfiles
 @inject SenderProfileApiClient SenderProfileClient
 
@@ -61,6 +62,16 @@
                         <InputCheckbox id="sender-active" class="form-check-input" @bind-Value="form.IsActive" />
                         <label class="form-check-label" for="sender-active">Active</label>
                     </div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="sender-signature-format">Signature format</label>
+                    <InputSelect id="sender-signature-format" class="form-select" @bind-Value="form.SignatureFormat">
+                        <option value="">No signature format</option>
+                        @foreach (var signatureFormat in SignatureFormats)
+                        {
+                            <option value="@signatureFormat">@signatureFormat</option>
+                        }
+                    </InputSelect>
                 </div>
                 <div class="col-12">
                     <label class="form-label" for="sender-signature">Signature</label>
@@ -123,6 +134,8 @@
 </section>
 
 @code {
+    private static readonly SenderSignatureFormat[] SignatureFormats = Enum.GetValues<SenderSignatureFormat>();
+
     private IReadOnlyList<SenderProfileDto> senderProfiles = [];
     private SenderProfileFormModel form = new();
     private Guid? editingId;
@@ -175,7 +188,8 @@
                     form.Website,
                     form.Signature,
                     form.IsDefault,
-                    form.IsActive));
+                    form.IsActive,
+                    form.SignatureFormat));
             }
             else
             {
@@ -186,7 +200,8 @@
                     form.OrganizationName,
                     form.Website,
                     form.Signature,
-                    form.IsDefault));
+                    form.IsDefault,
+                    form.SignatureFormat));
             }
 
             ResetForm();
@@ -216,6 +231,7 @@
             Phone = senderProfile.Phone,
             OrganizationName = senderProfile.OrganizationName,
             Website = senderProfile.Website,
+            SignatureFormat = senderProfile.SignatureFormat,
             Signature = senderProfile.Signature,
             IsDefault = senderProfile.IsDefault,
             IsActive = senderProfile.IsActive
@@ -259,6 +275,8 @@
         public string? OrganizationName { get; set; }
 
         public string? Website { get; set; }
+
+        public SenderSignatureFormat? SignatureFormat { get; set; }
 
         public string? Signature { get; set; }
 

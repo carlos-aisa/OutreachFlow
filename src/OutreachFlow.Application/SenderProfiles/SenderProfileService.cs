@@ -46,6 +46,7 @@ public sealed class SenderProfileService(
                 request.OrganizationName,
                 request.Website,
                 request.Signature,
+                request.SignatureFormat,
                 now);
 
             if (request.IsActive)
@@ -131,6 +132,7 @@ public sealed class SenderProfileService(
                 request.OrganizationName,
                 request.Website,
                 request.Signature,
+                request.SignatureFormat,
                 request.IsDefault);
         }
         catch (DomainException exception)
@@ -149,6 +151,7 @@ public sealed class SenderProfileService(
             senderProfile.OrganizationName,
             senderProfile.Website,
             senderProfile.Signature,
+            senderProfile.SignatureFormat,
             senderProfile.IsDefault,
             senderProfile.IsActive,
             senderProfile.CreatedAt,

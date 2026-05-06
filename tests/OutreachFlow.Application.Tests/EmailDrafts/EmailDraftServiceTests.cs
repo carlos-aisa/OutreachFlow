@@ -20,6 +20,82 @@ namespace OutreachFlow.Application.Tests.EmailDrafts;
 public sealed class EmailDraftServiceTests
 {
     [Fact]
+    public async Task ShouldAppendSenderSignatureWhenGeneratingDraft()
+    {
+        var service = CreateEmailDraftService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _,
+            out _,
+            out _,
+            out _,
+            out _,
+            out _);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile(
+            "Primary Sender",
+            "sender@example.com",
+            signature: "<p>Best regards</p>",
+            signatureFormat: SenderSignatureFormat.Html);
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Hello {{contact.displayName}}.");
+        await emailTemplateRepository.AddAsync(template);
+
+        var result = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+
+        result.Drafts.Should().ContainSingle();
+        result.Drafts[0].Body.Should().Be("Hello Alex Morgan.\n\n<p>Best regards</p>");
+    }
+
+    [Fact]
+    public async Task ShouldKeepRenderedBodyUnchangedWhenSenderHasNoSignature()
+    {
+        var service = CreateEmailDraftService(
+            out var contactRepository,
+            out var emailTemplateRepository,
+            out var senderProfileRepository,
+            out _,
+            out _,
+            out _,
+            out _,
+            out _,
+            out _);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Hello {{contact.displayName}}.");
+        await emailTemplateRepository.AddAsync(template);
+
+        var result = await service.GenerateAsync(new GenerateEmailDraftsRequest(
+            Search: null,
+            TagId: null,
+            Status: null,
+            DoNotContact: null,
+            OrganizationId: null,
+            LastContactedFrom: null,
+            LastContactedTo: null,
+            TemplateId: template.Id,
+            SenderProfileId: senderProfile.Id,
+            AttachmentAssetIds: []));
+
+        result.Drafts.Should().ContainSingle();
+        result.Drafts[0].Body.Should().Be("Hello Alex Morgan.");
+    }
+
+    [Fact]
     public async Task ShouldGenerateDraftsForEligibleContactsAndStoreDiagnostics()
     {
         var service = CreateEmailDraftService(
@@ -44,7 +120,8 @@ public sealed class EmailDraftServiceTests
         var senderProfile = new SenderProfile(
             "Primary Sender",
             "sender@example.com",
-            signature: "Best regards");
+            signature: "<p>Best regards</p>",
+            signatureFormat: SenderSignatureFormat.Html);
         await senderProfileRepository.AddAsync(senderProfile);
         var emailTemplate = new EmailTemplate(
             "Intro",
@@ -159,7 +236,8 @@ public sealed class EmailDraftServiceTests
         var senderProfile = new SenderProfile(
             "Primary Sender",
             "sender@example.com",
-            signature: "Best regards");
+            signature: "<p>Best regards</p>",
+            signatureFormat: SenderSignatureFormat.Html);
         await senderProfileRepository.AddAsync(senderProfile);
         var template = new EmailTemplate(
             "Intro",

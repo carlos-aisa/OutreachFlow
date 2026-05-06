@@ -6,6 +6,7 @@ using FluentAssertions;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Templates;
+using OutreachFlow.Domain.SenderProfiles;
 
 namespace OutreachFlow.IntegrationTests.Api;
 
@@ -57,9 +58,10 @@ public sealed class SenderProfilesAndTemplatesEndpointTests
                 null,
                 "Northwind Studio",
                 null,
-                "Best regards",
+                "<p>Best regards</p>",
                 true,
-                true));
+                true,
+                SenderSignatureFormat.Html));
         updatedProfile.Name.Should().Be("Primary updated");
         updatedProfile.IsDefault.Should().BeTrue();
 
@@ -128,6 +130,55 @@ public sealed class SenderProfilesAndTemplatesEndpointTests
         variables.Should().Contain(variable => variable.Name == "sender.signature");
     }
 
+    [Fact]
+    public async Task ShouldRejectSignatureContentWithoutFormat()
+    {
+        using var factory = new OutreachFlowApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/v1/sender-profiles",
+            new CreateSenderProfileRequest(
+                "Primary sender",
+                "sender@example.com",
+                null,
+                null,
+                null,
+                "<p>Best regards</p>",
+                true));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await ReadAsync<ApiErrorResponse>(response);
+        error.ErrorCode.Should().Be("VALIDATION_ERROR");
+        error.Message.Should().Be("Signature format is required when signature content is provided.");
+    }
+
+    [Fact]
+    public async Task ShouldRejectUnsupportedSignatureFormat()
+    {
+        using var factory = new OutreachFlowApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        using var response = await client.PostAsJsonAsync(
+            "/api/v1/sender-profiles",
+            new
+            {
+                name = "Primary sender",
+                email = "sender@example.com",
+                isDefault = true,
+                signature = "<p>Best regards</p>",
+                signatureFormat = 999
+            },
+            JsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await ReadAsync<ApiErrorResponse>(response);
+        error.ErrorCode.Should().Be("VALIDATION_ERROR");
+        error.Message.Should().Be("Signature format is not supported.");
+    }
+
     private static CreateSenderProfileRequest CreateSenderProfileRequest(
         string name,
         string email,
@@ -139,8 +190,9 @@ public sealed class SenderProfilesAndTemplatesEndpointTests
             null,
             "Northwind Studio",
             "https://example.com",
-            "Best regards",
-            isDefault);
+            "<p>Best regards</p>",
+            isDefault,
+            SenderSignatureFormat.Html);
     }
 
     private static async Task<T> GetAsync<T>(HttpClient client, string uri)
@@ -176,4 +228,6 @@ public sealed class SenderProfilesAndTemplatesEndpointTests
         options.Converters.Add(new JsonStringEnumConverter());
         return options;
     }
+
+    private sealed record ApiErrorResponse(string ErrorCode, string Message);
 }

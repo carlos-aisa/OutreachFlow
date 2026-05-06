@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.14.0] - 2026-05-06
+
+### Added
+
+- Sender signature format support in sender profiles (`Html`, `Rtf`) with domain validation for format/content consistency.
+- Draft generation composition now appends sender signature content when present.
+- Sender profile UI fields for signature format and signature content.
+- API integration tests for sender signature validation (missing format and unsupported format scenarios).
+- Persistence coverage for HTML and RTF signature save/load behavior.
+- OpenSpec `p13-email-signatures` implementation task completion.
+
+### Changed
+
+- Sender profile API contracts now include `signatureFormat` and expanded signature metadata.
+- OpenAPI v1 schemas now document sender signature format/content and related validation expectations.
+- README feature scope updated with sender signature capability.
+
 ## [0.13.0] - 2026-05-06
 
 ### Added

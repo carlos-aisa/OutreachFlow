@@ -1,3 +1,5 @@
+using OutreachFlow.Domain.SenderProfiles;
+
 namespace OutreachFlow.Application.SenderProfiles;
 
 public sealed record SenderProfileDto(
@@ -8,6 +10,7 @@ public sealed record SenderProfileDto(
     string? OrganizationName,
     string? Website,
     string? Signature,
+    SenderSignatureFormat? SignatureFormat,
     bool IsDefault,
     bool IsActive,
     DateTimeOffset CreatedAt,
@@ -20,7 +23,8 @@ public sealed record CreateSenderProfileRequest(
     string? OrganizationName,
     string? Website,
     string? Signature,
-    bool IsDefault);
+    bool IsDefault,
+    SenderSignatureFormat? SignatureFormat = null);
 
 public sealed record UpdateSenderProfileRequest(
     string Name,
@@ -30,4 +34,5 @@ public sealed record UpdateSenderProfileRequest(
     string? Website,
     string? Signature,
     bool IsDefault,
-    bool IsActive);
+    bool IsActive,
+    SenderSignatureFormat? SignatureFormat = null);
