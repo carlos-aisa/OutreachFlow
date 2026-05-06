@@ -5,6 +5,7 @@
 [![Latest Release](https://img.shields.io/github/v/release/carlos-aisa/OutreachFlow?sort=semver)](https://github.com/carlos-aisa/OutreachFlow/releases)
 [![.NET](https://img.shields.io/badge/.NET-8-512BD4)](https://dotnet.microsoft.com/)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-v1-6BA539)](docs/api/openapi.v1.yaml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 OutreachFlow is a lightweight CRM and controlled email outreach manager for small teams and independent professionals. It helps organize contacts, classify audiences with flexible tags, generate personalized drafts from reusable templates, attach reusable assets, send through configurable providers, and keep a complete communication history.
 
@@ -22,7 +23,9 @@ Current stable line: `v0.11.0` ([CHANGELOG](CHANGELOG.md), [Releases](https://gi
 - [API and Contracts](#api-and-contracts)
 - [Local Setup](#local-setup)
 - [Quality and CI](#quality-and-ci)
+- [Testing Matrix](#testing-matrix)
 - [Release Strategy](#release-strategy)
+- [Documentation Map](#documentation-map)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [Security](#security)
@@ -219,6 +222,31 @@ dotnet test
 
 Coverage is report-only (no threshold gate yet).
 
+### Engineering Quality Gates
+
+| Area | Mechanism | Signal |
+| --- | --- | --- |
+| Build and tests | `.github/workflows/ci.yml` | Required quality baseline for PRs |
+| Coverage visibility | ReportGenerator summary + sticky PR comment + README badge | Continuous visibility without hard gate |
+| Release control | `.github/workflows/release-openspec-change.yml` | Manual, auditable SemVer releases from archived OpenSpec changes |
+| Branch governance | `change/<change-id-or-short-description>` validation in CI | One change per branch and review-ready traceability |
+
+## Testing Matrix
+
+Run all automated tests:
+
+```bash
+dotnet test
+```
+
+Run by suite:
+
+```bash
+dotnet test tests/OutreachFlow.Domain.Tests
+dotnet test tests/OutreachFlow.Application.Tests
+dotnet test tests/OutreachFlow.IntegrationTests
+```
+
 ## Release Strategy
 
 Releases are manual and controlled after an OpenSpec change is completed.
@@ -232,6 +260,14 @@ Releases are manual and controlled after an OpenSpec change is completed.
 
 Versioning follows Semantic Versioning (`vX.Y.Z`).
 
+## Documentation Map
+
+- Architecture baseline: [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)
+- OpenAPI contract: [docs/api/openapi.v1.yaml](docs/api/openapi.v1.yaml)
+- Engineering standards: [docs/standards](docs/standards)
+- Change proposals and archived delivery history: [openspec](openspec)
+- Release history: [CHANGELOG.md](CHANGELOG.md)
+
 ## Roadmap
 
 - Phase 11: CSV imports with duplicate review and tag assignment
@@ -244,3 +280,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, PR expectations, and q
 ## Security
 
 See [SECURITY.md](SECURITY.md) for responsible disclosure and secret-handling expectations.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
