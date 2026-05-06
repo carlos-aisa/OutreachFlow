@@ -1190,6 +1190,7 @@ components:
         message:
           type: string
           example: The request could not be processed.
+          description: User-facing message localized from request culture hints (`culture` query, localization cookie, or `Accept-Language`).
     HealthResponse:
       type: object
       required:
@@ -1232,6 +1233,11 @@ components:
         - Email
         - Call
         - Meeting
+    SenderSignatureFormat:
+      type: string
+      enum:
+        - Html
+        - Rtf
     ImportJobStatus:
       type: string
       enum:
@@ -1800,7 +1806,13 @@ components:
         signature:
           type: string
           nullable: true
-          example: Best regards
+          example: <p>Best regards,</p><p>Carlos</p>
+          description: Signature content serialized in the selected signature format.
+        signatureFormat:
+          allOf:
+            - $ref: "#/components/schemas/SenderSignatureFormat"
+          nullable: true
+          description: Required when signature content is provided.
         isDefault:
           type: boolean
           example: true
@@ -1839,6 +1851,13 @@ components:
         signature:
           type: string
           nullable: true
+          example: <p>Best regards,</p><p>Carlos</p>
+          description: Signature content serialized in the selected signature format.
+        signatureFormat:
+          allOf:
+            - $ref: "#/components/schemas/SenderSignatureFormat"
+          nullable: true
+          description: Required when signature content is provided.
         isDefault:
           type: boolean
           example: true

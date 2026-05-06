@@ -72,6 +72,7 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 
 - Organizations, contacts, tags, and status management
 - Sender profiles and email templates with variable catalog
+- Sender profile signatures (HTML/RTF) with validation and draft-body append behavior
 - Attachment assets and template default attachments
 - Draft generation, review, approval, cancellation, and controlled send
 - Activity timeline (contact and email events)
@@ -79,6 +80,7 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 - Follow-up tasks with optional post-send automation
 - CSV contact imports with preview, duplicate detection, tag assignment, and import job tracking
 - Release installer packaging with versioned Windows installer assets in GitHub Releases
+- Spanish localization for navigation and core contact/template management workflows
 
 ### Next
 
@@ -281,6 +283,7 @@ Versioning follows Semantic Versioning (`vX.Y.Z`).
 - Engineering standards: [docs/standards](docs/standards)
 - Future integration boundaries: [docs/architecture/FUTURE_INTEGRATIONS.md](docs/architecture/FUTURE_INTEGRATIONS.md)
 - Installer packaging details: [docs/release/INSTALLER_RELEASE.md](docs/release/INSTALLER_RELEASE.md)
+- Localization setup and translation keys: [docs/localization/LOCALIZATION.md](docs/localization/LOCALIZATION.md)
 - Change proposals and archived delivery history: [openspec](openspec)
 - Release history: [CHANGELOG.md](CHANGELOG.md)
 

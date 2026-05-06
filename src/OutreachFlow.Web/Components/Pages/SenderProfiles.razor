@@ -1,16 +1,20 @@
 @page "/sender-profiles"
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.SenderProfiles
+@using OutreachFlow.Domain.SenderProfiles
+@using OutreachFlow.Web
 @using OutreachFlow.Web.SenderProfiles
 @inject SenderProfileApiClient SenderProfileClient
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Sender Profiles</PageTitle>
+<PageTitle>@Localizer["SenderProfiles.PageTitle"]</PageTitle>
 
-<h1>Sender Profiles</h1>
+<h1>@Localizer["SenderProfiles.PageTitle"]</h1>
 
 <p class="text-muted">
-    Configure reusable sender identities without hardcoded business details.
+    @Localizer["SenderProfiles.Description"]
 </p>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -20,10 +24,10 @@
 
 <section class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">@(editingId is null ? "Create sender profile" : "Edit sender profile")</h2>
+        <h2 class="h5 mb-0">@(editingId is null ? Localizer["SenderProfiles.Form.CreateTitle"] : Localizer["SenderProfiles.Form.EditTitle"])</h2>
         @if (editingId is not null)
         {
-            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="ResetForm">Cancel edit</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="ResetForm">@Localizer["Common.CancelEdit"]</button>
         }
     </div>
     <div class="card-body">
@@ -33,41 +37,51 @@
 
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label class="form-label" for="sender-name">Name</label>
+                    <label class="form-label" for="sender-name">@Localizer["Common.Name"]</label>
                     <InputText id="sender-name" class="form-control" @bind-Value="form.Name" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="sender-email">Email</label>
+                    <label class="form-label" for="sender-email">@Localizer["Common.Email"]</label>
                     <InputText id="sender-email" class="form-control" @bind-Value="form.Email" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="sender-phone">Phone</label>
+                    <label class="form-label" for="sender-phone">@Localizer["Common.Phone"]</label>
                     <InputText id="sender-phone" class="form-control" @bind-Value="form.Phone" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="sender-organization">Organization name</label>
+                    <label class="form-label" for="sender-organization">@Localizer["Common.OrganizationName"]</label>
                     <InputText id="sender-organization" class="form-control" @bind-Value="form.OrganizationName" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="sender-website">Website</label>
+                    <label class="form-label" for="sender-website">@Localizer["Common.Website"]</label>
                     <InputText id="sender-website" class="form-control" @bind-Value="form.Website" />
                 </div>
                 <div class="col-md-4 d-flex align-items-end gap-4">
                     <div class="form-check">
                         <InputCheckbox id="sender-default" class="form-check-input" @bind-Value="form.IsDefault" />
-                        <label class="form-check-label" for="sender-default">Default</label>
+                        <label class="form-check-label" for="sender-default">@Localizer["Common.Default"]</label>
                     </div>
                     <div class="form-check">
                         <InputCheckbox id="sender-active" class="form-check-input" @bind-Value="form.IsActive" />
-                        <label class="form-check-label" for="sender-active">Active</label>
+                        <label class="form-check-label" for="sender-active">@Localizer["Common.Active"]</label>
                     </div>
                 </div>
                 <div class="col-12">
-                    <label class="form-label" for="sender-signature">Signature</label>
+                    <label class="form-label" for="sender-signature-format">@Localizer["Common.SignatureFormat"]</label>
+                    <InputSelect id="sender-signature-format" class="form-select" @bind-Value="form.SignatureFormat">
+                        <option value="">@Localizer["Common.SignatureFormatPlaceholder"]</option>
+                        @foreach (var signatureFormat in SignatureFormats)
+                        {
+                            <option value="@signatureFormat">@signatureFormat</option>
+                        }
+                    </InputSelect>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="sender-signature">@Localizer["Common.Signature"]</label>
                     <InputTextArea id="sender-signature" class="form-control" @bind-Value="form.Signature" />
                 </div>
                 <div class="col-12">
-                    <button type="submit" class="btn btn-success" disabled="@isSaving">Save sender profile</button>
+                    <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["SenderProfiles.Form.SaveAction"]</button>
                 </div>
             </div>
         </EditForm>
@@ -76,29 +90,29 @@
 
 <section class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">Sender profile list</h2>
-        <span class="badge text-bg-secondary">@senderProfiles.Count profiles</span>
+        <h2 class="h5 mb-0">@Localizer["SenderProfiles.List.Title"]</h2>
+        <span class="badge text-bg-secondary">@Localizer["SenderProfiles.List.Count", senderProfiles.Count]</span>
     </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover mb-0">
             <thead>
                 <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Organization</th>
-                    <th scope="col">Default</th>
-                    <th scope="col">Active</th>
-                    <th scope="col">Actions</th>
+                    <th scope="col">@Localizer["Common.Name"]</th>
+                    <th scope="col">@Localizer["Common.Email"]</th>
+                    <th scope="col">@Localizer["Common.Organization"]</th>
+                    <th scope="col">@Localizer["Common.Default"]</th>
+                    <th scope="col">@Localizer["Common.Active"]</th>
+                    <th scope="col">@Localizer["Common.Actions"]</th>
                 </tr>
             </thead>
             <tbody>
                 @if (isLoading)
                 {
-                    <tr><td colspan="6">Loading sender profiles...</td></tr>
+                    <tr><td colspan="6">@Localizer["SenderProfiles.List.Loading"]</td></tr>
                 }
                 else if (senderProfiles.Count == 0)
                 {
-                    <tr><td colspan="6">No sender profiles have been created yet.</td></tr>
+                    <tr><td colspan="6">@Localizer["SenderProfiles.List.Empty"]</td></tr>
                 }
                 else
                 {
@@ -108,11 +122,11 @@
                             <td>@senderProfile.Name</td>
                             <td>@senderProfile.Email</td>
                             <td>@(senderProfile.OrganizationName ?? "-")</td>
-                            <td>@(senderProfile.IsDefault ? "Yes" : "No")</td>
-                            <td>@(senderProfile.IsActive ? "Yes" : "No")</td>
+                            <td>@(senderProfile.IsDefault ? Localizer["Common.Yes"] : Localizer["Common.No"])</td>
+                            <td>@(senderProfile.IsActive ? Localizer["Common.Yes"] : Localizer["Common.No"])</td>
                             <td>
-                                <button type="button" class="btn btn-sm btn-outline-primary me-2" @onclick="() => Edit(senderProfile)">Edit</button>
-                                <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => DeactivateAsync(senderProfile.Id)" disabled="@(!senderProfile.IsActive)">Deactivate</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary me-2" @onclick="() => Edit(senderProfile)">@Localizer["Common.Edit"]</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => DeactivateAsync(senderProfile.Id)" disabled="@(!senderProfile.IsActive)">@Localizer["Common.Deactivate"]</button>
                             </td>
                         </tr>
                     }
@@ -123,6 +137,8 @@
 </section>
 
 @code {
+    private static readonly SenderSignatureFormat[] SignatureFormats = Enum.GetValues<SenderSignatureFormat>();
+
     private IReadOnlyList<SenderProfileDto> senderProfiles = [];
     private SenderProfileFormModel form = new();
     private Guid? editingId;
@@ -150,7 +166,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -175,7 +191,8 @@
                     form.Website,
                     form.Signature,
                     form.IsDefault,
-                    form.IsActive));
+                    form.IsActive,
+                    form.SignatureFormat));
             }
             else
             {
@@ -186,7 +203,8 @@
                     form.OrganizationName,
                     form.Website,
                     form.Signature,
-                    form.IsDefault));
+                    form.IsDefault,
+                    form.SignatureFormat));
             }
 
             ResetForm();
@@ -198,7 +216,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -216,6 +234,7 @@
             Phone = senderProfile.Phone,
             OrganizationName = senderProfile.OrganizationName,
             Website = senderProfile.Website,
+            SignatureFormat = senderProfile.SignatureFormat,
             Signature = senderProfile.Signature,
             IsDefault = senderProfile.IsDefault,
             IsActive = senderProfile.IsActive
@@ -235,7 +254,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
     }
 
@@ -259,6 +278,8 @@
         public string? OrganizationName { get; set; }
 
         public string? Website { get; set; }
+
+        public SenderSignatureFormat? SignatureFormat { get; set; }
 
         public string? Signature { get; set; }
 

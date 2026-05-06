@@ -24,6 +24,47 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 - Release workflow now uploads installer package both as a workflow artifact and as a GitHub release asset.
 - Release workflow packaging and release steps now run on `windows-latest` for deterministic Windows package generation.
 
+## [0.15.0] - 2026-05-06
+
+### Added
+
+- Spanish localization foundation for `OutreachFlow.Web` and `OutreachFlow.Api`:
+  - supported cultures `en-US` and `es-ES`,
+  - deterministic culture resolution (query string, cookie, `Accept-Language`, default fallback).
+- Localized Web navigation and core workflow pages:
+  - Organizations,
+  - Contacts,
+  - Tags,
+  - Sender Profiles,
+  - Templates.
+- Sidebar language selector with persisted culture cookie via `/culture/set` endpoint.
+- Resource-backed API error localization for known user-facing validation and not-found/conflict messages.
+- Integration tests for API culture negotiation and Spanish localized responses.
+- UI/component tests for Spanish rendering in navigation and contacts workflow.
+- Localization documentation: `docs/localization/LOCALIZATION.md`.
+
+### Changed
+
+- OpenAPI `ErrorResponse.message` now documents localized message behavior based on request culture hints.
+- README updated with localization capability and documentation links.
+
+## [0.14.0] - 2026-05-06
+
+### Added
+
+- Sender signature format support in sender profiles (`Html`, `Rtf`) with domain validation for format/content consistency.
+- Draft generation composition now appends sender signature content when present.
+- Sender profile UI fields for signature format and signature content.
+- API integration tests for sender signature validation (missing format and unsupported format scenarios).
+- Persistence coverage for HTML and RTF signature save/load behavior.
+- OpenSpec `p13-email-signatures` implementation task completion.
+
+### Changed
+
+- Sender profile API contracts now include `signatureFormat` and expanded signature metadata.
+- OpenAPI v1 schemas now document sender signature format/content and related validation expectations.
+- README feature scope updated with sender signature capability.
+
 ## [0.13.0] - 2026-05-06
 
 ### Added

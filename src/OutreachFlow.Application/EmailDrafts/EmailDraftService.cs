@@ -135,6 +135,7 @@ public sealed class EmailDraftService(
                 emailTemplate,
                 new TemplateContext(contact, organization, senderProfile),
                 cancellationToken);
+            var composedBody = AppendSignatureIfNeeded(renderedEmail.Body, senderProfile.Signature);
 
             var draft = EmailDraft.CreateGenerated(
                 contact.Id,
@@ -142,7 +143,7 @@ public sealed class EmailDraftService(
                 emailTemplate.Id,
                 senderProfile.Id,
                 renderedEmail.Subject,
-                renderedEmail.Body,
+                composedBody,
                 renderedEmail.HasErrors,
                 SerializeVariables(renderedEmail.MissingVariables),
                 SerializeVariables(renderedEmail.UnknownVariables),
@@ -563,6 +564,24 @@ public sealed class EmailDraftService(
             providerMessageId,
             failureReason
         }, JsonOptions);
+    }
+
+    private static string AppendSignatureIfNeeded(string body, string? signature)
+    {
+        if (string.IsNullOrWhiteSpace(signature))
+        {
+            return body;
+        }
+
+        var trimmedBody = body.TrimEnd();
+        var trimmedSignature = signature.Trim();
+
+        if (trimmedBody.EndsWith(trimmedSignature, StringComparison.Ordinal))
+        {
+            return trimmedBody;
+        }
+
+        return $"{trimmedBody}\n\n{trimmedSignature}";
     }
 
     private static EmailDraftDto Map(EmailDraft draft, Contact contact)

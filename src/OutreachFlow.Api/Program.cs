@@ -1,7 +1,10 @@
 using System.Text.Json.Serialization;
+using System.Globalization;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
 using OutreachFlow.Api.Endpoints;
+using OutreachFlow.Api.Errors;
 using OutreachFlow.Application.DependencyInjection;
 using OutreachFlow.Infrastructure.DependencyInjection;
 using OutreachFlow.Infrastructure.Persistence;
@@ -10,12 +13,35 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IApiErrorLocalizer, ApiErrorLocalizer>();
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+        new CultureInfo("en-US"),
+        new CultureInfo("es-ES")
+    };
+
+    options.DefaultRequestCulture = new RequestCulture("en-US");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.RequestCultureProviders =
+    [
+        new QueryStringRequestCultureProvider(),
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
+    ];
+});
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+ApiEndpoint.ConfigureHttpContextAccessor(app.Services.GetRequiredService<IHttpContextAccessor>());
+app.UseRequestLocalization();
 
 using (var scope = app.Services.CreateScope())
 {
