@@ -1,3 +1,5 @@
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 using OutreachFlow.Web.Components;
 using OutreachFlow.Web.Contacts;
 using OutreachFlow.Web.EmailDrafts;
@@ -14,6 +16,25 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+        new CultureInfo("en-US"),
+        new CultureInfo("es-ES")
+    };
+
+    options.DefaultRequestCulture = new RequestCulture("en-US");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.RequestCultureProviders =
+    [
+        new QueryStringRequestCultureProvider(),
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
+    ];
+});
 
 var apiBaseUrl = builder.Configuration["OutreachFlowApi:BaseUrl"] ??
     throw new InvalidOperationException("OutreachFlow API base URL is not configured.");
@@ -48,9 +69,29 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRequestLocalization();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+app.MapGet("/culture/set", (string culture, string? redirectUri, HttpContext context) =>
+{
+    var safeRedirect = string.IsNullOrWhiteSpace(redirectUri) ? "/" : redirectUri;
+    if (!Uri.IsWellFormedUriString(safeRedirect, UriKind.Relative))
+    {
+        safeRedirect = "/";
+    }
+
+    context.Response.Cookies.Append(
+        CookieRequestCultureProvider.DefaultCookieName,
+        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+        new CookieOptions
+        {
+            Expires = DateTimeOffset.UtcNow.AddYears(1),
+            IsEssential = true
+        });
+
+    return Results.LocalRedirect(safeRedirect);
+});
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

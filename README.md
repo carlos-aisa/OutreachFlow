@@ -79,6 +79,7 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 - SMTP provider support (configuration-based)
 - Follow-up tasks with optional post-send automation
 - CSV contact imports with preview, duplicate detection, tag assignment, and import job tracking
+- Spanish localization for navigation and core contact/template management workflows
 
 ### Next
 
@@ -279,13 +280,14 @@ Versioning follows Semantic Versioning (`vX.Y.Z`).
 - OpenAPI contract: [docs/api/openapi.v1.yaml](docs/api/openapi.v1.yaml)
 - Engineering standards: [docs/standards](docs/standards)
 - Future integration boundaries: [docs/architecture/FUTURE_INTEGRATIONS.md](docs/architecture/FUTURE_INTEGRATIONS.md)
+- Localization setup and translation keys: [docs/localization/LOCALIZATION.md](docs/localization/LOCALIZATION.md)
 - Change proposals and archived delivery history: [openspec](openspec)
 - Release history: [CHANGELOG.md](CHANGELOG.md)
 
 ## Roadmap
 
 - Phase 12: Future integration foundation (boundaries, safety rules, and disabled-by-default configuration placeholders)
-- Phase 14+: Localization, installer packaging, contact/provider integrations, queueing, observability, PostgreSQL profile
+- Phase 15+: Installer packaging, contact/provider integrations, queueing, observability, PostgreSQL profile
 
 ## Contributing
 

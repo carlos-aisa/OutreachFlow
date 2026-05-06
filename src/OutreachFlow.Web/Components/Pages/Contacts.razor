@@ -1,23 +1,26 @@
 @page "/contacts"
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.Contacts
 @using OutreachFlow.Application.Organizations
 @using OutreachFlow.Application.Tags
 @using OutreachFlow.Domain.Contacts
 @using OutreachFlow.Web.Contacts
+@using OutreachFlow.Web
 @using OutreachFlow.Web.Organizations
 @using OutreachFlow.Web.Tags
 @inject ContactApiClient ContactClient
 @inject OrganizationApiClient OrganizationClient
 @inject TagApiClient TagClient
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Contacts</PageTitle>
+<PageTitle>@Localizer["Contacts.PageTitle"]</PageTitle>
 
-<h1>Contacts</h1>
+<h1>@Localizer["Contacts.PageTitle"]</h1>
 
 <p class="text-muted">
-    Manage contacts, apply lightweight filters, and create new records without business-specific assumptions.
+    @Localizer["Contacts.Description"]
 </p>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -27,18 +30,18 @@
 
 <section class="card mb-4">
     <div class="card-header">
-        <h2 class="h5 mb-0">Filters</h2>
+        <h2 class="h5 mb-0">@Localizer["Contacts.Filters.Title"]</h2>
     </div>
     <div class="card-body">
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label" for="contact-search">Search</label>
-                <input id="contact-search" class="form-control" @bind="search" placeholder="Name, email, or role" />
+                <label class="form-label" for="contact-search">@Localizer["Common.Search"]</label>
+                <input id="contact-search" class="form-control" @bind="search" placeholder="@Localizer["Contacts.Filters.SearchPlaceholder"]" />
             </div>
             <div class="col-md-3">
-                <label class="form-label" for="contact-status">Status</label>
+                <label class="form-label" for="contact-status">@Localizer["Common.Status"]</label>
                 <select id="contact-status" class="form-select" @bind="selectedStatus">
-                    <option value="">Any status</option>
+                    <option value="">@Localizer["Contacts.Filters.AnyStatus"]</option>
                     @foreach (var status in StatusValues)
                     {
                         <option value="@status">@status</option>
@@ -46,9 +49,9 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label" for="contact-organization-filter">Organization</label>
+                <label class="form-label" for="contact-organization-filter">@Localizer["Common.Organization"]</label>
                 <select id="contact-organization-filter" class="form-select" @bind="selectedOrganizationId">
-                    <option value="">Any organization</option>
+                    <option value="">@Localizer["Contacts.Filters.AnyOrganization"]</option>
                     @foreach (var organization in organizations)
                     {
                         <option value="@organization.Id">@organization.Name</option>
@@ -56,9 +59,9 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label" for="contact-tag-filter">Tag</label>
+                <label class="form-label" for="contact-tag-filter">@Localizer["Common.Tag"]</label>
                 <select id="contact-tag-filter" class="form-select" @bind="selectedTagId">
-                    <option value="">Any tag</option>
+                    <option value="">@Localizer["Contacts.Filters.AnyTag"]</option>
                     @foreach (var tag in tags)
                     {
                         <option value="@tag.Id">@FormatTag(tag)</option>
@@ -66,16 +69,16 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label" for="contact-dnc-filter">Do not contact</label>
+                <label class="form-label" for="contact-dnc-filter">@Localizer["Common.DoNotContact"]</label>
                 <select id="contact-dnc-filter" class="form-select" @bind="selectedDoNotContact">
-                    <option value="">Any</option>
-                    <option value="true">Only do not contact</option>
-                    <option value="false">Exclude do not contact</option>
+                    <option value="">@Localizer["Common.Any"]</option>
+                    <option value="true">@Localizer["Contacts.Filters.OnlyDoNotContact"]</option>
+                    <option value="false">@Localizer["Contacts.Filters.ExcludeDoNotContact"]</option>
                 </select>
             </div>
             <div class="col-md-9 d-flex gap-2">
-                <button type="button" class="btn btn-primary" @onclick="LoadContactsAsync" disabled="@isLoading">Apply filters</button>
-                <button type="button" class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@isLoading">Clear</button>
+                <button type="button" class="btn btn-primary" @onclick="LoadContactsAsync" disabled="@isLoading">@Localizer["Common.ApplyFilters"]</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@isLoading">@Localizer["Common.Clear"]</button>
             </div>
         </div>
     </div>
@@ -83,7 +86,7 @@
 
 <section class="card mb-4">
     <div class="card-header">
-        <h2 class="h5 mb-0">Create contact</h2>
+        <h2 class="h5 mb-0">@Localizer["Contacts.Form.CreateTitle"]</h2>
     </div>
     <div class="card-body">
         <EditForm Model="newContact" OnValidSubmit="CreateContactAsync">
@@ -92,17 +95,17 @@
 
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label class="form-label" for="new-contact-name">Display name</label>
+                    <label class="form-label" for="new-contact-name">@Localizer["Common.DisplayName"]</label>
                     <InputText id="new-contact-name" class="form-control" @bind-Value="newContact.DisplayName" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="new-contact-email">Email</label>
+                    <label class="form-label" for="new-contact-email">@Localizer["Common.Email"]</label>
                     <InputText id="new-contact-email" class="form-control" @bind-Value="newContact.Email" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="new-contact-organization">Organization</label>
+                    <label class="form-label" for="new-contact-organization">@Localizer["Common.Organization"]</label>
                     <InputSelect id="new-contact-organization" class="form-select" @bind-Value="newContact.OrganizationId">
-                        <option value="">No organization</option>
+                        <option value="">@Localizer["Contacts.Form.NoOrganization"]</option>
                         @foreach (var organization in organizations)
                         {
                             <option value="@organization.Id">@organization.Name</option>
@@ -110,19 +113,19 @@
                     </InputSelect>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="new-contact-phone">Phone</label>
+                    <label class="form-label" for="new-contact-phone">@Localizer["Common.Phone"]</label>
                     <InputText id="new-contact-phone" class="form-control" @bind-Value="newContact.Phone" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="new-contact-role">Role</label>
+                    <label class="form-label" for="new-contact-role">@Localizer["Common.Role"]</label>
                     <InputText id="new-contact-role" class="form-control" @bind-Value="newContact.Role" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="new-contact-source">Source</label>
+                    <label class="form-label" for="new-contact-source">@Localizer["Common.Source"]</label>
                     <InputText id="new-contact-source" class="form-control" @bind-Value="newContact.Source" />
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="new-contact-status">Status</label>
+                    <label class="form-label" for="new-contact-status">@Localizer["Common.Status"]</label>
                     <InputSelect id="new-contact-status" class="form-select" @bind-Value="newContact.Status">
                         @foreach (var status in StatusValues)
                         {
@@ -133,11 +136,11 @@
                 <div class="col-md-4 d-flex align-items-end">
                     <div class="form-check">
                         <InputCheckbox id="new-contact-dnc" class="form-check-input" @bind-Value="newContact.DoNotContact" />
-                        <label class="form-check-label" for="new-contact-dnc">Do not contact</label>
+                        <label class="form-check-label" for="new-contact-dnc">@Localizer["Common.DoNotContact"]</label>
                     </div>
                 </div>
                 <div class="col-md-4 d-flex align-items-end justify-content-md-end">
-                    <button type="submit" class="btn btn-success" disabled="@isSaving">Create contact</button>
+                    <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Contacts.Form.CreateAction"]</button>
                 </div>
             </div>
         </EditForm>
@@ -146,33 +149,33 @@
 
 <section class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">Contact list</h2>
-        <span class="badge text-bg-secondary">@contacts.Count contacts</span>
+        <h2 class="h5 mb-0">@Localizer["Contacts.List.Title"]</h2>
+        <span class="badge text-bg-secondary">@Localizer["Contacts.List.Count", contacts.Count]</span>
     </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover mb-0">
             <thead>
                 <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Organization</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Do not contact</th>
-                    <th scope="col">Tags</th>
-                    <th scope="col">Last contacted</th>
+                    <th scope="col">@Localizer["Common.Name"]</th>
+                    <th scope="col">@Localizer["Common.Email"]</th>
+                    <th scope="col">@Localizer["Common.Organization"]</th>
+                    <th scope="col">@Localizer["Common.Status"]</th>
+                    <th scope="col">@Localizer["Common.DoNotContact"]</th>
+                    <th scope="col">@Localizer["Common.Tags"]</th>
+                    <th scope="col">@Localizer["Contacts.List.LastContacted"]</th>
                 </tr>
             </thead>
             <tbody>
                 @if (isLoading)
                 {
                     <tr>
-                        <td colspan="7">Loading contacts...</td>
+                        <td colspan="7">@Localizer["Contacts.List.Loading"]</td>
                     </tr>
                 }
                 else if (contacts.Count == 0)
                 {
                     <tr>
-                        <td colspan="7">No contacts match the current filters.</td>
+                        <td colspan="7">@Localizer["Contacts.List.Empty"]</td>
                     </tr>
                 }
                 else
@@ -186,7 +189,7 @@
                             <td>@contact.Email</td>
                             <td>@(contact.OrganizationName ?? "-")</td>
                             <td>@contact.Status</td>
-                            <td>@(contact.DoNotContact ? "Yes" : "No")</td>
+                            <td>@(contact.DoNotContact ? Localizer["Common.Yes"] : Localizer["Common.No"])</td>
                             <td>@FormatContactTags(contact.Tags)</td>
                             <td>@FormatDate(contact.LastContactedAt)</td>
                         </tr>
@@ -232,7 +235,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
     }
 
@@ -258,7 +261,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -303,7 +306,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {

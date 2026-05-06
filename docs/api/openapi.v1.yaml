@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: OutreachFlow API
-  version: 0.14.0
+  version: 0.15.0
   description: API contract for OutreachFlow v1.
 servers:
   - url: http://localhost:5131
@@ -1190,6 +1190,7 @@ components:
         message:
           type: string
           example: The request could not be processed.
+          description: User-facing message localized from request culture hints (`culture` query, localization cookie, or `Accept-Language`).
     HealthResponse:
       type: object
       required:
