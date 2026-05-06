@@ -2,10 +2,41 @@
 
 [![CI](https://github.com/carlos-aisa/OutreachFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/carlos-aisa/OutreachFlow/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/carlos-aisa/OutreachFlow/main/.github/badges/coverage.json)](https://github.com/carlos-aisa/OutreachFlow/actions/workflows/ci.yml)
+[![Latest Release](https://img.shields.io/github/v/release/carlos-aisa/OutreachFlow?sort=semver)](https://github.com/carlos-aisa/OutreachFlow/releases)
+[![.NET](https://img.shields.io/badge/.NET-8-512BD4)](https://dotnet.microsoft.com/)
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-v1-6BA539)](docs/api/openapi.v1.yaml)
 
-OutreachFlow is a lightweight CRM and controlled email outreach manager for small teams and independent professionals. It helps organize contacts, tag audiences, generate personalized email drafts from templates, attach reusable documents, send emails through configurable providers, and track communication history.
+OutreachFlow is a lightweight CRM and controlled email outreach manager for small teams and independent professionals. It helps organize contacts, classify audiences with flexible tags, generate personalized drafts from reusable templates, attach reusable assets, send through configurable providers, and keep a complete communication history.
 
-## Who It Is For
+Current stable line: `v0.11.0` ([CHANGELOG](CHANGELOG.md), [Releases](https://github.com/carlos-aisa/OutreachFlow/releases)).
+
+## Table of Contents
+
+- [Why OutreachFlow](#why-outreachflow)
+- [What It Is Not](#what-it-is-not)
+- [Project Highlights](#project-highlights)
+- [Feature Scope](#feature-scope)
+- [Technology Stack](#technology-stack)
+- [Architecture](#architecture)
+- [Repository Structure](#repository-structure)
+- [API and Contracts](#api-and-contracts)
+- [Local Setup](#local-setup)
+- [Quality and CI](#quality-and-ci)
+- [Release Strategy](#release-strategy)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Security](#security)
+
+## Why OutreachFlow
+
+Many small organizations need outreach discipline but not enterprise CRM complexity. OutreachFlow focuses on a practical middle ground:
+
+- Contact-centric workflow with full traceability
+- Human approval before send
+- Provider abstraction (`Fake`, `SMTP`, and future providers)
+- Rules that block unsafe sending (Do Not Contact, unresolved variables, duplicate/equivalent recent send protection)
+
+### Who It Is For
 
 - Freelancers
 - Small businesses
@@ -14,207 +45,153 @@ OutreachFlow is a lightweight CRM and controlled email outreach manager for smal
 - Trainers and educators
 - Associations
 - Independent professionals
-- Small teams that need controlled outreach
-
-## What Problem It Solves
-
-OutreachFlow centralizes contact and outreach operations in one internal tool with traceability and human approval before sending.
+- Small teams needing controlled external communication
 
 ## What It Is Not
 
-OutreachFlow is not a spam engine and is not designed for aggressive bulk mailing.
+OutreachFlow is not a spam engine and is not designed for aggressive bulk mailing, scraping, or invasive automation.
 
-## Core Features (MVP Target)
+## Project Highlights
 
-- Contacts, organizations, and tags management
-- Sender profiles management
-- Email templates with validated variables
-- Personalized draft generation per contact
-- Reusable attachment assets
-- Human review and approval flow
-- Controlled sending through provider abstraction
-- Contact activity history and traceability
+- Clean layered architecture with strict dependency direction
+- Explicit business rules in Domain and Application layers
+- Template rendering engine with unknown/missing variable diagnostics
+- Controlled draft lifecycle: generate, review, approve, send, audit
+- Provider abstraction and swap-ready infrastructure design
+- Rich automated test suite across domain, application, and integration levels
+- OpenSpec-driven delivery with one-change-per-branch workflow
+- CI with coverage reporting visible in PRs and README badge
+- Manual, auditable release process based on archived OpenSpec changes
+
+## Feature Scope
+
+### Completed
+
+- Organizations, contacts, tags, and status management
+- Sender profiles and email templates with variable catalog
+- Attachment assets and template default attachments
+- Draft generation, review, approval, cancellation, and controlled send
+- Activity timeline (contact and email events)
+- SMTP provider support (configuration-based)
+- Follow-up tasks with optional post-send automation
+
+### Next
+
+- CSV imports with duplicate detection and review
+- Future providers (Gmail API, Microsoft Graph)
+- Queue and throttling controls
+- PostgreSQL support profile
 
 ## Technology Stack
 
 - .NET 8
 - ASP.NET Core Web API
 - Blazor Web App
-- EF Core
-- SQLite (MVP)
+- EF Core + SQLite
 - xUnit + FluentAssertions
-- Swagger / OpenAPI
+- Swagger/OpenAPI
+- GitHub Actions (CI, coverage, release workflow)
 
 ## Architecture
 
-Layered architecture with strict dependency direction:
+- `OutreachFlow.Domain`: entities, value objects, business invariants
+- `OutreachFlow.Application`: use cases, DTOs, service contracts, orchestration rules
+- `OutreachFlow.Infrastructure`: EF Core persistence, repositories, migrations, provider implementations
+- `OutreachFlow.Api`: REST endpoints and API composition
+- `OutreachFlow.Web`: Blazor Web App management UI
 
-- `OutreachFlow.Domain`: entities, value objects, rules, invariants
-- `OutreachFlow.Application`: use cases, DTOs, ports/interfaces
-- `OutreachFlow.Infrastructure`: EF Core, persistence, migrations, external providers
-- `OutreachFlow.Api`: REST endpoints
-- `OutreachFlow.Web`: Blazor UI
+Detailed architecture document: [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)
 
-Detailed baseline: `docs/architecture/ARCHITECTURE.md`.
+## Repository Structure
 
-## Current Status
+```text
+OutreachFlow/
+|- src/
+|  |- OutreachFlow.Domain/
+|  |- OutreachFlow.Application/
+|  |- OutreachFlow.Infrastructure/
+|  |- OutreachFlow.Api/
+|  |- OutreachFlow.Web/
+|- tests/
+|  |- OutreachFlow.Domain.Tests/
+|  |- OutreachFlow.Application.Tests/
+|  |- OutreachFlow.IntegrationTests/
+|- docs/
+|  |- api/openapi.v1.yaml
+|  |- architecture/ARCHITECTURE.md
+|  |- standards/
+|- openspec/
+|- scripts/
+|- CHANGELOG.md
+|- VERSION
+|- README.md
+```
 
-Phase 0 completed:
+## API and Contracts
 
-- Solution and project structure created
-- Layer references configured
-- API with Swagger and health endpoint
-- Blazor app bootstrapped with basic pages
-- EF Core SQLite configured
-- Initial migration created
-- CI pipeline for restore, build, test
+- OpenAPI contract: [docs/api/openapi.v1.yaml](docs/api/openapi.v1.yaml)
+- Swagger UI is enabled in local API runs
+- API uses `/api/v1/*` versioned routes
 
-Phase 1 completed:
+Current endpoint groups:
 
-- Generic organizations, contacts, tags, and contact-tag assignments
-- Application services and DTOs for CRUD, filtering, duplicate prevention, and tagging
-- EF Core mappings, SQLite migration, unique constraints, and relational foreign keys
-- REST endpoints for organizations, contacts, tags, and contact tag assignment
-- Blazor pages for contacts, organizations, and tags
-- Domain, application, and integration tests for the core contact model
+- Organizations
+- Contacts, contact tags, and activities
+- Tags
+- Sender profiles
+- Templates and template attachments
+- Attachment assets
+- Draft generation, review, approval, cancellation, and send
+- Follow-up tasks
 
-Phase 2 completed:
+## Local Setup
 
-- Configurable sender profiles with active/default behavior
-- Reusable email templates with active/inactive state
-- Centralized supported template variable catalog for API and UI guidance
-- REST endpoints and Blazor pages for sender profiles and templates
-- Domain, application, and integration tests for configurable sender identity and template management
+### Prerequisites
 
-Phase 3 completed:
+- .NET SDK 8.x
+- Git
 
-- `ITemplateRenderer` contract with centralized variable rendering rules
-- `TemplateContext` and `RenderedEmail` models for deterministic render diagnostics
-- Unknown variable detection and missing value detection for supported variables
-- Unresolved token safety checks to block risky draft generation flows
-- Application tests for success, unknown variables, missing values, and unsupported expression syntax
+### Run
 
-Phase 4 completed:
-
-- Reusable attachment assets with active/inactive lifecycle behavior
-- Local file storage through `IAttachmentFileStorage` and `LocalAttachmentFileStorage`
-- Safe storage root configuration under `AttachmentStorage:RootPath`
-- REST endpoints for attachment upload/list/read/update/deactivate
-- Template default attachment assignment/removal endpoints
-- Blazor attachment management page and template editor attachment controls
-- Domain, application, and integration tests for attachment persistence, upload, and association rules
-
-Phase 5 completed:
-
-- `EmailDraft` and `EmailDraftAttachment` models for persisted generated draft snapshots
-- Multi-contact draft generation use case with template rendering diagnostics
-- Skip reporting for ineligible contacts (for example, Do Not Contact)
-- Draft generation APIs (`POST /api/v1/drafts/generate`, list, and detail)
-- Blazor draft generation wizard with recipient filters, selections, preview, and result
-- Domain, application, and integration tests for draft persistence and generation behavior
-
-Phase 6 completed:
-
-- Draft review workflow with edit, approve, and cancel transitions
-- Approval gate that blocks unresolved variables, unresolved diagnostics, and render errors
-- Draft review APIs (`PUT /api/v1/drafts/{id}`, `POST /api/v1/drafts/{id}/approve`, `POST /api/v1/drafts/{id}/cancel`)
-- Blazor draft list and draft detail pages for review, corrections, approval, and cancellation
-- Domain, application, and integration tests for draft review rules and endpoint behavior
-
-Phase 7 completed:
-
-- Email sending abstraction through `IEmailSender` and send contracts (`SendEmailCommand`, `EmailSendResult`)
-- Default `FakeEmailSender` provider for local development and automated tests
-- Controlled send use case for approved drafts with validation rules:
-  - approved-only sending,
-  - do-not-contact enforcement,
-  - unresolved-variable blocking,
-  - active attachment validation,
-  - duplicate and equivalent recent send prevention
-- `EmailMessage` persistence for successful and failed send attempts
-- Draft send status transitions (`Sent`, `Failed`) with `sentAt` and failure reason tracking
-- Contact `LastContactedAt` update on successful send
-- Send endpoint and UI action (`POST /api/v1/drafts/{id}/send`)
-
-Phase 8 completed:
-
-- `ContactActivity` domain model and persisted timeline events linked to contacts
-- Automatic activity recording for:
-  - contact create/update,
-  - status transitions,
-  - draft generation,
-  - email send success/failure
-- Contact activity endpoint (`GET /api/v1/contacts/{id}/activities`)
-- Contact detail page with activity timeline in Blazor
-- Domain, application, and integration tests for activity persistence and retrieval order
-
-Phase 9 completed:
-
-- Real SMTP provider support (`SmtpEmailSender`) behind `IEmailSender`
-- Provider selection and required SMTP configuration validation when `EmailSending:Provider=SMTP`
-- SMTP setup guidance with user secrets and placeholder configuration values
-- Integration tests for SMTP option validation, provider selection, failure mapping, and fake provider enforcement in API integration tests
-
-Phase 10 completed:
-
-- `FollowUpTask` domain model with completion lifecycle (`IsCompleted`, `CompletedAt`)
-- Follow-up task CRUD and completion APIs
-- Follow-up management page in Blazor (`/follow-ups`)
-- Pending follow-up visibility on dashboard and contact detail
-- Optional automatic post-send follow-up creation via `FollowUpAutomation` configuration
-- Follow-up activity tracking (`FollowUpCreated`, `FollowUpCompleted`)
-
-## Roadmap
-
-- Phase 1: Core contacts model (organizations, contacts, tags)
-- Phase 2: Sender profiles and templates
-- Phase 3: Template rendering engine
-- Phase 4: Attachment assets
-- Phase 5: Draft generation
-- Phase 6: Draft review and approval
-- Phase 7: Controlled sending abstraction
-- Phase 8: Contact activity history
-- Phase 9: SMTP real provider
-- Phase 10: Follow-up tasks
-- Phase 11+: Imports and future integrations
-
-## Run Locally
-
-1. Restore dependencies:
+1. Restore dependencies.
 
 ```bash
 dotnet restore
 ```
 
-2. Optional: apply migrations manually (the API also applies pending migrations on startup):
+2. Apply migrations (optional; API also applies pending migrations on startup).
 
 ```bash
 dotnet ef database update --project src/OutreachFlow.Infrastructure --startup-project src/OutreachFlow.Api
 ```
 
-3. Optional: configure local attachment storage root (default: `storage/attachments`):
+3. Run API.
 
-```json
-{
-  "AttachmentStorage": {
-    "RootPath": "storage/attachments"
-  }
-}
+```bash
+dotnet run --project src/OutreachFlow.Api
 ```
 
-4. Optional: configure SMTP sender (use secrets, never commit credentials):
+4. Run Web UI.
+
+```bash
+dotnet run --project src/OutreachFlow.Web
+```
+
+Default local API base URL expected by Web: `http://localhost:5131`.
+
+### Optional SMTP Configuration (Local Only)
 
 ```bash
 dotnet user-secrets set "EmailSending:Provider" "SMTP" --project src/OutreachFlow.Api
 dotnet user-secrets set "EmailSending:Smtp:Host" "smtp.example.com" --project src/OutreachFlow.Api
 dotnet user-secrets set "EmailSending:Smtp:Port" "587" --project src/OutreachFlow.Api
 dotnet user-secrets set "EmailSending:Smtp:UseSsl" "true" --project src/OutreachFlow.Api
-dotnet user-secrets set "EmailSending:Smtp:Username" "your-smtp-user" --project src/OutreachFlow.Api
-dotnet user-secrets set "EmailSending:Smtp:Password" "your-smtp-password" --project src/OutreachFlow.Api
+dotnet user-secrets set "EmailSending:Smtp:Username" "your-user" --project src/OutreachFlow.Api
+dotnet user-secrets set "EmailSending:Smtp:Password" "your-password" --project src/OutreachFlow.Api
 dotnet user-secrets set "EmailSending:Smtp:TimeoutSeconds" "30" --project src/OutreachFlow.Api
 ```
 
-5. Optional: configure automatic follow-up creation after successful sends:
+### Optional Follow-up Automation
 
 ```bash
 dotnet user-secrets set "FollowUpAutomation:AutoCreateAfterSuccessfulSend" "true" --project src/OutreachFlow.Api
@@ -222,110 +199,48 @@ dotnet user-secrets set "FollowUpAutomation:DueDaysAfterSend" "7" --project src/
 dotnet user-secrets set "FollowUpAutomation:DefaultType" "Email" --project src/OutreachFlow.Api
 ```
 
-6. Run API:
+## Quality and CI
 
-```bash
-dotnet run --project src/OutreachFlow.Api
-```
-
-7. Run Web UI:
-
-```bash
-dotnet run --project src/OutreachFlow.Web
-```
-
-The Web UI calls the API configured by `OutreachFlowApi:BaseUrl`. The default local value is `http://localhost:5131`, matching the API `http` launch profile.
-
-## API Surface
-
-The v1 OpenAPI contract is maintained in `docs/api/openapi.v1.yaml`. Current endpoints include:
-
-- `/api/v1/organizations`
-- `/api/v1/contacts`
-- `/api/v1/contacts/{id}/tags/{tagId}`
-- `/api/v1/contacts/{id}/activities`
-- `/api/v1/tags`
-- `/api/v1/sender-profiles`
-- `/api/v1/sender-profiles/default`
-- `/api/v1/templates`
-- `/api/v1/templates/variables`
-- `/api/v1/templates/{id}/attachments/{attachmentId}`
-- `/api/v1/attachments`
-- `/api/v1/attachments/{id}`
-- `/api/v1/drafts/generate`
-- `/api/v1/drafts`
-- `/api/v1/drafts/{id}`
-- `/api/v1/drafts/{id}` (PUT for edit)
-- `/api/v1/drafts/{id}/approve`
-- `/api/v1/drafts/{id}/cancel`
-- `/api/v1/drafts/{id}/send`
-- `/api/v1/follow-ups`
-- `/api/v1/follow-ups/{id}`
-- `/api/v1/follow-ups/{id}/complete`
-
-## Supported Template Variables
-
-Supported variable names are centralized and validated:
-
-- `contact.displayName`
-- `contact.email`
-- `contact.role`
-- `organization.name`
-- `organization.city`
-- `organization.province`
-- `sender.name`
-- `sender.email`
-- `sender.phone`
-- `sender.organizationName`
-- `sender.website`
-- `sender.signature`
-
-Rendering supports only direct substitution with `{{variable.name}}` syntax. Loops, conditionals, scripts, and expression evaluation are intentionally out of scope for MVP.
-
-## Run Tests
+### Tests
 
 ```bash
 dotnet test
 ```
 
-## GitHub Workflows
+### Pull Request CI
 
-- Pull requests run restore, build, tests, and total coverage reporting.
-- Coverage is reported in the workflow summary, uploaded as an HTML artifact, and posted as a pull request comment.
-- The README coverage badge is updated from the latest successful `main` coverage run.
-- Coverage is report-only for now and does not block pull requests.
-- Pull requests must be opened from branches named `change/<change-id-or-short-description>`.
-- Completed OpenSpec changes are released through the manual `release openspec change` workflow after the change is archived, `VERSION` is bumped, and `CHANGELOG.md` has a matching entry.
+- `dotnet restore`
+- `dotnet build --configuration Release --no-restore`
+- `dotnet test --configuration Release --no-build --collect:"XPlat Code Coverage"`
+- Merged coverage summary via ReportGenerator
+- Sticky PR comment with total coverage
+- HTML coverage report artifact upload
+- Coverage badge refresh on `main`
 
-## OpenSpec Branch Workflow
+Coverage is report-only (no threshold gate yet).
 
-Each OpenSpec change must be implemented in its own branch and reviewed through a pull request.
+## Release Strategy
 
-```bash
-git switch main
-git pull
-git switch -c change/p01-core-contacts-model
-```
+Releases are manual and controlled after an OpenSpec change is completed.
 
-Use one branch per change. Do not implement multiple OpenSpec changes in the same pull request.
+1. Implement one OpenSpec change in `change/<id>` branch.
+2. Complete tasks in `tasks.md`.
+3. Archive change under `openspec/changes/archive/`.
+4. Bump `VERSION` and add matching `CHANGELOG.md` section.
+5. Merge to `main` after CI passes.
+6. Run `release-openspec-change` workflow with `change_id` and `version`.
 
-## Release Process
+Versioning follows Semantic Versioning (`vX.Y.Z`).
 
-1. Implement one OpenSpec change on a branch.
-2. Mark all tasks complete in `tasks.md`.
-3. Archive the change with `openspec archive <change-id>`.
-4. Update `VERSION` and add a matching `CHANGELOG.md` section.
-5. Merge the pull request to `main` after CI passes.
-6. Run the manual release workflow with the archived change id and SemVer version.
+## Roadmap
 
-## Technical Notes
+- Phase 11: CSV imports with duplicate review and tag assignment
+- Phase 12+: Contacts integrations, provider integrations, queueing, observability, PostgreSQL profile
 
-- Provider-specific email sending is abstracted for future SMTP/Gmail/Graph implementations.
-- The default provider is `Fake` (`EmailSending:Provider`).
-- SMTP is supported for local/manual configuration (`EmailSending:Provider=SMTP`) with settings under `EmailSending:Smtp:*`.
-- SMTP configuration requires `Host`, `Port`, `Username`, `Password`, and positive `TimeoutSeconds`.
-- Fake sender failures can be simulated using `EmailSending:FakeFailureKeyword` in subject/body/recipient (default: `[fail-send]`).
-- SMTP delivery and provider-level throttling/reputation behavior depend on your external provider and are intentionally outside the app logic.
-- Follow-up auto creation after send is opt-in (`FollowUpAutomation:AutoCreateAfterSuccessfulSend=false` by default).
-- Secrets must be managed through environment variables or user secrets, never in source control.
-- MVP focus is controlled and traceable outreach, not automation at scale.
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for branch naming, PR expectations, and quality checks.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for responsible disclosure and secret-handling expectations.
