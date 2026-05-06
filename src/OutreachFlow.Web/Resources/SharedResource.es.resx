@@ -61,6 +61,8 @@
   <data name="Common.Yes" xml:space="preserve"><value>Sí</value></data>
   <data name="Common.No" xml:space="preserve"><value>No</value></data>
   <data name="Common.Signature" xml:space="preserve"><value>Firma</value></data>
+  <data name="Common.SignatureFormat" xml:space="preserve"><value>Formato de firma</value></data>
+  <data name="Common.SignatureFormatPlaceholder" xml:space="preserve"><value>Sin formato de firma</value></data>
   <data name="Common.ApiUnavailablePrefix" xml:space="preserve"><value>No se pudo conectar con la API de OutreachFlow</value></data>
   <data name="Organizations.PageTitle" xml:space="preserve"><value>Organizaciones</value></data>
   <data name="Organizations.Description" xml:space="preserve"><value>Crea y revisa organizaciones genéricas que pueden asociarse a contactos.</value></data>

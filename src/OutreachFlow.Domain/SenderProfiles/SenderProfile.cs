@@ -19,6 +19,7 @@ public sealed class SenderProfile
         string? organizationName = null,
         string? website = null,
         string? signature = null,
+        SenderSignatureFormat? signatureFormat = null,
         bool isDefault = false,
         DateTimeOffset? createdAt = null)
     {
@@ -30,6 +31,8 @@ public sealed class SenderProfile
         OrganizationName = NormalizeOptional(organizationName);
         Website = NormalizeOptional(website);
         Signature = NormalizeOptional(signature);
+        SignatureFormat = signatureFormat;
+        ValidateSignature();
         IsDefault = isDefault;
         IsActive = true;
         CreatedAt = createdAt ?? DateTimeOffset.UtcNow;
@@ -52,6 +55,8 @@ public sealed class SenderProfile
 
     public string? Signature { get; private set; }
 
+    public SenderSignatureFormat? SignatureFormat { get; private set; }
+
     public bool IsDefault { get; private set; }
 
     public bool IsActive { get; private set; }
@@ -67,6 +72,7 @@ public sealed class SenderProfile
         string? organizationName,
         string? website,
         string? signature,
+        SenderSignatureFormat? signatureFormat,
         DateTimeOffset updatedAt)
     {
         Name = RequireText(name, "Sender profile name is required.");
@@ -76,6 +82,8 @@ public sealed class SenderProfile
         OrganizationName = NormalizeOptional(organizationName);
         Website = NormalizeOptional(website);
         Signature = NormalizeOptional(signature);
+        SignatureFormat = signatureFormat;
+        ValidateSignature();
         UpdatedAt = updatedAt;
     }
 
@@ -122,5 +130,53 @@ public sealed class SenderProfile
     private static string? NormalizeOptional(string? value)
     {
         return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private void ValidateSignature()
+    {
+        if (Signature is null && SignatureFormat is null)
+        {
+            return;
+        }
+
+        if (Signature is null && SignatureFormat is not null)
+        {
+            throw new DomainException("Signature content is required when signature format is provided.");
+        }
+
+        if (Signature is not null && SignatureFormat is null)
+        {
+            throw new DomainException("Signature format is required when signature content is provided.");
+        }
+
+        if (Signature!.Length > 12000)
+        {
+            throw new DomainException("Signature content cannot exceed 12000 characters.");
+        }
+
+        if (!Enum.IsDefined(SignatureFormat!.Value))
+        {
+            throw new DomainException("Signature format is not supported.");
+        }
+
+        if (SignatureFormat == SenderSignatureFormat.Html)
+        {
+            var trimmed = Signature.Trim();
+            if (!trimmed.StartsWith('<') || !trimmed.EndsWith('>'))
+            {
+                throw new DomainException("HTML signature content must start and end with an HTML tag.");
+            }
+
+            return;
+        }
+
+        if (SignatureFormat == SenderSignatureFormat.Rtf)
+        {
+            var trimmed = Signature.TrimStart();
+            if (!trimmed.StartsWith(@"{\rtf", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new DomainException("RTF signature content must start with '{\\rtf'.");
+            }
+        }
     }
 }

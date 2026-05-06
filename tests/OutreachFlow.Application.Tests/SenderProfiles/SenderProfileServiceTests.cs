@@ -2,6 +2,7 @@ using FluentAssertions;
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tests.Support;
+using OutreachFlow.Domain.SenderProfiles;
 
 namespace OutreachFlow.Application.Tests.SenderProfiles;
 
@@ -73,7 +74,8 @@ public sealed class SenderProfileServiceTests
             null,
             "Northwind Studio",
             "https://example.com",
-            "Best regards",
-            isDefault);
+            "<p>Best regards</p>",
+            isDefault,
+            SenderSignatureFormat.Html);
     }
 }

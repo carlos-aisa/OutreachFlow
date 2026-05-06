@@ -15,7 +15,8 @@ public sealed class SenderProfileTests
             "+34 600 000 000",
             "Northwind Studio",
             "https://example.com",
-            "Best regards",
+            "<p>Best regards</p>",
+            SenderSignatureFormat.Html,
             isDefault: true);
 
         profile.Id.Should().NotBeEmpty();
@@ -24,6 +25,7 @@ public sealed class SenderProfileTests
         profile.NormalizedEmail.Should().Be("SENDER@EXAMPLE.COM");
         profile.IsActive.Should().BeTrue();
         profile.IsDefault.Should().BeTrue();
+        profile.SignatureFormat.Should().Be(SenderSignatureFormat.Html);
     }
 
     [Fact]
@@ -33,6 +35,32 @@ public sealed class SenderProfileTests
 
         act.Should().Throw<DomainException>()
             .WithMessage("Email is required.");
+    }
+
+    [Fact]
+    public void ShouldRejectSignatureContentWithoutFormat()
+    {
+        var act = () => new SenderProfile(
+            "Primary sender",
+            "sender@example.com",
+            signature: "<p>Best regards</p>",
+            signatureFormat: null);
+
+        act.Should().Throw<DomainException>()
+            .WithMessage("Signature format is required when signature content is provided.");
+    }
+
+    [Fact]
+    public void ShouldRejectRtfSignatureWithInvalidPayload()
+    {
+        var act = () => new SenderProfile(
+            "Primary sender",
+            "sender@example.com",
+            signature: "Best regards",
+            signatureFormat: SenderSignatureFormat.Rtf);
+
+        act.Should().Throw<DomainException>()
+            .WithMessage("RTF signature content must start with '{\\rtf'.");
     }
 
     [Fact]

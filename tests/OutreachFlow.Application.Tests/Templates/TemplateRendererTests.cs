@@ -35,14 +35,15 @@ public sealed class TemplateRendererTests
             "Carlos",
             "carlos@example.com",
             organizationName: "OutreachFlow",
-            signature: "Carlos A.");
+            signature: "<p>Carlos A.</p>",
+            signatureFormat: SenderSignatureFormat.Html);
 
         var context = new TemplateContext(contact, organization, senderProfile);
 
         var renderedEmail = _renderer.Render(template, context);
 
         renderedEmail.Subject.Should().Be("Proposal for Acme Foundation");
-        renderedEmail.Body.Should().Be("Hello Maria Lopez, your contact email is maria@example.com. Regards, Carlos A.");
+        renderedEmail.Body.Should().Be("Hello Maria Lopez, your contact email is maria@example.com. Regards, <p>Carlos A.</p>");
         renderedEmail.UnknownVariables.Should().BeEmpty();
         renderedEmail.MissingVariables.Should().BeEmpty();
         renderedEmail.HasErrors.Should().BeFalse();
@@ -79,8 +80,7 @@ public sealed class TemplateRendererTests
         var contact = new Contact("Maria Lopez", "maria@example.com");
         var senderProfile = new SenderProfile(
             "Carlos",
-            "carlos@example.com",
-            signature: "   ");
+            "carlos@example.com");
 
         var context = new TemplateContext(contact, null, senderProfile);
 
@@ -135,7 +135,11 @@ public sealed class TemplateRendererTests
     {
         var contact = new Contact("Maria Lopez", "maria@example.com", role: "Partnership Manager");
         var organization = new Organization("Acme Foundation", city: "Madrid", province: "Madrid");
-        var senderProfile = new SenderProfile("Carlos", "carlos@example.com", signature: "Carlos A.");
+        var senderProfile = new SenderProfile(
+            "Carlos",
+            "carlos@example.com",
+            signature: "<p>Carlos A.</p>",
+            signatureFormat: SenderSignatureFormat.Html);
 
         return new TemplateContext(contact, organization, senderProfile);
     }
