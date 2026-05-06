@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [0.15.0] - 2026-05-06
+
+### Added
+
+- Spanish localization foundation for `OutreachFlow.Web` and `OutreachFlow.Api`:
+  - supported cultures `en-US` and `es-ES`,
+  - deterministic culture resolution (query string, cookie, `Accept-Language`, default fallback).
+- Localized Web navigation and core workflow pages:
+  - Organizations,
+  - Contacts,
+  - Tags,
+  - Sender Profiles,
+  - Templates.
+- Sidebar language selector with persisted culture cookie via `/culture/set` endpoint.
+- Resource-backed API error localization for known user-facing validation and not-found/conflict messages.
+- Integration tests for API culture negotiation and Spanish localized responses.
+- UI/component tests for Spanish rendering in navigation and contacts workflow.
+- Localization documentation: `docs/localization/LOCALIZATION.md`.
+
+### Changed
+
+- OpenAPI `ErrorResponse.message` now documents localized message behavior based on request culture hints.
+- README updated with localization capability and documentation links.
+
 ## [0.13.0] - 2026-05-06
 
 ### Added

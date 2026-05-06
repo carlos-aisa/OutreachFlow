@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ApiError.OrganizationNotFound" xml:space="preserve">
+    <value>No se encontró la organización.</value>
+  </data>
+  <data name="ApiError.ContactNotFound" xml:space="preserve">
+    <value>No se encontró el contacto.</value>
+  </data>
+  <data name="ApiError.TagNotFound" xml:space="preserve">
+    <value>No se encontró la etiqueta.</value>
+  </data>
+  <data name="ApiError.SenderProfileNotFound" xml:space="preserve">
+    <value>No se encontró el perfil de remitente.</value>
+  </data>
+  <data name="ApiError.DefaultSenderProfileNotFound" xml:space="preserve">
+    <value>No se encontró el perfil de remitente predeterminado.</value>
+  </data>
+  <data name="ApiError.EmailTemplateNotFound" xml:space="preserve">
+    <value>No se encontró la plantilla de correo.</value>
+  </data>
+  <data name="ApiError.EmailDraftNotFound" xml:space="preserve">
+    <value>No se encontró el borrador de correo.</value>
+  </data>
+  <data name="ApiError.FollowUpTaskNotFound" xml:space="preserve">
+    <value>No se encontró la tarea de seguimiento.</value>
+  </data>
+  <data name="ApiError.AttachmentAssetNotFound" xml:space="preserve">
+    <value>No se encontró el adjunto reutilizable.</value>
+  </data>
+  <data name="ApiError.ContactEmailAlreadyExists" xml:space="preserve">
+    <value>Ya existe un contacto con ese correo electrónico.</value>
+  </data>
+  <data name="ApiError.TagAlreadyExists" xml:space="preserve">
+    <value>La etiqueta ya existe en esa categoría.</value>
+  </data>
+  <data name="ApiError.DraftRenderErrors" xml:space="preserve">
+    <value>No se puede aprobar el borrador mientras existan errores de renderizado.</value>
+  </data>
+  <data name="ApiError.OnlyApprovedDraftsCanBeSent" xml:space="preserve">
+    <value>Solo se pueden enviar borradores aprobados.</value>
+  </data>
+  <data name="ApiError.DraftAlreadySent" xml:space="preserve">
+    <value>Este borrador ya se envió.</value>
+  </data>
+  <data name="ApiError.SignatureFormatRequired" xml:space="preserve">
+    <value>El formato de firma es obligatorio cuando se proporciona contenido de firma.</value>
+  </data>
+  <data name="ApiError.SignatureFormatNotSupported" xml:space="preserve">
+    <value>El formato de firma no es compatible.</value>
+  </data>
+</root>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Navigation.Menu" xml:space="preserve"><value>Menú de navegación</value></data>
+  <data name="Nav.Dashboard" xml:space="preserve"><value>Panel</value></data>
+  <data name="Nav.Contacts" xml:space="preserve"><value>Contactos</value></data>
+  <data name="Nav.Organizations" xml:space="preserve"><value>Organizaciones</value></data>
+  <data name="Nav.Tags" xml:space="preserve"><value>Etiquetas</value></data>
+  <data name="Nav.SenderProfiles" xml:space="preserve"><value>Perfiles de remitente</value></data>
+  <data name="Nav.Templates" xml:space="preserve"><value>Plantillas</value></data>
+  <data name="Nav.Attachments" xml:space="preserve"><value>Adjuntos</value></data>
+  <data name="Nav.Drafts" xml:space="preserve"><value>Borradores</value></data>
+  <data name="Nav.DraftGeneration" xml:space="preserve"><value>Generación de borradores</value></data>
+  <data name="Nav.FollowUps" xml:space="preserve"><value>Seguimientos</value></data>
+  <data name="Nav.Imports" xml:space="preserve"><value>Importaciones</value></data>
+  <data name="Common.Name" xml:space="preserve"><value>Nombre</value></data>
+  <data name="Common.DisplayName" xml:space="preserve"><value>Nombre visible</value></data>
+  <data name="Common.Type" xml:space="preserve"><value>Tipo</value></data>
+  <data name="Common.Website" xml:space="preserve"><value>Sitio web</value></data>
+  <data name="Common.City" xml:space="preserve"><value>Ciudad</value></data>
+  <data name="Common.Province" xml:space="preserve"><value>Provincia</value></data>
+  <data name="Common.Country" xml:space="preserve"><value>País</value></data>
+  <data name="Common.Notes" xml:space="preserve"><value>Notas</value></data>
+  <data name="Common.Category" xml:space="preserve"><value>Categoría</value></data>
+  <data name="Common.Created" xml:space="preserve"><value>Creado</value></data>
+  <data name="Common.Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="Common.Subject" xml:space="preserve"><value>Asunto</value></data>
+  <data name="Common.Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Common.Active" xml:space="preserve"><value>Activo</value></data>
+  <data name="Common.Default" xml:space="preserve"><value>Predeterminado</value></data>
+  <data name="Common.Organization" xml:space="preserve"><value>Organización</value></data>
+  <data name="Common.OrganizationName" xml:space="preserve"><value>Nombre de organización</value></data>
+  <data name="Common.Email" xml:space="preserve"><value>Correo electrónico</value></data>
+  <data name="Common.Phone" xml:space="preserve"><value>Teléfono</value></data>
+  <data name="Common.Role" xml:space="preserve"><value>Rol</value></data>
+  <data name="Common.Source" xml:space="preserve"><value>Origen</value></data>
+  <data name="Common.Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Common.Tag" xml:space="preserve"><value>Etiqueta</value></data>
+  <data name="Common.Tags" xml:space="preserve"><value>Etiquetas</value></data>
+  <data name="Common.DoNotContact" xml:space="preserve"><value>No contactar</value></data>
+  <data name="Common.Search" xml:space="preserve"><value>Buscar</value></data>
+  <data name="Common.Any" xml:space="preserve"><value>Cualquiera</value></data>
+  <data name="Common.ApplyFilters" xml:space="preserve"><value>Aplicar filtros</value></data>
+  <data name="Common.Clear" xml:space="preserve"><value>Limpiar</value></data>
+  <data name="Common.CancelEdit" xml:space="preserve"><value>Cancelar edición</value></data>
+  <data name="Common.Remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="Common.Add" xml:space="preserve"><value>Añadir</value></data>
+  <data name="Common.Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="Common.Deactivate" xml:space="preserve"><value>Desactivar</value></data>
+  <data name="Common.Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="Common.No" xml:space="preserve"><value>No</value></data>
+  <data name="Common.Signature" xml:space="preserve"><value>Firma</value></data>
+  <data name="Common.ApiUnavailablePrefix" xml:space="preserve"><value>No se pudo conectar con la API de OutreachFlow</value></data>
+  <data name="Organizations.PageTitle" xml:space="preserve"><value>Organizaciones</value></data>
+  <data name="Organizations.Description" xml:space="preserve"><value>Crea y revisa organizaciones genéricas que pueden asociarse a contactos.</value></data>
+  <data name="Organizations.Form.CreateTitle" xml:space="preserve"><value>Crear organización</value></data>
+  <data name="Organizations.Form.CreateAction" xml:space="preserve"><value>Crear organización</value></data>
+  <data name="Organizations.List.Title" xml:space="preserve"><value>Listado de organizaciones</value></data>
+  <data name="Organizations.List.Count" xml:space="preserve"><value>{0} organizaciones</value></data>
+  <data name="Organizations.List.Loading" xml:space="preserve"><value>Cargando organizaciones...</value></data>
+  <data name="Organizations.List.Empty" xml:space="preserve"><value>Todavía no se han creado organizaciones.</value></data>
+  <data name="Tags.PageTitle" xml:space="preserve"><value>Etiquetas</value></data>
+  <data name="Tags.Description" xml:space="preserve"><value>Crea etiquetas flexibles para segmentar contactos sin categorías fijas.</value></data>
+  <data name="Tags.Form.CreateTitle" xml:space="preserve"><value>Crear etiqueta</value></data>
+  <data name="Tags.Form.CreateAction" xml:space="preserve"><value>Crear etiqueta</value></data>
+  <data name="Tags.List.Title" xml:space="preserve"><value>Listado de etiquetas</value></data>
+  <data name="Tags.List.Count" xml:space="preserve"><value>{0} etiquetas</value></data>
+  <data name="Tags.List.Loading" xml:space="preserve"><value>Cargando etiquetas...</value></data>
+  <data name="Tags.List.Empty" xml:space="preserve"><value>Todavía no se han creado etiquetas.</value></data>
+  <data name="Templates.PageTitle" xml:space="preserve"><value>Plantillas de correo</value></data>
+  <data name="Templates.Description" xml:space="preserve"><value>Guarda plantillas reutilizables de asunto y cuerpo como datos configurables, incluyendo adjuntos predeterminados.</value></data>
+  <data name="Templates.Form.CreateTitle" xml:space="preserve"><value>Crear plantilla</value></data>
+  <data name="Templates.Form.EditTitle" xml:space="preserve"><value>Editar plantilla</value></data>
+  <data name="Templates.Form.SubjectTemplate" xml:space="preserve"><value>Plantilla de asunto</value></data>
+  <data name="Templates.Form.BodyTemplate" xml:space="preserve"><value>Plantilla de cuerpo</value></data>
+  <data name="Templates.Form.SaveAction" xml:space="preserve"><value>Guardar plantilla</value></data>
+  <data name="Templates.Attachments.DefaultTitle" xml:space="preserve"><value>Adjuntos predeterminados</value></data>
+  <data name="Templates.Attachments.Help" xml:space="preserve"><value>Elige archivos reutilizables que deben preseleccionarse para esta plantilla.</value></data>
+  <data name="Templates.Attachments.Empty" xml:space="preserve"><value>No hay adjuntos activos disponibles. Sube adjuntos primero.</value></data>
+  <data name="Templates.List.Title" xml:space="preserve"><value>Listado de plantillas</value></data>
+  <data name="Templates.List.Count" xml:space="preserve"><value>{0} plantillas</value></data>
+  <data name="Templates.List.DefaultAttachments" xml:space="preserve"><value>Adjuntos predeterminados</value></data>
+  <data name="Templates.List.Loading" xml:space="preserve"><value>Cargando plantillas...</value></data>
+  <data name="Templates.List.Empty" xml:space="preserve"><value>Todavía no se han creado plantillas.</value></data>
+  <data name="Templates.Variables.Title" xml:space="preserve"><value>Variables compatibles</value></data>
+  <data name="Templates.Variables.Help" xml:space="preserve"><value>Estas variables están centralizadas en Application y se reutilizan desde API y UI.</value></data>
+  <data name="Templates.Variables.Empty" xml:space="preserve"><value>No hay variables disponibles.</value></data>
+  <data name="SenderProfiles.PageTitle" xml:space="preserve"><value>Perfiles de remitente</value></data>
+  <data name="SenderProfiles.Description" xml:space="preserve"><value>Configura identidades reutilizables de remitente sin detalles de negocio fijos.</value></data>
+  <data name="SenderProfiles.Form.CreateTitle" xml:space="preserve"><value>Crear perfil de remitente</value></data>
+  <data name="SenderProfiles.Form.EditTitle" xml:space="preserve"><value>Editar perfil de remitente</value></data>
+  <data name="SenderProfiles.Form.SaveAction" xml:space="preserve"><value>Guardar perfil de remitente</value></data>
+  <data name="SenderProfiles.List.Title" xml:space="preserve"><value>Listado de perfiles de remitente</value></data>
+  <data name="SenderProfiles.List.Count" xml:space="preserve"><value>{0} perfiles</value></data>
+  <data name="SenderProfiles.List.Loading" xml:space="preserve"><value>Cargando perfiles de remitente...</value></data>
+  <data name="SenderProfiles.List.Empty" xml:space="preserve"><value>Todavía no se han creado perfiles de remitente.</value></data>
+  <data name="Contacts.PageTitle" xml:space="preserve"><value>Contactos</value></data>
+  <data name="Contacts.Description" xml:space="preserve"><value>Gestiona contactos, aplica filtros ligeros y crea nuevos registros sin suposiciones específicas de negocio.</value></data>
+  <data name="Contacts.Filters.Title" xml:space="preserve"><value>Filtros</value></data>
+  <data name="Contacts.Filters.SearchPlaceholder" xml:space="preserve"><value>Nombre, correo o rol</value></data>
+  <data name="Contacts.Filters.AnyStatus" xml:space="preserve"><value>Cualquier estado</value></data>
+  <data name="Contacts.Filters.AnyOrganization" xml:space="preserve"><value>Cualquier organización</value></data>
+  <data name="Contacts.Filters.AnyTag" xml:space="preserve"><value>Cualquier etiqueta</value></data>
+  <data name="Contacts.Filters.OnlyDoNotContact" xml:space="preserve"><value>Solo no contactar</value></data>
+  <data name="Contacts.Filters.ExcludeDoNotContact" xml:space="preserve"><value>Excluir no contactar</value></data>
+  <data name="Contacts.Form.CreateTitle" xml:space="preserve"><value>Crear contacto</value></data>
+  <data name="Contacts.Form.NoOrganization" xml:space="preserve"><value>Sin organización</value></data>
+  <data name="Contacts.Form.CreateAction" xml:space="preserve"><value>Crear contacto</value></data>
+  <data name="Contacts.List.Title" xml:space="preserve"><value>Listado de contactos</value></data>
+  <data name="Contacts.List.Count" xml:space="preserve"><value>{0} contactos</value></data>
+  <data name="Contacts.List.LastContacted" xml:space="preserve"><value>Último contacto</value></data>
+  <data name="Contacts.List.Loading" xml:space="preserve"><value>Cargando contactos...</value></data>
+  <data name="Contacts.List.Empty" xml:space="preserve"><value>Ningún contacto coincide con los filtros actuales.</value></data>
+</root>

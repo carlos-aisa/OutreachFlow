@@ -1,77 +1,98 @@
+@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using OutreachFlow.Web
+@inject IStringLocalizer<SharedResource> Localizer
+@inject NavigationManager NavigationManager
+
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">OutreachFlow</a>
+        <select class="form-select form-select-sm w-auto" value="@CultureInfo.CurrentUICulture.Name" @onchange="SetLanguage">
+            <option value="en-US">English</option>
+            <option value="es-ES">Español</option>
+        </select>
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+<input type="checkbox" title="@Localizer["Navigation.Menu"]" class="navbar-toggler" />
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Dashboard
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Dashboard"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="contacts">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Contacts
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Contacts"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="organizations">
-                <span class="bi bi-building-fill-nav-menu" aria-hidden="true"></span> Organizations
+                <span class="bi bi-building-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Organizations"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="tags">
-                <span class="bi bi-tag-fill-nav-menu" aria-hidden="true"></span> Tags
+                <span class="bi bi-tag-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Tags"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="sender-profiles">
-                <span class="bi bi-person-badge-fill-nav-menu" aria-hidden="true"></span> Sender Profiles
+                <span class="bi bi-person-badge-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.SenderProfiles"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="templates">
-                <span class="bi bi-envelope-paper-fill-nav-menu" aria-hidden="true"></span> Templates
+                <span class="bi bi-envelope-paper-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Templates"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="attachments">
-                <span class="bi bi-paperclip-nav-menu" aria-hidden="true"></span> Attachments
+                <span class="bi bi-paperclip-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Attachments"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="drafts">
-                <span class="bi bi-card-text-nav-menu" aria-hidden="true"></span> Drafts
+                <span class="bi bi-card-text-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Drafts"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="drafts/generate">
-                <span class="bi bi-journal-check-nav-menu" aria-hidden="true"></span> Draft Generation
+                <span class="bi bi-journal-check-nav-menu" aria-hidden="true"></span> @Localizer["Nav.DraftGeneration"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="follow-ups">
-                <span class="bi bi-calendar-check-nav-menu" aria-hidden="true"></span> Follow-Ups
+                <span class="bi bi-calendar-check-nav-menu" aria-hidden="true"></span> @Localizer["Nav.FollowUps"]
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="imports">
-                <span class="bi bi-upload-nav-menu" aria-hidden="true"></span> Imports
+                <span class="bi bi-upload-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Imports"]
             </NavLink>
         </div>
     </nav>
 </div>
+
+@code {
+    private void SetLanguage(ChangeEventArgs args)
+    {
+        var culture = args.Value?.ToString() ?? "en-US";
+        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        var redirectUri = string.IsNullOrWhiteSpace(relativePath) ? "/" : $"/{relativePath}";
+        var setCultureUri = $"/culture/set?culture={Uri.EscapeDataString(culture)}&redirectUri={Uri.EscapeDataString(redirectUri)}";
+        NavigationManager.NavigateTo(setCultureUri, forceLoad: true);
+    }
+}
