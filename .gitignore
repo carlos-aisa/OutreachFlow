@@ -29,3 +29,4 @@ Thumbs.db
 **/TestResults/
 /coverage/
 /coverage-report/
+/artifacts/

@@ -1,42 +1,60 @@
-# Installer Release Packaging
+﻿# Installer Release Packaging
 
-`p15-release-installer-packaging` introduces deterministic installer package generation in the release workflow.
+`p16-windows-installer-wizard` replaces zip-only distribution with a real Windows installer wizard flow.
 
 ## Artifact Format
 
-Current release packaging produces:
+Current release packaging produces two assets:
 
-- `OutreachFlow-v<version>-win-x64-installer.zip`
+- `OutreachFlow-v<version>-win-x64-setup.exe`
+- `OutreachFlow-v<version>-win-x64.msi`
 
-Example:
+Example for version `0.17.0`:
 
-- `OutreachFlow-v0.16.0-win-x64-installer.zip`
+- `OutreachFlow-v0.17.0-win-x64-setup.exe`
+- `OutreachFlow-v0.17.0-win-x64.msi`
 
 ## Packaging Toolchain
 
-- `dotnet publish` targeting `win-x64` (`--self-contained false`)
-- PowerShell packaging script:
-  - `scripts/release/Build-InstallerPackage.ps1`
-- Artifact validation script:
-  - `scripts/release/Validate-InstallerPackage.ps1`
+- WiX v4 installer projects under `tools/installer/windows/`
+- PowerShell build script:
+  - `tools/installer/windows/build-installer.ps1`
+- Release artifact validation script:
+  - `scripts/release/Validate-WindowsInstallerArtifacts.ps1`
 
 ## Local Packaging
 
 Run from repository root:
 
 ```powershell
-pwsh ./scripts/release/Build-InstallerPackage.ps1 -Version 0.16.0
-pwsh ./scripts/release/Validate-InstallerPackage.ps1 -Version 0.16.0 -ArtifactPath ./artifacts/installer/OutreachFlow-v0.16.0-win-x64-installer.zip
+pwsh ./tools/installer/windows/build-installer.ps1 -Version 0.17.0 -Configuration Release
+pwsh ./scripts/release/Validate-WindowsInstallerArtifacts.ps1 -Version 0.17.0 `
+  -SetupPath ./artifacts/installer/OutreachFlow-v0.17.0-win-x64-setup.exe `
+  -MsiPath ./artifacts/installer/OutreachFlow-v0.17.0-win-x64.msi
 ```
+
+## Installation Behavior
+
+The MSI custom actions:
+
+- configure runtime data under `C:\ProgramData\OutreachFlow`,
+- configure API and Web appsettings for local service mode,
+- register and start Windows services:
+  - `OutreachFlow.Api`
+  - `OutreachFlow.Web`
+
+Uninstall removes service registrations and can optionally remove runtime data when requested.
 
 ## Release Workflow Integration
 
 The manual release workflow (`.github/workflows/release-openspec-change.yml`) now:
 
-1. builds the installer package,
-2. validates file existence, filename convention, and non-empty size,
-3. uploads the package as a workflow artifact,
-4. creates the GitHub release,
-5. uploads installer package to the release assets.
+1. validates OpenSpec release constraints,
+2. restores/builds/tests the solution,
+3. builds setup + MSI assets,
+4. validates naming and non-empty artifact output,
+5. uploads both artifacts to workflow artifacts,
+6. creates the GitHub release,
+7. uploads setup + MSI to release assets.
 
-If packaging or asset upload fails, the release job fails.
+If installer build or asset upload fails, the release job fails.

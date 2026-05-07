@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
+  <Bundle Name="OutreachFlow Setup"
+          Manufacturer="OutreachFlow"
+          Version="$(var.ProductVersion)"
+          UpgradeCode="6CE6D33D-C58F-44DB-94A2-463B171E57C4">
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication
+        Theme="hyperlinkLicense"
+        LicenseUrl="https://github.com/carlos-aisa/OutreachFlow/blob/main/LICENSE" />
+    </BootstrapperApplication>
+
+    <Chain>
+      <MsiPackage
+        Id="OutreachFlowMsi"
+        SourceFile="$(var.InstallerMsiPath)"
+        Visible="no"
+        Vital="yes" />
+    </Chain>
+  </Bundle>
+</Wix>

@@ -12,6 +12,7 @@ using OutreachFlow.Web.FollowUps;
 using OutreachFlow.Web.ContactImports;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddWindowsService();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -64,11 +65,19 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+
+    var useHsts = builder.Configuration.GetValue("Hosting:UseHsts", true);
+    if (useHsts)
+    {
+        app.UseHsts();
+    }
 }
 
-app.UseHttpsRedirection();
+var useHttpsRedirection = builder.Configuration.GetValue("Hosting:UseHttpsRedirection", true);
+if (useHttpsRedirection)
+{
+    app.UseHttpsRedirection();
+}
 app.UseRequestLocalization();
 
 app.UseStaticFiles();
