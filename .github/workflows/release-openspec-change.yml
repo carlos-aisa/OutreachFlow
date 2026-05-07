@@ -68,12 +68,13 @@ jobs:
         id: build_installer
         shell: pwsh
         run: |
-          $resultJson = ./tools/installer/windows/build-installer.ps1 `
+          ./tools/installer/windows/build-installer.ps1 `
             -Version "${{ inputs.version }}"
 
-          $result = $resultJson | ConvertFrom-Json
-          "setup_path=$($result.SetupPath)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "msi_path=$($result.MsiPath)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          $setupPath = (Resolve-Path "artifacts/installer/OutreachFlow-v${{ inputs.version }}-win-x64-setup.exe").Path
+          $msiPath = (Resolve-Path "artifacts/installer/OutreachFlow-v${{ inputs.version }}-win-x64.msi").Path
+          "setup_path=$setupPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "msi_path=$msiPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Validate installer output
         shell: pwsh
