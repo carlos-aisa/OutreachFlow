@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
-## [Unreleased]
+## [0.17.0] - 2026-05-08
 
 ### Added
 
@@ -15,7 +15,7 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
   - MSI custom action scripts for install/uninstall service configuration
 - Release artifact validation script for setup + MSI:
   - `scripts/release/Validate-WindowsInstallerArtifacts.ps1`
-- OpenSpec change proposal for `p16-windows-installer-wizard`.
+- OpenSpec archive for `p16-windows-installer-wizard`.
 
 ### Changed
 
