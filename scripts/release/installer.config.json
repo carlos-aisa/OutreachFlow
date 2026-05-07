@@ -1,7 +1,0 @@
-{
-  "productName": "OutreachFlow",
-  "architecture": "x64",
-  "runtimeIdentifier": "win-x64",
-  "publishProject": "src/OutreachFlow.Web/OutreachFlow.Web.csproj",
-  "publishConfiguration": "Release"
-}

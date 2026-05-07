@@ -9,7 +9,7 @@
 
 OutreachFlow is a lightweight CRM and controlled email outreach manager for small teams and independent professionals. It helps organize contacts, classify audiences with flexible tags, generate personalized drafts from reusable templates, attach reusable assets, send through configurable providers, and keep a complete communication history.
 
-Current stable line: `v0.13.0` ([CHANGELOG](CHANGELOG.md), [Releases](https://github.com/carlos-aisa/OutreachFlow/releases)).
+Current stable line: `v0.16.0` ([CHANGELOG](CHANGELOG.md), [Releases](https://github.com/carlos-aisa/OutreachFlow/releases)).
 
 ## Table of Contents
 
@@ -79,7 +79,7 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 - SMTP provider support (configuration-based)
 - Follow-up tasks with optional post-send automation
 - CSV contact imports with preview, duplicate detection, tag assignment, and import job tracking
-- Release installer packaging with versioned Windows installer assets in GitHub Releases
+- Windows installer wizard distribution (`setup.exe` + `.msi`) for API and Web deployment
 - Spanish localization for navigation and core contact/template management workflows
 
 ### Next
@@ -272,7 +272,9 @@ Releases are manual and controlled after an OpenSpec change is completed.
 4. Bump `VERSION` and add matching `CHANGELOG.md` section.
 5. Merge to `main` after CI passes.
 6. Run `release-openspec-change` workflow with `change_id` and `version`.
-7. Download installer asset `OutreachFlow-v<version>-win-x64-installer.zip` from the release page.
+7. Download release assets:
+   - `OutreachFlow-v<version>-win-x64-setup.exe`
+   - `OutreachFlow-v<version>-win-x64.msi`
 
 Versioning follows Semantic Versioning (`vX.Y.Z`).
 

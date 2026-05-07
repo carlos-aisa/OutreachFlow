@@ -64,29 +64,37 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release --no-build
 
-      - name: Build installer package
-        id: package_installer
+      - name: Build Windows installer
+        id: build_installer
         shell: pwsh
         run: |
-          ./scripts/release/Build-InstallerPackage.ps1 `
+          $resultJson = ./tools/installer/windows/build-installer.ps1 `
             -Version "${{ inputs.version }}"
 
-          $artifactPath = (Resolve-Path "artifacts/installer/OutreachFlow-v${{ inputs.version }}-win-x64-installer.zip").Path
-          "artifact_path=$artifactPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          $result = $resultJson | ConvertFrom-Json
+          "setup_path=$($result.SetupPath)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "msi_path=$($result.MsiPath)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
-      - name: Validate installer package output
+      - name: Validate installer output
         shell: pwsh
         run: |
-          ./scripts/release/Validate-InstallerPackage.ps1 `
+          ./scripts/release/Validate-WindowsInstallerArtifacts.ps1 `
             -Version "${{ inputs.version }}" `
-            -ArtifactPath "${{ steps.package_installer.outputs.artifact_path }}" `
-            -ExpectedArchitecture "x64"
+            -SetupPath "${{ steps.build_installer.outputs.setup_path }}" `
+            -MsiPath "${{ steps.build_installer.outputs.msi_path }}"
 
-      - name: Upload installer package artifact
+      - name: Upload setup artifact
         uses: actions/upload-artifact@v4
         with:
-          name: installer-package-v${{ inputs.version }}
-          path: ${{ steps.package_installer.outputs.artifact_path }}
+          name: installer-setup-v${{ inputs.version }}
+          path: ${{ steps.build_installer.outputs.setup_path }}
+          if-no-files-found: error
+
+      - name: Upload msi artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-msi-v${{ inputs.version }}
+          path: ${{ steps.build_installer.outputs.msi_path }}
           if-no-files-found: error
 
       - name: Extract release notes
@@ -138,12 +146,13 @@ jobs:
             --title $tag `
             --notes-file release-notes.md
 
-      - name: Upload installer package to release
+      - name: Upload installer assets to release
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: |
           $tag = "v${{ inputs.version }}"
-          $artifactPath = "${{ steps.package_installer.outputs.artifact_path }}"
+          $setupPath = "${{ steps.build_installer.outputs.setup_path }}"
+          $msiPath = "${{ steps.build_installer.outputs.msi_path }}"
 
-          gh release upload $tag $artifactPath --clobber
+          gh release upload $tag $setupPath $msiPath --clobber

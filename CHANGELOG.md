@@ -4,6 +4,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- Windows installer wizard toolchain under `tools/installer/windows`:
+  - WiX MSI project (`OutreachFlow.Installer.wixproj` + `.wxs`)
+  - WiX bootstrapper project (`OutreachFlow.Bootstrapper.wixproj` + `.wxs`)
+  - Installer orchestration script (`build-installer.ps1`)
+  - MSI custom action scripts for install/uninstall service configuration
+- Release artifact validation script for setup + MSI:
+  - `scripts/release/Validate-WindowsInstallerArtifacts.ps1`
+- OpenSpec change proposal for `p16-windows-installer-wizard`.
+
+### Changed
+
+- `release-openspec-change` workflow now builds and publishes:
+  - `OutreachFlow-v<version>-win-x64-setup.exe`
+  - `OutreachFlow-v<version>-win-x64.msi`
+- Installer strategy now uses guided install/uninstall/update behavior via MSI major upgrade instead of zip packaging.
+- API and Web startup now enable Windows service hosting mode and configurable HTTPS redirection/HSTS flags for service deployments.
+- Installer documentation and README release instructions now reference setup + MSI assets.
+
+### Removed
+
+- Legacy zip packaging scripts:
+  - `scripts/release/Build-InstallerPackage.ps1`
+  - `scripts/release/Validate-InstallerPackage.ps1`
+  - `scripts/release/installer.config.json`
+
 ## [0.16.0] - 2026-05-06
 
 ### Added

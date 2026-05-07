@@ -10,6 +10,7 @@ using OutreachFlow.Infrastructure.DependencyInjection;
 using OutreachFlow.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddWindowsService();
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -55,7 +56,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-if (!app.Environment.IsEnvironment("Testing"))
+var useHttpsRedirection = builder.Configuration.GetValue("Hosting:UseHttpsRedirection", true);
+if (!app.Environment.IsEnvironment("Testing") && useHttpsRedirection)
 {
     app.UseHttpsRedirection();
 }

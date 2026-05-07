@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package Name="OutreachFlow"
+           Manufacturer="OutreachFlow"
+           Version="$(var.ProductVersion)"
+           UpgradeCode="0F665F0D-89A2-40F7-BC06-02ABCF1D4B6D"
+           InstallerVersion="500">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLDIR" Name="OutreachFlow" />
+    </StandardDirectory>
+
+    <Property Id="RUNTIMEROOT" Value="C:\ProgramData\OutreachFlow" />
+    <Property Id="MSIREMOVEDATA" Value="0" />
+
+    <Feature Id="MainFeature" Title="OutreachFlow" Level="1">
+      <ComponentGroupRef Id="HarvestedPayload" />
+    </Feature>
+
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLDIR" />
+
+    <SetProperty
+      Id="RunInstallConfiguration"
+      Sequence="execute"
+      Before="RunInstallConfiguration"
+      Value="&quot;[System64Folder]WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;[INSTALLDIR]installer-scripts\Invoke-MsiConfigureInstall.ps1&quot; -RuntimeRoot &quot;[RUNTIMEROOT]&quot;" />
+
+    <CustomAction
+      Id="RunInstallConfiguration"
+      BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+      DllEntry="WixQuietExec"
+      Execute="deferred"
+      Return="check"
+      Impersonate="no" />
+
+    <SetProperty
+      Id="RunUninstallConfiguration"
+      Sequence="execute"
+      Before="RunUninstallConfiguration"
+      Value="&quot;[System64Folder]WindowsPowerShell\v1.0\powershell.exe&quot; -NoProfile -ExecutionPolicy Bypass -File &quot;[INSTALLDIR]installer-scripts\Invoke-MsiConfigureUninstall.ps1&quot; -RuntimeRoot &quot;[RUNTIMEROOT]&quot; -RemoveData [MSIREMOVEDATA]" />
+
+    <CustomAction
+      Id="RunUninstallConfiguration"
+      BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"
+      DllEntry="WixQuietExec"
+      Execute="deferred"
+      Return="check"
+      Impersonate="no" />
+
+    <InstallExecuteSequence>
+      <Custom Action="RunInstallConfiguration" After="InstallFiles" Condition="NOT Installed" />
+      <Custom Action="RunUninstallConfiguration" Before="RemoveFiles" Condition="REMOVE=&quot;ALL&quot;" />
+    </InstallExecuteSequence>
+  </Package>
+</Wix>
