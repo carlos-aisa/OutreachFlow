@@ -31,6 +31,7 @@ public sealed class ContactDetailTagManagementComponentTests : BunitContext
             BaseAddress = new Uri("http://localhost")
         };
 
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
         Services.AddSingleton(new ContactApiClient(httpClient));
         Services.AddSingleton(new FollowUpTaskApiClient(httpClient));
         Services.AddSingleton(new TagApiClient(httpClient));
@@ -57,6 +58,7 @@ public sealed class ContactDetailTagManagementComponentTests : BunitContext
             BaseAddress = new Uri("http://localhost")
         };
 
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
         Services.AddSingleton(new ContactApiClient(httpClient));
         Services.AddSingleton(new FollowUpTaskApiClient(httpClient));
         Services.AddSingleton(new TagApiClient(httpClient));
