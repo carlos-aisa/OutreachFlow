@@ -33,6 +33,8 @@ pwsh ./scripts/release/Validate-WindowsInstallerArtifacts.ps1 -Version 0.17.0 `
   -MsiPath ./artifacts/installer/OutreachFlow-v0.17.0-win-x64.msi
 ```
 
+`build-installer.ps1` writes build progress to the host stream and reserves standard output for its final JSON summary. This allows CI steps to either invoke it directly or safely capture the JSON result in a PowerShell variable before calling `ConvertFrom-Json`.
+
 ## Installation Behavior
 
 The MSI custom actions:

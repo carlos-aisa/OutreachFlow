@@ -15,13 +15,13 @@
         </div>
 
         <div class="language-selector-group">
-            <label class="visually-hidden" for="sidebar-language-select">Language</label>
+            <label class="visually-hidden" for="sidebar-language-select">@Localizer["Common.Language"]</label>
             <select id="sidebar-language-select"
                     class="form-select form-select-sm language-select"
                     @bind="_selectedCulture"
                     @bind:after="PersistLanguageSelectionAsync">
-                <option value="en-US">English</option>
-                <option value="es-ES">Español</option>
+                <option value="en-US">@Localizer["Common.English"]</option>
+                <option value="es-ES">@Localizer["Common.Spanish"]</option>
             </select>
         </div>
     </div>

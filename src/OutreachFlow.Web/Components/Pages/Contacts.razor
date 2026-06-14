@@ -44,7 +44,7 @@
                     <option value="">@Localizer["Contacts.Filters.AnyStatus"]</option>
                     @foreach (var status in StatusValues)
                     {
-                        <option value="@status">@status</option>
+                        <option value="@status">@FormatStatus(status)</option>
                     }
                 </select>
             </div>
@@ -129,7 +129,7 @@
                     <InputSelect id="new-contact-status" class="form-select" @bind-Value="newContact.Status">
                         @foreach (var status in StatusValues)
                         {
-                            <option value="@status">@status</option>
+                            <option value="@status">@FormatStatus(status)</option>
                         }
                     </InputSelect>
                 </div>
@@ -188,7 +188,7 @@
                             </td>
                             <td>@contact.Email</td>
                             <td>@(contact.OrganizationName ?? "-")</td>
-                            <td>@contact.Status</td>
+                            <td>@FormatStatus(contact.Status)</td>
                             <td>@(contact.DoNotContact ? Localizer["Common.Yes"] : Localizer["Common.No"])</td>
                             <td>@FormatContactTags(contact.Tags)</td>
                             <td>@FormatDate(contact.LastContactedAt)</td>
@@ -332,6 +332,11 @@
     private static string FormatTag(TagDto tag)
     {
         return string.IsNullOrWhiteSpace(tag.Category) ? tag.Name : $"{tag.Category}: {tag.Name}";
+    }
+
+    private string FormatStatus(ContactStatus status)
+    {
+        return Localizer[$"ContactStatus.{status}"];
     }
 
     private static string FormatContactTags(IReadOnlyList<ContactTagDto> contactTags)

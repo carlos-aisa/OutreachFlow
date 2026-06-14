@@ -2,16 +2,19 @@
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.Attachments
+@using OutreachFlow.Web
 @using OutreachFlow.Web.Attachments
 @inject AttachmentAssetApiClient AttachmentClient
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Attachments</PageTitle>
+<PageTitle>@Localizer["Attachments.PageTitle"]</PageTitle>
 
-<h1>Attachments</h1>
+<h1>@Localizer["Attachments.PageTitle"]</h1>
 
 <p class="text-muted">
-    Manage reusable files that can be attached to templates and reused in controlled outreach workflows.
+    @Localizer["Attachments.Description"]
 </p>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -23,7 +26,7 @@
     <div class="col-lg-5">
         <section class="card">
             <div class="card-header">
-                <h2 class="h5 mb-0">Upload attachment</h2>
+                <h2 class="h5 mb-0">@Localizer["Attachments.Form.Title"]</h2>
             </div>
             <div class="card-body">
                 <EditForm Model="form" OnValidSubmit="UploadAsync">
@@ -32,25 +35,25 @@
 
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label" for="attachment-name">Name</label>
+                            <label class="form-label" for="attachment-name">@Localizer["Common.Name"]</label>
                             <InputText id="attachment-name" class="form-control" @bind-Value="form.Name" />
                         </div>
                         <div class="col-12">
-                            <label class="form-label" for="attachment-description">Description</label>
+                            <label class="form-label" for="attachment-description">@Localizer["Common.Description"]</label>
                             <InputText id="attachment-description" class="form-control" @bind-Value="form.Description" />
                         </div>
                         <div class="col-12">
-                            <label class="form-label" for="attachment-file">File</label>
+                            <label class="form-label" for="attachment-file">@Localizer["Common.File"]</label>
                             <InputFile id="attachment-file" OnChange="OnFileSelected" />
                             @if (selectedFile is not null)
                             {
                                 <div class="form-text">
-                                    Selected: <strong>@selectedFile.Name</strong> (@FormatSize(selectedFile.Size))
+                                    @Localizer["Attachments.Form.Selected"]: <strong>@selectedFile.Name</strong> (@FormatSize(selectedFile.Size))
                                 </div>
                             }
                         </div>
                         <div class="col-12">
-                            <button type="submit" class="btn btn-success" disabled="@isUploading">Upload</button>
+                            <button type="submit" class="btn btn-success" disabled="@isUploading">@Localizer["Attachments.Form.UploadAction"]</button>
                         </div>
                     </div>
                 </EditForm>
@@ -61,29 +64,29 @@
     <div class="col-lg-7">
         <section class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 class="h5 mb-0">Attachment list</h2>
-                <span class="badge text-bg-secondary">@attachments.Count files</span>
+                <h2 class="h5 mb-0">@Localizer["Attachments.List.Title"]</h2>
+                <span class="badge text-bg-secondary">@Localizer["Attachments.List.Count", attachments.Count]</span>
             </div>
             <div class="table-responsive">
                 <table class="table table-striped table-hover mb-0">
                     <thead>
                         <tr>
-                            <th scope="col">Name</th>
-                            <th scope="col">File</th>
-                            <th scope="col">Type</th>
-                            <th scope="col">Size</th>
-                            <th scope="col">Active</th>
-                            <th scope="col">Actions</th>
+                            <th scope="col">@Localizer["Common.Name"]</th>
+                            <th scope="col">@Localizer["Common.File"]</th>
+                            <th scope="col">@Localizer["Common.Type"]</th>
+                            <th scope="col">@Localizer["Common.Size"]</th>
+                            <th scope="col">@Localizer["Common.Active"]</th>
+                            <th scope="col">@Localizer["Common.Actions"]</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if (isLoading)
                         {
-                            <tr><td colspan="6">Loading attachments...</td></tr>
+                            <tr><td colspan="6">@Localizer["Attachments.List.Loading"]</td></tr>
                         }
                         else if (attachments.Count == 0)
                         {
-                            <tr><td colspan="6">No attachments uploaded yet.</td></tr>
+                            <tr><td colspan="6">@Localizer["Attachments.List.Empty"]</td></tr>
                         }
                         else
                         {
@@ -94,14 +97,14 @@
                                     <td>@attachment.FileName</td>
                                     <td><code>@attachment.ContentType</code></td>
                                     <td>@FormatSize(attachment.SizeBytes)</td>
-                                    <td>@(attachment.IsActive ? "Yes" : "No")</td>
+                                    <td>@(attachment.IsActive ? Localizer["Common.Yes"] : Localizer["Common.No"])</td>
                                     <td>
                                         <button
                                             type="button"
                                             class="btn btn-sm btn-outline-danger"
                                             @onclick="() => DeactivateAsync(attachment.Id)"
                                             disabled="@(!attachment.IsActive)">
-                                            Deactivate
+                                            @Localizer["Common.Deactivate"]
                                         </button>
                                     </td>
                                 </tr>
@@ -142,7 +145,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -164,7 +167,7 @@
     {
         if (selectedFile is null)
         {
-            errorMessage = "Please select a file to upload.";
+            errorMessage = Localizer["Attachments.Error.SelectFile"];
             return;
         }
 
@@ -195,7 +198,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -216,7 +219,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
     }
 

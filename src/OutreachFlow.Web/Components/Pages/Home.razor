@@ -1,20 +1,23 @@
 @page "/"
 @rendermode InteractiveServer
+@using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.Contacts
 @using OutreachFlow.Application.EmailDrafts
 @using OutreachFlow.Application.FollowUps
 @using OutreachFlow.Domain.Contacts
 @using OutreachFlow.Domain.EmailDrafts
+@using OutreachFlow.Web
 @using OutreachFlow.Web.Contacts
 @using OutreachFlow.Web.EmailDrafts
 @using OutreachFlow.Web.FollowUps
 @inject ContactApiClient ContactClient
 @inject EmailDraftApiClient DraftClient
 @inject FollowUpTaskApiClient FollowUpClient
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Dashboard</PageTitle>
+<PageTitle>@Localizer["Dashboard.PageTitle"]</PageTitle>
 
-<h1>Dashboard</h1>
+<h1>@Localizer["Dashboard.PageTitle"]</h1>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
@@ -25,7 +28,7 @@
     <div class="col-md-3">
         <div class="card h-100">
             <div class="card-body">
-                <h2 class="h6 text-muted">New contacts</h2>
+                <h2 class="h6 text-muted">@Localizer["Dashboard.Metrics.NewContacts"]</h2>
                 <p class="display-6 mb-0">@newContactsCount</p>
             </div>
         </div>
@@ -33,7 +36,7 @@
     <div class="col-md-3">
         <div class="card h-100">
             <div class="card-body">
-                <h2 class="h6 text-muted">Needs review drafts</h2>
+                <h2 class="h6 text-muted">@Localizer["Dashboard.Metrics.NeedsReviewDrafts"]</h2>
                 <p class="display-6 mb-0">@needsReviewDraftsCount</p>
             </div>
         </div>
@@ -41,7 +44,7 @@
     <div class="col-md-3">
         <div class="card h-100">
             <div class="card-body">
-                <h2 class="h6 text-muted">Approved drafts</h2>
+                <h2 class="h6 text-muted">@Localizer["Dashboard.Metrics.ApprovedDrafts"]</h2>
                 <p class="display-6 mb-0">@approvedDraftsCount</p>
             </div>
         </div>
@@ -49,7 +52,7 @@
     <div class="col-md-3">
         <div class="card h-100">
             <div class="card-body">
-                <h2 class="h6 text-muted">Failed sends</h2>
+                <h2 class="h6 text-muted">@Localizer["Dashboard.Metrics.FailedSends"]</h2>
                 <p class="display-6 mb-0">@failedDraftsCount</p>
             </div>
         </div>
@@ -58,13 +61,13 @@
 
 <section class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">Pending follow-ups</h2>
-        <a class="btn btn-sm btn-outline-primary" href="/follow-ups">Open follow-ups</a>
+        <h2 class="h5 mb-0">@Localizer["Dashboard.FollowUps.Title"]</h2>
+        <a class="btn btn-sm btn-outline-primary" href="/follow-ups">@Localizer["Dashboard.FollowUps.Action"]</a>
     </div>
     <div class="card-body">
         @if (pendingFollowUps.Count == 0)
         {
-            <p class="mb-0">No pending follow-up tasks.</p>
+            <p class="mb-0">@Localizer["Dashboard.FollowUps.Empty"]</p>
         }
         else
         {
@@ -130,7 +133,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
     }
 }

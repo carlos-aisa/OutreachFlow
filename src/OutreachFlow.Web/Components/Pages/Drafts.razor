@@ -1,16 +1,19 @@
 @page "/drafts"
 @rendermode InteractiveServer
+@using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.EmailDrafts
 @using OutreachFlow.Domain.EmailDrafts
+@using OutreachFlow.Web
 @using OutreachFlow.Web.EmailDrafts
 @inject EmailDraftApiClient DraftClient
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Drafts</PageTitle>
+<PageTitle>@Localizer["Drafts.PageTitle"]</PageTitle>
 
-<h1>Drafts</h1>
+<h1>@Localizer["Drafts.PageTitle"]</h1>
 
 <p class="text-muted">
-    Review generated drafts before approval and sending.
+    @Localizer["Drafts.Description"]
 </p>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -20,23 +23,23 @@
 
 <section class="card mb-4">
     <div class="card-header">
-        <h2 class="h5 mb-0">Filters</h2>
+        <h2 class="h5 mb-0">@Localizer["Drafts.Filters.Title"]</h2>
     </div>
     <div class="card-body">
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label">Status</label>
+                <label class="form-label">@Localizer["Common.Status"]</label>
                 <select class="form-select" @bind="selectedStatus">
-                    <option value="">Any</option>
+                    <option value="">@Localizer["Drafts.Filters.AnyStatus"]</option>
                     @foreach (var status in statusValues)
                     {
-                        <option value="@status">@status</option>
+                        <option value="@status">@FormatStatus(status)</option>
                     }
                 </select>
             </div>
             <div class="col-md-8 d-flex gap-2">
-                <button class="btn btn-primary" @onclick="LoadDraftsAsync" disabled="@isLoading">Apply</button>
-                <button class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@isLoading">Clear</button>
+                <button class="btn btn-primary" @onclick="LoadDraftsAsync" disabled="@isLoading">@Localizer["Common.ApplyFilters"]</button>
+                <button class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@isLoading">@Localizer["Common.Clear"]</button>
             </div>
         </div>
     </div>
@@ -44,16 +47,16 @@
 
 <section class="card">
     <div class="card-header">
-        <h2 class="h5 mb-0">Draft list</h2>
+        <h2 class="h5 mb-0">@Localizer["Drafts.List.Title"]</h2>
     </div>
     <div class="card-body">
         @if (isLoading)
         {
-            <p class="mb-0">Loading drafts...</p>
+            <p class="mb-0">@Localizer["Drafts.List.Loading"]</p>
         }
         else if (drafts.Count == 0)
         {
-            <p class="mb-0">No drafts found for the selected filters.</p>
+            <p class="mb-0">@Localizer["Drafts.List.Empty"]</p>
         }
         else
         {
@@ -61,11 +64,11 @@
                 <table class="table table-sm align-middle">
                     <thead>
                         <tr>
-                            <th>Contact</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Updated</th>
-                            <th>Approved</th>
+                            <th>@Localizer["Common.Contact"]</th>
+                            <th>@Localizer["Common.Email"]</th>
+                            <th>@Localizer["Common.Status"]</th>
+                            <th>@Localizer["Common.Updated"]</th>
+                            <th>@Localizer["Common.Approved"]</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -75,12 +78,12 @@
                             <tr>
                                 <td>@draft.ContactDisplayName</td>
                                 <td>@draft.ContactEmail</td>
-                                <td>@draft.Status</td>
+                                <td>@FormatStatus(draft.Status)</td>
                                 <td>@draft.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                                 <td>@FormatDate(draft.ApprovedAt)</td>
                                 <td class="text-end">
                                     <a class="btn btn-sm btn-outline-primary" href="@($"/drafts/{draft.Id}")">
-                                        Review
+                                        @Localizer["Drafts.List.ReviewAction"]
                                     </a>
                                 </td>
                             </tr>
@@ -119,7 +122,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -136,6 +139,11 @@
     private static EmailDraftStatus? ParseStatus(string? value)
     {
         return Enum.TryParse<EmailDraftStatus>(value, out var status) ? status : null;
+    }
+
+    private string FormatStatus(EmailDraftStatus status)
+    {
+        return Localizer[$"EmailDraftStatus.{status}"];
     }
 
     private static string FormatDate(DateTimeOffset? value)

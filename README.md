@@ -80,7 +80,7 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 - Follow-up tasks with optional post-send automation
 - CSV contact imports with preview, duplicate detection, tag assignment, and import job tracking
 - Windows installer wizard distribution (`setup.exe` + `.msi`) for API and Web deployment
-- Spanish localization for navigation and core contact/template management workflows, with persisted Web language selection for already localized surfaces
+- Spanish localization across the supported Web workflows, including dashboard, contacts, sender profiles, templates, drafts, follow-ups, attachments, and imports, with persisted language selection
 
 ### Next
 
