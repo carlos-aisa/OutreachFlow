@@ -1,19 +1,24 @@
 @page "/contacts/{ContactId:guid}"
 @rendermode InteractiveServer
+@using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.ContactActivities
 @using OutreachFlow.Application.Contacts
 @using OutreachFlow.Application.FollowUps
 @using OutreachFlow.Application.Tags
+@using OutreachFlow.Domain.Contacts
+@using OutreachFlow.Domain.FollowUps
+@using OutreachFlow.Web
 @using OutreachFlow.Web.Contacts
 @using OutreachFlow.Web.FollowUps
 @using OutreachFlow.Web.Tags
 @inject ContactApiClient ContactClient
 @inject FollowUpTaskApiClient FollowUpClient
 @inject TagApiClient TagClient
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Contact Detail</PageTitle>
+<PageTitle>@Localizer["ContactDetail.PageTitle"]</PageTitle>
 
-<h1>Contact Detail</h1>
+<h1>@Localizer["ContactDetail.PageTitle"]</h1>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
@@ -22,46 +27,46 @@
 
 @if (isLoading)
 {
-    <p>Loading contact detail...</p>
+    <p>@Localizer["ContactDetail.Loading"]</p>
 }
 else if (contact is null)
 {
-    <p>Contact not found.</p>
+    <p>@Localizer["ContactDetail.NotFound"]</p>
 }
 else
 {
     <section class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-0">Contact summary</h2>
-            <a class="btn btn-sm btn-outline-primary" href="/contacts">Back to contacts</a>
+            <h2 class="h5 mb-0">@Localizer["ContactDetail.Summary.Title"]</h2>
+            <a class="btn btn-sm btn-outline-primary" href="/contacts">@Localizer["ContactDetail.Summary.BackToContacts"]</a>
         </div>
         <div class="card-body">
             <dl class="row mb-0">
-                <dt class="col-sm-3">Display name</dt>
+                <dt class="col-sm-3">@Localizer["Common.DisplayName"]</dt>
                 <dd class="col-sm-9">@contact.DisplayName</dd>
 
-                <dt class="col-sm-3">Email</dt>
+                <dt class="col-sm-3">@Localizer["Common.Email"]</dt>
                 <dd class="col-sm-9">@contact.Email</dd>
 
-                <dt class="col-sm-3">Organization</dt>
+                <dt class="col-sm-3">@Localizer["Common.Organization"]</dt>
                 <dd class="col-sm-9">@(contact.OrganizationName ?? "-")</dd>
 
-                <dt class="col-sm-3">Status</dt>
-                <dd class="col-sm-9">@contact.Status</dd>
+                <dt class="col-sm-3">@Localizer["Common.Status"]</dt>
+                <dd class="col-sm-9">@FormatContactStatus(contact.Status)</dd>
 
-                <dt class="col-sm-3">Do not contact</dt>
-                <dd class="col-sm-9">@(contact.DoNotContact ? "Yes" : "No")</dd>
+                <dt class="col-sm-3">@Localizer["Common.DoNotContact"]</dt>
+                <dd class="col-sm-9">@(contact.DoNotContact ? Localizer["Common.Yes"] : Localizer["Common.No"])</dd>
 
-                <dt class="col-sm-3">Role</dt>
+                <dt class="col-sm-3">@Localizer["Common.Role"]</dt>
                 <dd class="col-sm-9">@(contact.Role ?? "-")</dd>
 
-                <dt class="col-sm-3">Source</dt>
+                <dt class="col-sm-3">@Localizer["Common.Source"]</dt>
                 <dd class="col-sm-9">@(contact.Source ?? "-")</dd>
 
-                <dt class="col-sm-3">Phone</dt>
+                <dt class="col-sm-3">@Localizer["Common.Phone"]</dt>
                 <dd class="col-sm-9">@(contact.Phone ?? "-")</dd>
 
-                <dt class="col-sm-3">Last contacted</dt>
+                <dt class="col-sm-3">@Localizer["Contacts.List.LastContacted"]</dt>
                 <dd class="col-sm-9">@FormatDate(contact.LastContactedAt)</dd>
             </dl>
         </div>
@@ -69,17 +74,17 @@ else
 
     <section class="card mb-4">
         <div class="card-header">
-            <h2 class="h5 mb-0">Contact tags</h2>
+            <h2 class="h5 mb-0">@Localizer["ContactDetail.Tags.Title"]</h2>
         </div>
         <div class="card-body">
             <div class="row g-3 align-items-end">
                 <div class="col-md-9">
-                    <label class="form-label" for="contact-tag-select">Add tag</label>
+                    <label class="form-label" for="contact-tag-select">@Localizer["ContactDetail.Tags.AddLabel"]</label>
                     <select id="contact-tag-select"
                             class="form-select"
                             @bind="selectedTagId"
                             disabled="@isTagSaving">
-                        <option value="">Select a tag</option>
+                        <option value="">@Localizer["ContactDetail.Tags.Select"]</option>
                         @foreach (var tag in assignableTags)
                         {
                             <option value="@tag.Id">@FormatTag(tag.Name, tag.Category)</option>
@@ -89,11 +94,11 @@ else
                     {
                         @if (tags.Count == 0)
                         {
-                            <div class="form-text">No tags are available. Create tags first.</div>
+                            <div class="form-text">@Localizer["ContactDetail.Tags.NoAvailable"]</div>
                         }
                         else
                         {
-                            <div class="form-text">All available tags are already assigned to this contact.</div>
+                            <div class="form-text">@Localizer["ContactDetail.Tags.AllAssigned"]</div>
                         }
                     }
                 </div>
@@ -103,14 +108,14 @@ else
                             id="assign-contact-tag"
                             @onclick="AssignTagAsync"
                             disabled="@(!CanAssignTag)">
-                        Add tag
+                        @Localizer["Common.Add"]
                     </button>
                 </div>
             </div>
 
             @if (contact.Tags.Count == 0)
             {
-                <p class="text-muted mt-3 mb-0">No tags assigned yet.</p>
+                <p class="text-muted mt-3 mb-0">@Localizer["ContactDetail.Tags.Empty"]</p>
             }
             else
             {
@@ -118,8 +123,8 @@ else
                     <table class="table table-sm align-middle mb-0">
                         <thead>
                             <tr>
-                                <th scope="col">Tag</th>
-                                <th scope="col" class="text-end">Action</th>
+                                <th scope="col">@Localizer["Common.Tag"]</th>
+                                <th scope="col" class="text-end">@Localizer["Common.Actions"]</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -132,7 +137,7 @@ else
                                                 class="btn btn-sm btn-outline-danger"
                                                 @onclick="() => RemoveTagAsync(tag.Id)"
                                                 disabled="@isTagSaving">
-                                            Remove
+                                            @Localizer["Common.Remove"]
                                         </button>
                                     </td>
                                 </tr>
@@ -146,13 +151,13 @@ else
 
     <section class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-0">Activity timeline</h2>
-            <span class="badge text-bg-secondary">@activities.Count events</span>
+            <h2 class="h5 mb-0">@Localizer["ContactDetail.Activity.Title"]</h2>
+            <span class="badge text-bg-secondary">@Localizer["ContactDetail.Activity.Count", activities.Count]</span>
         </div>
         <div class="card-body">
             @if (activities.Count == 0)
             {
-                <p class="mb-0">No activity has been recorded for this contact yet.</p>
+                <p class="mb-0">@Localizer["ContactDetail.Activity.Empty"]</p>
             }
             else
             {
@@ -160,11 +165,11 @@ else
                     <table class="table table-sm align-middle mb-0">
                         <thead>
                             <tr>
-                                <th scope="col">Occurred</th>
-                                <th scope="col">Type</th>
-                                <th scope="col">Subject</th>
-                                <th scope="col">Body preview</th>
-                                <th scope="col">Metadata</th>
+                                <th scope="col">@Localizer["ContactDetail.Activity.Occurred"]</th>
+                                <th scope="col">@Localizer["Common.Type"]</th>
+                                <th scope="col">@Localizer["Common.Subject"]</th>
+                                <th scope="col">@Localizer["ContactDetail.Activity.BodyPreview"]</th>
+                                <th scope="col">@Localizer["Common.Metadata"]</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -187,13 +192,13 @@ else
 
     <section class="card mt-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-0">Follow-up tasks</h2>
-            <a class="btn btn-sm btn-outline-primary" href="/follow-ups">Manage follow-ups</a>
+            <h2 class="h5 mb-0">@Localizer["ContactDetail.FollowUps.Title"]</h2>
+            <a class="btn btn-sm btn-outline-primary" href="/follow-ups">@Localizer["ContactDetail.FollowUps.ManageAction"]</a>
         </div>
         <div class="card-body">
             @if (followUps.Count == 0)
             {
-                <p class="mb-0">No follow-up tasks for this contact.</p>
+                <p class="mb-0">@Localizer["ContactDetail.FollowUps.Empty"]</p>
             }
             else
             {
@@ -201,10 +206,10 @@ else
                     <table class="table table-sm mb-0">
                         <thead>
                             <tr>
-                                <th scope="col">Due</th>
-                                <th scope="col">Type</th>
-                                <th scope="col">Notes</th>
-                                <th scope="col">Status</th>
+                                <th scope="col">@Localizer["Common.Due"]</th>
+                                <th scope="col">@Localizer["Common.Type"]</th>
+                                <th scope="col">@Localizer["Common.Notes"]</th>
+                                <th scope="col">@Localizer["Common.Status"]</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -212,9 +217,9 @@ else
                             {
                                 <tr>
                                     <td>@FormatDate(task.DueAt)</td>
-                                    <td>@task.Type</td>
+                                    <td>@FormatTaskType(task.Type)</td>
                                     <td>@(string.IsNullOrWhiteSpace(task.Notes) ? "-" : task.Notes)</td>
-                                    <td>@(task.IsCompleted ? "Completed" : "Pending")</td>
+                                    <td>@(task.IsCompleted ? Localizer["FollowUps.Status.Completed"] : Localizer["FollowUps.Status.Pending"])</td>
                                 </tr>
                             }
                         </tbody>
@@ -274,7 +279,7 @@ else
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
             contact = null;
             activities = [];
             followUps = [];
@@ -331,7 +336,7 @@ else
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -383,6 +388,16 @@ else
     private static string FormatTag(string name, string? category)
     {
         return string.IsNullOrWhiteSpace(category) ? name : $"{category}: {name}";
+    }
+
+    private string FormatContactStatus(ContactStatus status)
+    {
+        return Localizer[$"ContactStatus.{status}"];
+    }
+
+    private string FormatTaskType(FollowUpTaskType type)
+    {
+        return Localizer[$"FollowUpTaskType.{type}"];
     }
 
     private bool CanAssignTag => !isTagSaving &&

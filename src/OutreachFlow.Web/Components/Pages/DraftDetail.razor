@@ -1,13 +1,16 @@
 @page "/drafts/{DraftId:guid}"
 @rendermode InteractiveServer
+@using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.EmailDrafts
 @using OutreachFlow.Domain.EmailDrafts
+@using OutreachFlow.Web
 @using OutreachFlow.Web.EmailDrafts
 @inject EmailDraftApiClient DraftClient
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Draft Review</PageTitle>
+<PageTitle>@Localizer["DraftDetail.PageTitle"]</PageTitle>
 
-<h1>Draft Review</h1>
+<h1>@Localizer["DraftDetail.PageTitle"]</h1>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
@@ -21,42 +24,42 @@
 
 @if (isLoading)
 {
-    <p>Loading draft...</p>
+    <p>@Localizer["DraftDetail.Loading"]</p>
 }
 else if (draft is null)
 {
-    <p>Draft not found.</p>
+    <p>@Localizer["DraftDetail.NotFound"]</p>
 }
 else
 {
     <section class="card mb-4">
         <div class="card-header">
-            <h2 class="h5 mb-0">Summary</h2>
+            <h2 class="h5 mb-0">@Localizer["Common.Summary"]</h2>
         </div>
         <div class="card-body">
             <dl class="row mb-0">
-                <dt class="col-sm-3">Contact</dt>
+                <dt class="col-sm-3">@Localizer["Common.Contact"]</dt>
                 <dd class="col-sm-9">@draft.ContactDisplayName (@draft.ContactEmail)</dd>
 
-                <dt class="col-sm-3">Status</dt>
-                <dd class="col-sm-9">@draft.Status</dd>
+                <dt class="col-sm-3">@Localizer["Common.Status"]</dt>
+                <dd class="col-sm-9">@FormatStatus(draft.Status)</dd>
 
-                <dt class="col-sm-3">Created</dt>
+                <dt class="col-sm-3">@Localizer["Common.Created"]</dt>
                 <dd class="col-sm-9">@FormatDate(draft.CreatedAt)</dd>
 
-                <dt class="col-sm-3">Updated</dt>
+                <dt class="col-sm-3">@Localizer["Common.Updated"]</dt>
                 <dd class="col-sm-9">@FormatDate(draft.UpdatedAt)</dd>
 
-                <dt class="col-sm-3">Approved</dt>
+                <dt class="col-sm-3">@Localizer["Common.Approved"]</dt>
                 <dd class="col-sm-9">@FormatDate(draft.ApprovedAt)</dd>
 
-                <dt class="col-sm-3">Cancelled</dt>
+                <dt class="col-sm-3">@Localizer["Common.Cancelled"]</dt>
                 <dd class="col-sm-9">@FormatDate(draft.CancelledAt)</dd>
 
-                <dt class="col-sm-3">Sent</dt>
+                <dt class="col-sm-3">@Localizer["Common.Sent"]</dt>
                 <dd class="col-sm-9">@FormatDate(draft.SentAt)</dd>
 
-                <dt class="col-sm-3">Failure reason</dt>
+                <dt class="col-sm-3">@Localizer["Common.FailureReason"]</dt>
                 <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(draft.FailureReason) ? "-" : draft.FailureReason)</dd>
             </dl>
         </div>
@@ -64,51 +67,51 @@ else
 
     <section class="card mb-4">
         <div class="card-header">
-            <h2 class="h5 mb-0">Draft content</h2>
+            <h2 class="h5 mb-0">@Localizer["DraftDetail.Content.Title"]</h2>
         </div>
         <div class="card-body">
             <div class="mb-3">
-                <label class="form-label">Subject</label>
+                <label class="form-label">@Localizer["Common.Subject"]</label>
                 <input class="form-control" @bind="editableSubject" />
             </div>
             <div class="mb-3">
-                <label class="form-label">Body</label>
+                <label class="form-label">@Localizer["Common.Body"]</label>
                 <textarea class="form-control" rows="12" @bind="editableBody"></textarea>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isBusy">Save</button>
-                <button class="btn btn-success" @onclick="ApproveAsync" disabled="@isBusy">Approve</button>
-                <button class="btn btn-warning" @onclick="SendAsync" disabled="@(!canSend || isBusy)">Send</button>
-                <button class="btn btn-outline-danger" @onclick="CancelAsync" disabled="@isBusy">Cancel draft</button>
+                <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isBusy">@Localizer["Common.Save"]</button>
+                <button class="btn btn-success" @onclick="ApproveAsync" disabled="@isBusy">@Localizer["Common.Approve"]</button>
+                <button class="btn btn-warning" @onclick="SendAsync" disabled="@(!canSend || isBusy)">@Localizer["Common.Send"]</button>
+                <button class="btn btn-outline-danger" @onclick="CancelAsync" disabled="@isBusy">@Localizer["DraftDetail.Actions.CancelDraft"]</button>
             </div>
         </div>
     </section>
 
     <section class="card mb-4">
         <div class="card-header">
-            <h2 class="h5 mb-0">Diagnostics</h2>
+            <h2 class="h5 mb-0">@Localizer["DraftDetail.Diagnostics.Title"]</h2>
         </div>
         <div class="card-body">
             <p class="mb-1">
-                Render errors: <strong>@(draft.HasRenderErrors ? "Yes" : "No")</strong>
+                @Localizer["DraftDetail.Diagnostics.RenderErrors"]: <strong>@(draft.HasRenderErrors ? Localizer["Common.Yes"] : Localizer["Common.No"])</strong>
             </p>
             <p class="mb-1">
-                Missing variables: <strong>@FormatVariables(draft.MissingVariables)</strong>
+                @Localizer["DraftDetail.Diagnostics.MissingVariables"]: <strong>@FormatVariables(draft.MissingVariables)</strong>
             </p>
             <p class="mb-0">
-                Unknown variables: <strong>@FormatVariables(draft.UnknownVariables)</strong>
+                @Localizer["DraftDetail.Diagnostics.UnknownVariables"]: <strong>@FormatVariables(draft.UnknownVariables)</strong>
             </p>
         </div>
     </section>
 
     <section class="card">
         <div class="card-header">
-            <h2 class="h5 mb-0">Attachments</h2>
+            <h2 class="h5 mb-0">@Localizer["Nav.Attachments"]</h2>
         </div>
         <div class="card-body">
             @if (draft.AttachmentAssetIds.Count == 0)
             {
-                <p class="mb-0">No attachments associated with this draft.</p>
+                <p class="mb-0">@Localizer["DraftDetail.Attachments.Empty"]</p>
             }
             else
             {
@@ -164,7 +167,7 @@ else
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
             draft = null;
         }
         finally
@@ -191,7 +194,7 @@ else
                 new UpdateEmailDraftRequest(editableSubject, editableBody));
             editableSubject = draft.Subject;
             editableBody = draft.Body;
-            successMessage = "Draft updated.";
+            successMessage = Localizer["DraftDetail.Success.Updated"];
         }
         catch (InvalidOperationException exception)
         {
@@ -199,7 +202,7 @@ else
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -221,7 +224,7 @@ else
         try
         {
             draft = await DraftClient.ApproveAsync(draft.Id);
-            successMessage = "Draft approved.";
+            successMessage = Localizer["DraftDetail.Success.Approved"];
         }
         catch (InvalidOperationException exception)
         {
@@ -229,7 +232,7 @@ else
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -251,7 +254,7 @@ else
         try
         {
             draft = await DraftClient.CancelAsync(draft.Id);
-            successMessage = "Draft cancelled.";
+            successMessage = Localizer["DraftDetail.Success.Cancelled"];
         }
         catch (InvalidOperationException exception)
         {
@@ -259,7 +262,7 @@ else
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -282,8 +285,8 @@ else
         {
             draft = await DraftClient.SendApprovedAsync(draft.Id);
             successMessage = draft.Status == EmailDraftStatus.Sent
-                ? "Draft sent."
-                : "Draft send attempt recorded with failure status.";
+                ? Localizer["DraftDetail.Success.Sent"]
+                : Localizer["DraftDetail.Success.SendFailed"];
         }
         catch (InvalidOperationException exception)
         {
@@ -291,7 +294,7 @@ else
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -302,6 +305,11 @@ else
     private static string FormatVariables(IReadOnlyList<string> variables)
     {
         return variables.Count == 0 ? "-" : string.Join(", ", variables);
+    }
+
+    private string FormatStatus(EmailDraftStatus status)
+    {
+        return Localizer[$"EmailDraftStatus.{status}"];
     }
 
     private static string FormatDate(DateTimeOffset? value)
