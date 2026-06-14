@@ -23,6 +23,26 @@ function Convert-ToMsiVersion {
     return "{0}.{1}.{2}" -f [int]$parts[0], [int]$parts[1], [int]$parts[2]
 }
 
+function Invoke-LoggedCommand {
+    param(
+        [Parameter(Mandatory = $true)] [string]$FilePath,
+        [Parameter()] [string[]]$Arguments = @()
+    )
+
+    & $FilePath @Arguments | Out-Host
+
+    if ($LASTEXITCODE -ne 0) {
+        $renderedArguments = if ($Arguments.Count -eq 0) {
+            ""
+        }
+        else {
+            " " + ($Arguments -join " ")
+        }
+
+        throw "Command '$FilePath$renderedArguments' failed with exit code $LASTEXITCODE."
+    }
+}
+
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..\..")
 $artifactsRoot = Join-Path $repoRoot "artifacts\installer"
 $layoutRoot = Join-Path $artifactsRoot "msi-layout"
@@ -47,21 +67,25 @@ New-Item -ItemType Directory -Path $scriptsLayout -Force | Out-Null
 
 Push-Location $repoRoot
 try {
-    dotnet publish $apiProject `
-        --configuration $Configuration `
-        --runtime win-x64 `
-        --self-contained true `
-        /p:PublishSingleFile=false `
-        /p:PublishTrimmed=false `
-        --output $apiLayout
+    Invoke-LoggedCommand -FilePath "dotnet" -Arguments @(
+        "publish",
+        $apiProject,
+        "--configuration", $Configuration,
+        "--runtime", "win-x64",
+        "--self-contained", "true",
+        "/p:PublishSingleFile=false",
+        "/p:PublishTrimmed=false",
+        "--output", $apiLayout)
 
-    dotnet publish $webProject `
-        --configuration $Configuration `
-        --runtime win-x64 `
-        --self-contained true `
-        /p:PublishSingleFile=false `
-        /p:PublishTrimmed=false `
-        --output $webLayout
+    Invoke-LoggedCommand -FilePath "dotnet" -Arguments @(
+        "publish",
+        $webProject,
+        "--configuration", $Configuration,
+        "--runtime", "win-x64",
+        "--self-contained", "true",
+        "/p:PublishSingleFile=false",
+        "/p:PublishTrimmed=false",
+        "--output", $webLayout)
 
     Copy-Item -Path (Join-Path $PSScriptRoot "scripts\*.ps1") -Destination $scriptsLayout -Force
 
@@ -76,15 +100,14 @@ try {
     $msiVersion = Convert-ToMsiVersion -InputVersion $Version
     $msiOutputName = "OutreachFlow-v{0}-win-x64" -f $Version
 
-    dotnet build $wixProject -c $Configuration `
-        /p:ProductVersion=$msiVersion `
-        /p:MsiSourceDir=$layoutRoot `
-        /p:OutputName=$msiOutputName `
-        /p:OutputPath="$artifactsRoot\"
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "WiX MSI build failed with exit code $LASTEXITCODE."
-    }
+    Invoke-LoggedCommand -FilePath "dotnet" -Arguments @(
+        "build",
+        $wixProject,
+        "-c", $Configuration,
+        "/p:ProductVersion=$msiVersion",
+        "/p:MsiSourceDir=$layoutRoot",
+        "/p:OutputName=$msiOutputName",
+        "/p:OutputPath=$artifactsRoot\")
 
     if (-not (Test-Path $msiFile)) {
         $candidateMsi = Get-ChildItem -Path (Join-Path $PSScriptRoot "wix") -Recurse -Filter ("OutreachFlow-v{0}-win-x64.msi" -f $Version) |
@@ -100,15 +123,14 @@ try {
 
     $setupOutputName = "OutreachFlow-v{0}-win-x64-setup" -f $Version
 
-    dotnet build $bootstrapperProject -c $Configuration `
-        /p:ProductVersion=$msiVersion `
-        /p:InstallerMsiPath=$msiFile `
-        /p:OutputName=$setupOutputName `
-        /p:OutputPath="$artifactsRoot\"
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "WiX bootstrapper build failed with exit code $LASTEXITCODE."
-    }
+    Invoke-LoggedCommand -FilePath "dotnet" -Arguments @(
+        "build",
+        $bootstrapperProject,
+        "-c", $Configuration,
+        "/p:ProductVersion=$msiVersion",
+        "/p:InstallerMsiPath=$msiFile",
+        "/p:OutputName=$setupOutputName",
+        "/p:OutputPath=$artifactsRoot\")
 
     if (-not (Test-Path $setupFile)) {
         $candidateSetup = Get-ChildItem -Path (Join-Path $PSScriptRoot "bootstrapper") -Recurse -Filter ("OutreachFlow-v{0}-win-x64-setup.exe" -f $Version) |
