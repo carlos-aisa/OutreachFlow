@@ -1,7 +1,9 @@
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Text;
 using Bunit;
+using Bunit.TestDoubles;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using OutreachFlow.Web.Components.Layout;
@@ -18,6 +20,7 @@ public sealed class WebLocalizationComponentTests : BunitContext
     public void ShouldRenderNavigationInSpanish()
     {
         using var cultureScope = UseCulture("es-ES");
+        JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("es-ES");
         Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
         var component = Render<NavMenu>();
@@ -28,9 +31,51 @@ public sealed class WebLocalizationComponentTests : BunitContext
     }
 
     [Fact]
+    public void ShouldRenderSpanishLanguageSelectorAsSelected()
+    {
+        using var cultureScope = UseCulture("es-ES");
+        JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        var component = Render<NavMenu>();
+
+        component.WaitForAssertion(() =>
+            component.Find("#sidebar-language-select").GetAttribute("value").Should().Be("es-ES"));
+    }
+
+    [Fact]
+    public async Task ShouldPersistLanguageSelectionAndForceReloadCurrentRoute()
+    {
+        using var cultureScope = UseCulture("en-US");
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("en-US");
+        var setCultureCall = JSInterop.Setup<string>("cultureHelper.setCulture", invocation =>
+            invocation.Arguments.Count == 1 &&
+            string.Equals(invocation.Arguments[0]?.ToString(), "es-ES", StringComparison.Ordinal))
+            .SetResult("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+        var currentUri = nav.Uri;
+        var component = Render<NavMenu>();
+
+        await component.InvokeAsync(() => component.Find("#sidebar-language-select").Change("es-ES"));
+
+        component.WaitForAssertion(() =>
+        {
+            setCultureCall.Invocations.Should().ContainSingle();
+            nav.Uri.Should().Be(currentUri);
+            nav.History.Should().NotBeEmpty();
+            nav.History.First().Uri.Should().Be(currentUri);
+            nav.History.First().Options.ForceLoad.Should().BeTrue();
+        });
+    }
+
+    [Fact]
     public void ShouldRenderContactsPageLabelsInSpanish()
     {
         using var cultureScope = UseCulture("es-ES");
+        JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("es-ES");
         Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
         var httpClient = new HttpClient(new EmptyArrayJsonHandler())

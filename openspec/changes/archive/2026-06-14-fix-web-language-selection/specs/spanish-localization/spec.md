@@ -1,9 +1,4 @@
-# spanish-localization Specification
-
-## Purpose
-Define the Spanish localization expectations for OutreachFlow Web and API surfaces, including how the active culture is selected, persisted, and reflected in localized UI areas.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Spanish UI localization
 The system SHALL provide Spanish translations for user-facing Web UI navigation, page labels, forms, and action buttons in core workflows, and localized surfaces SHALL reflect the active culture selected by the user.
@@ -15,13 +10,6 @@ The system SHALL provide Spanish translations for user-facing Web UI navigation,
 #### Scenario: Render localized navigation in Spanish after selection
 - **WHEN** a user selects Spanish from the Web language selector
 - **THEN** the navigation menu is rendered in Spanish after the redirect completes
-
-### Requirement: Spanish validation and error messages
-The system SHALL provide Spanish localized messages for user-facing validation and known API error responses.
-
-#### Scenario: Return Spanish validation message
-- **WHEN** a request fails a known validation rule and active culture is Spanish
-- **THEN** the response message is returned in Spanish
 
 ### Requirement: Culture selection and fallback
 The system SHALL resolve culture using explicit user selection first, then request language hints, and finally a configured default culture, and the Web language selector SHALL persist the user's chosen culture for later visits.
@@ -42,12 +30,7 @@ The system SHALL resolve culture using explicit user selection first, then reque
 - **WHEN** no supported language is resolved from user preference or request headers
 - **THEN** the application uses the configured default culture
 
-### Requirement: Localization coverage for key workflows
-The system SHALL include Spanish localization for organization, contacts, tags, sender profiles, and templates user flows.
-
-#### Scenario: Open templates flow in Spanish
-- **WHEN** a Spanish-culture user navigates to templates pages
-- **THEN** list and form text in that workflow are displayed in Spanish
+## ADDED Requirements
 
 ### Requirement: Language selector layout
 The system SHALL present the Web language selector within the sidebar layout without overlapping or displacing navigation content on supported viewport sizes.

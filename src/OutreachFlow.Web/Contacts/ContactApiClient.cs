@@ -66,6 +66,31 @@ public sealed class ContactApiClient(HttpClient httpClient)
             cancellationToken);
     }
 
+    public async Task AssignTagAsync(
+        Guid contactId,
+        Guid tagId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PostAsync(
+            $"api/v1/contacts/{contactId}/tags/{tagId}",
+            content: null,
+            cancellationToken);
+
+        await ApiClientJson.EnsureSuccessAsync(response, cancellationToken);
+    }
+
+    public async Task RemoveTagAsync(
+        Guid contactId,
+        Guid tagId,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.DeleteAsync(
+            $"api/v1/contacts/{contactId}/tags/{tagId}",
+            cancellationToken);
+
+        await ApiClientJson.EnsureSuccessAsync(response, cancellationToken);
+    }
+
     private static void AddIfNotBlank(
         IDictionary<string, string?> query,
         string key,

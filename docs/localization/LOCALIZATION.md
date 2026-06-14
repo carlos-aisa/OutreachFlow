@@ -24,7 +24,15 @@ Selecting a language calls:
 
 - `GET /culture/set?culture=<culture>&redirectUri=<relative-path>`
 
-The endpoint stores `CookieRequestCultureProvider.DefaultCookieName` and redirects back to the requested page.
+The Web language selector mirrors the chosen culture into both browser storage and `CookieRequestCultureProvider.DefaultCookieName`, then forces a reload of the current route so the next render uses the new culture.
+
+The `/culture/set` endpoint remains available as a server-side fallback and stores the same culture cookie as root-scoped (`Path=/`) before redirecting back to the requested page.
+
+This means:
+
+- The selected culture is applied on the next page render after the redirect.
+- The preference is reused on later visits without adding `culture` to normal navigation URLs.
+- The last selected supported culture remains active after restarting the Web application because the browser continues sending the cookie.
 
 ## Resource File Conventions
 

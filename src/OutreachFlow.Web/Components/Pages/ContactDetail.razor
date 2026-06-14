@@ -3,10 +3,13 @@
 @using OutreachFlow.Application.ContactActivities
 @using OutreachFlow.Application.Contacts
 @using OutreachFlow.Application.FollowUps
+@using OutreachFlow.Application.Tags
 @using OutreachFlow.Web.Contacts
 @using OutreachFlow.Web.FollowUps
+@using OutreachFlow.Web.Tags
 @inject ContactApiClient ContactClient
 @inject FollowUpTaskApiClient FollowUpClient
+@inject TagApiClient TagClient
 
 <PageTitle>Contact Detail</PageTitle>
 
@@ -61,6 +64,83 @@ else
                 <dt class="col-sm-3">Last contacted</dt>
                 <dd class="col-sm-9">@FormatDate(contact.LastContactedAt)</dd>
             </dl>
+        </div>
+    </section>
+
+    <section class="card mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Contact tags</h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-9">
+                    <label class="form-label" for="contact-tag-select">Add tag</label>
+                    <select id="contact-tag-select"
+                            class="form-select"
+                            @bind="selectedTagId"
+                            disabled="@isTagSaving">
+                        <option value="">Select a tag</option>
+                        @foreach (var tag in assignableTags)
+                        {
+                            <option value="@tag.Id">@FormatTag(tag.Name, tag.Category)</option>
+                        }
+                    </select>
+                    @if (assignableTags.Count == 0)
+                    {
+                        @if (tags.Count == 0)
+                        {
+                            <div class="form-text">No tags are available. Create tags first.</div>
+                        }
+                        else
+                        {
+                            <div class="form-text">All available tags are already assigned to this contact.</div>
+                        }
+                    }
+                </div>
+                <div class="col-md-3">
+                    <button type="button"
+                            class="btn btn-primary w-100"
+                            id="assign-contact-tag"
+                            @onclick="AssignTagAsync"
+                            disabled="@(!CanAssignTag)">
+                        Add tag
+                    </button>
+                </div>
+            </div>
+
+            @if (contact.Tags.Count == 0)
+            {
+                <p class="text-muted mt-3 mb-0">No tags assigned yet.</p>
+            }
+            else
+            {
+                <div class="table-responsive mt-3">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Tag</th>
+                                <th scope="col" class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var tag in contact.Tags)
+                            {
+                                <tr>
+                                    <td>@FormatTag(tag.Name, tag.Category)</td>
+                                    <td class="text-end">
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                @onclick="() => RemoveTagAsync(tag.Id)"
+                                                disabled="@isTagSaving">
+                                            Remove
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </section>
 
@@ -152,8 +232,12 @@ else
     private ContactDto? contact;
     private IReadOnlyList<ContactActivityDto> activities = [];
     private IReadOnlyList<FollowUpTaskDto> followUps = [];
+    private IReadOnlyList<TagDto> tags = [];
+    private IReadOnlyList<TagDto> assignableTags = [];
     private bool isLoading;
+    private bool isTagSaving;
     private string? errorMessage;
+    private string? selectedTagId;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -175,6 +259,8 @@ else
                 DueFrom: null,
                 DueTo: null,
                 Limit: 20));
+            tags = await TagClient.ListAsync();
+            UpdateAssignableTagSelection(contact);
         }
         catch (InvalidOperationException exception)
         {
@@ -182,6 +268,9 @@ else
             contact = null;
             activities = [];
             followUps = [];
+            tags = [];
+            assignableTags = [];
+            selectedTagId = null;
         }
         catch (HttpRequestException exception)
         {
@@ -189,12 +278,116 @@ else
             contact = null;
             activities = [];
             followUps = [];
+            tags = [];
+            assignableTags = [];
+            selectedTagId = null;
         }
         finally
         {
             isLoading = false;
         }
     }
+
+    private async Task AssignTagAsync()
+    {
+        if (contact is null || !Guid.TryParse(selectedTagId, out var tagId))
+        {
+            return;
+        }
+
+        await SaveTagChangeAsync(async () =>
+        {
+            await ContactClient.AssignTagAsync(ContactId, tagId);
+            await RefreshContactTagsAsync();
+        });
+    }
+
+    private async Task RemoveTagAsync(Guid tagId)
+    {
+        if (contact is null)
+        {
+            return;
+        }
+
+        await SaveTagChangeAsync(async () =>
+        {
+            await ContactClient.RemoveTagAsync(ContactId, tagId);
+            await RefreshContactTagsAsync();
+        });
+    }
+
+    private async Task SaveTagChangeAsync(Func<Task> operation)
+    {
+        isTagSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            await operation();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+        }
+        finally
+        {
+            isTagSaving = false;
+        }
+    }
+
+    private async Task RefreshContactTagsAsync()
+    {
+        contact = await ContactClient.GetByIdAsync(ContactId);
+        UpdateAssignableTagSelection(contact);
+    }
+
+    private void UpdateAssignableTagSelection(ContactDto? currentContact)
+    {
+        assignableTags = BuildAssignableTags(currentContact, tags);
+
+        if (assignableTags.Count == 0)
+        {
+            selectedTagId = null;
+            return;
+        }
+
+        if (!Guid.TryParse(selectedTagId, out var selectedGuid) ||
+            assignableTags.All(tag => tag.Id != selectedGuid))
+        {
+            selectedTagId = assignableTags[0].Id.ToString();
+        }
+    }
+
+    private static IReadOnlyList<TagDto> BuildAssignableTags(
+        ContactDto? currentContact,
+        IReadOnlyList<TagDto> availableTags)
+    {
+        if (currentContact is null || availableTags.Count == 0)
+        {
+            return [];
+        }
+
+        var assignedTagIds = currentContact.Tags
+            .Select(tag => tag.Id)
+            .ToHashSet();
+
+        return availableTags
+            .Where(tag => !assignedTagIds.Contains(tag.Id))
+            .ToArray();
+    }
+
+    private static string FormatTag(string name, string? category)
+    {
+        return string.IsNullOrWhiteSpace(category) ? name : $"{category}: {name}";
+    }
+
+    private bool CanAssignTag => !isTagSaving &&
+                                 assignableTags.Count > 0 &&
+                                 Guid.TryParse(selectedTagId, out _);
 
     private static string FormatDate(DateTimeOffset? value)
     {

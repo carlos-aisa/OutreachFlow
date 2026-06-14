@@ -14,18 +14,22 @@ using OutreachFlow.Web.ContactImports;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWindowsService();
 
+var supportedCultures = new[]
+{
+    new CultureInfo("en-US"),
+    new CultureInfo("es-ES")
+};
+
+var supportedCultureNames = supportedCultures
+    .Select(culture => culture.Name)
+    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
-    var supportedCultures = new[]
-    {
-        new CultureInfo("en-US"),
-        new CultureInfo("es-ES")
-    };
-
     options.DefaultRequestCulture = new RequestCulture("en-US");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
@@ -84,6 +88,11 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 app.MapGet("/culture/set", (string culture, string? redirectUri, HttpContext context) =>
 {
+    if (!supportedCultureNames.Contains(culture))
+    {
+        culture = "en-US";
+    }
+
     var safeRedirect = string.IsNullOrWhiteSpace(redirectUri) ? "/" : redirectUri;
     if (!Uri.IsWellFormedUriString(safeRedirect, UriKind.Relative))
     {
@@ -96,7 +105,8 @@ app.MapGet("/culture/set", (string culture, string? redirectUri, HttpContext con
         new CookieOptions
         {
             Expires = DateTimeOffset.UtcNow.AddYears(1),
-            IsEssential = true
+            IsEssential = true,
+            Path = "/"
         });
 
     return Results.LocalRedirect(safeRedirect);

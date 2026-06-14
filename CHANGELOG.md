@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project follows Semantic Versioning.
 
+## [Unreleased]
+
+### Changed
+
+- Web contact detail page now supports direct tag management for existing contacts (assign and remove).
+
 ## [0.17.0] - 2026-05-08
 
 ### Added
