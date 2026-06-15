@@ -1,13 +1,27 @@
-﻿@page "/counter"
+@page "/counter"
 @rendermode InteractiveServer
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Counter</PageTitle>
+<PageTitle>@Localizer["Sandbox.Counter.PageTitle"]</PageTitle>
 
-<h1>Counter</h1>
+<div class="page-shell">
+    <div class="page-intro">
+        <p class="page-kicker">@Localizer["Sandbox.Kicker"]</p>
+        <h1 class="page-title">@Localizer["Sandbox.Counter.PageTitle"]</h1>
+        <p class="page-description">@Localizer["Sandbox.Counter.Description"]</p>
+    </div>
 
-<p role="status">Current count: @currentCount</p>
-
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+    <section class="card">
+        <div class="card-header">
+            <h2 class="workspace-card-title mb-0">@Localizer["Sandbox.Counter.StateTitle"]</h2>
+        </div>
+        <div class="card-body d-flex flex-wrap align-items-center gap-3">
+            <p class="mb-0" role="status">@Localizer["Sandbox.Counter.CurrentCount"] <strong>@currentCount</strong></p>
+            <button class="btn btn-primary" @onclick="IncrementCount">@Localizer["Sandbox.Counter.IncrementAction"]</button>
+        </div>
+    </section>
+</div>
 
 @code {
     private int currentCount = 0;

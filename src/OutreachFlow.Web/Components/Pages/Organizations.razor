@@ -10,20 +10,21 @@
 
 <PageTitle>@Localizer["Organizations.PageTitle"]</PageTitle>
 
-<h1>@Localizer["Organizations.PageTitle"]</h1>
-
-<p class="text-muted">
-    @Localizer["Organizations.Description"]
-</p>
+<div class="page-shell">
+<div class="page-intro">
+    <p class="page-kicker">@Localizer["Organizations.PageTitle"]</p>
+    <h1 class="page-title">@Localizer["Organizations.PageTitle"]</h1>
+    <p class="page-description">@Localizer["Organizations.Description"]</p>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
+    <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
 }
 
 <section class="card mb-4">
     <div class="card-header">
-        <h2 class="h5 mb-0">@Localizer["Organizations.Form.CreateTitle"]</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["Organizations.Form.CreateTitle"]</h2>
     </div>
     <div class="card-body">
         <EditForm Model="newOrganization" OnValidSubmit="CreateOrganizationAsync">
@@ -69,7 +70,7 @@
 
 <section class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">@Localizer["Organizations.List.Title"]</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["Organizations.List.Title"]</h2>
         <span class="badge text-bg-secondary">@Localizer["Organizations.List.Count", organizations.Count]</span>
     </div>
     <div class="table-responsive">
@@ -113,6 +114,7 @@
         </table>
     </div>
 </section>
+</div>
 
 @code {
     private IReadOnlyList<OrganizationDto> organizations = [];

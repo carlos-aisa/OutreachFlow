@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       change_id:
-        description: OpenSpec change id, for example p01-core-contacts-model
+        description: OpenSpec change id, for example p01-core-contacts-model or refresh-web-ui
         required: true
         type: string
       version:

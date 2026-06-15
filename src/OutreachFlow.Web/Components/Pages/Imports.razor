@@ -1,45 +1,53 @@
 @page "/imports"
 @rendermode InteractiveServer
 @using System.Text
+@using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.ContactImports
 @using OutreachFlow.Application.Tags
+@using OutreachFlow.Web
 @using OutreachFlow.Web.ContactImports
 @using OutreachFlow.Web.Tags
 @inject ContactImportApiClient ImportClient
 @inject TagApiClient TagClient
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Contact Imports</PageTitle>
+<PageTitle>@Localizer["Imports.PageTitle"]</PageTitle>
 
-<h1>Contact Imports</h1>
+<div class="page-shell">
+<div class="page-intro">
+    <p class="page-kicker">@Localizer["Imports.PageTitle"]</p>
+    <h1 class="page-title">@Localizer["Imports.PageTitle"]</h1>
+    <p class="page-description">@Localizer["Imports.Description"]</p>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
+    <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
 }
 
 @if (!string.IsNullOrWhiteSpace(successMessage))
 {
-    <div class="alert alert-success" role="alert">@successMessage</div>
+    <div class="alert alert-success page-section" role="alert">@successMessage</div>
 }
 
 <section class="card mb-4">
     <div class="card-header">
-        <h2 class="h5 mb-0">CSV Import</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["Imports.CsvTitle"]</h2>
     </div>
     <div class="card-body">
         <div class="mb-3">
-            <label class="form-label" for="csv-file">CSV file</label>
+            <label class="form-label" for="csv-file">@Localizer["Imports.FileLabel"]</label>
             <InputFile id="csv-file" OnChange="OnFileSelectedAsync" accept=".csv,text/csv" />
             @if (!string.IsNullOrWhiteSpace(fileName))
             {
-                <div class="form-text">Selected file: @fileName</div>
+                <div class="form-text">@Localizer["Imports.SelectedFile", fileName]</div>
             }
-            <div class="form-text">Required headers: <code>displayName,email</code>. Optional: <code>phone,role,source</code>.</div>
+            <div class="form-text">@((MarkupString)Localizer["Imports.RequiredHeaders"].Value)</div>
         </div>
 
         <div class="d-flex gap-2">
-            <button class="btn btn-primary" @onclick="PreviewAsync" disabled="@isBusy">Preview</button>
-            <button class="btn btn-outline-secondary" @onclick="ClearPreview" disabled="@isBusy">Clear</button>
+            <button class="btn btn-primary" @onclick="PreviewAsync" disabled="@isBusy">@Localizer["Imports.PreviewAction"]</button>
+            <button class="btn btn-outline-secondary" @onclick="ClearPreview" disabled="@isBusy">@Localizer["Common.Clear"]</button>
         </div>
     </div>
 </section>
@@ -48,21 +56,21 @@
 {
     <section class="card mb-4">
         <div class="card-header">
-            <h2 class="h5 mb-0">Preview Summary</h2>
+            <h2 class="workspace-card-title mb-0">@Localizer["Imports.SummaryTitle"]</h2>
         </div>
         <div class="card-body">
             <div class="row g-3 mb-3">
-                <div class="col-md-3"><strong>Total rows:</strong> @preview.TotalRows</div>
-                <div class="col-md-3 text-success"><strong>Valid:</strong> @preview.ValidRows</div>
-                <div class="col-md-3 text-warning"><strong>Duplicates:</strong> @preview.DuplicateRows</div>
-                <div class="col-md-3 text-danger"><strong>Invalid:</strong> @preview.InvalidRows</div>
+                <div class="col-md-3"><strong>@Localizer["Imports.TotalRows"]:</strong> @preview.TotalRows</div>
+                <div class="col-md-3 text-success"><strong>@Localizer["Imports.ValidRows"]:</strong> @preview.ValidRows</div>
+                <div class="col-md-3 text-warning"><strong>@Localizer["Imports.DuplicateRows"]:</strong> @preview.DuplicateRows</div>
+                <div class="col-md-3 text-danger"><strong>@Localizer["Imports.InvalidRows"]:</strong> @preview.InvalidRows</div>
             </div>
 
-            <h3 class="h6">Assign tags to imported contacts</h3>
+            <h3 class="h6">@Localizer["Imports.AssignTags"]</h3>
             <div class="row g-2 mb-3">
                 @if (tags.Count == 0)
                 {
-                    <div class="col-12 text-muted">No tags available. Create tags first if needed.</div>
+                    <div class="col-12 text-muted">@Localizer["Imports.NoTags"]</div>
                 }
                 else
                 {
@@ -89,24 +97,24 @@
             </div>
 
             <button class="btn btn-success" @onclick="CommitAsync" disabled="@isBusy || preview.ValidRows == 0">
-                Commit import
+                @Localizer["Imports.CommitAction"]
             </button>
         </div>
     </section>
 
     <section class="card mb-4">
         <div class="card-header">
-            <h2 class="h5 mb-0">Preview Rows</h2>
+            <h2 class="workspace-card-title mb-0">@Localizer["Imports.RowsTitle"]</h2>
         </div>
         <div class="table-responsive">
             <table class="table table-striped mb-0">
                 <thead>
                     <tr>
-                        <th scope="col">Row</th>
-                        <th scope="col">Display Name</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Message</th>
+                        <th scope="col">@Localizer["Common.Row"]</th>
+                        <th scope="col">@Localizer["Common.DisplayName"]</th>
+                        <th scope="col">@Localizer["Common.Email"]</th>
+                        <th scope="col">@Localizer["Common.Status"]</th>
+                        <th scope="col">@Localizer["Common.Message"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -119,15 +127,15 @@
                             <td>
                                 @if (row.IsValid)
                                 {
-                                    <span class="badge bg-success">Valid</span>
+                                    <span class="badge bg-success">@Localizer["Imports.ValidRows"]</span>
                                 }
                                 else if (row.IsDuplicate)
                                 {
-                                    <span class="badge bg-warning text-dark">Duplicate</span>
+                                    <span class="badge bg-warning text-dark">@Localizer["Imports.DuplicateRows"]</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger">Invalid</span>
+                                    <span class="badge bg-danger">@Localizer["Imports.InvalidRows"]</span>
                                 }
                             </td>
                             <td>@(string.IsNullOrWhiteSpace(row.Message) ? "-" : row.Message)</td>
@@ -141,24 +149,24 @@
 
 <section class="card">
     <div class="card-header">
-        <h2 class="h5 mb-0">Recent Import Jobs</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["Imports.JobsTitle"]</h2>
     </div>
     <div class="table-responsive">
         <table class="table table-striped mb-0">
             <thead>
                 <tr>
-                    <th scope="col">Created</th>
-                    <th scope="col">File</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Created</th>
-                    <th scope="col">Duplicates</th>
-                    <th scope="col">Invalid</th>
+                    <th scope="col">@Localizer["Common.Created"]</th>
+                    <th scope="col">@Localizer["Common.File"]</th>
+                    <th scope="col">@Localizer["Common.Status"]</th>
+                    <th scope="col">@Localizer["Common.Created"]</th>
+                    <th scope="col">@Localizer["Imports.DuplicateRows"]</th>
+                    <th scope="col">@Localizer["Imports.InvalidRows"]</th>
                 </tr>
             </thead>
             <tbody>
                 @if (jobs.Count == 0)
                 {
-                    <tr><td colspan="6">No import jobs found.</td></tr>
+                    <tr><td colspan="6">@Localizer["Imports.NoJobs"]</td></tr>
                 }
                 else
                 {
@@ -167,7 +175,7 @@
                         <tr>
                             <td>@job.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                             <td>@job.FileName</td>
-                            <td>@job.Status</td>
+                            <td>@SharedResourceDisplayNames.ImportJobStatus(Localizer, job.Status)</td>
                             <td>@job.CreatedCount</td>
                             <td>@job.DuplicateRows</td>
                             <td>@job.InvalidRows</td>
@@ -178,6 +186,7 @@
         </table>
     </div>
 </section>
+</div>
 
 @code {
     private IReadOnlyList<TagDto> tags = [];
@@ -214,7 +223,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -240,7 +249,7 @@
         catch (IOException exception)
         {
             csvContent = null;
-            errorMessage = $"Could not read the selected file: {exception.Message}";
+            errorMessage = Localizer["Imports.ReadFileError", exception.Message];
         }
     }
 
@@ -254,7 +263,7 @@
         {
             if (string.IsNullOrWhiteSpace(fileName) || string.IsNullOrWhiteSpace(csvContent))
             {
-                throw new InvalidOperationException("Select a CSV file before requesting preview.");
+                throw new InvalidOperationException(Localizer["Imports.SelectFileBeforePreview"]);
             }
 
             preview = await ImportClient.PreviewAsync(new ContactImportPreviewRequest(fileName, csvContent));
@@ -265,7 +274,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {
@@ -283,7 +292,7 @@
         {
             if (string.IsNullOrWhiteSpace(fileName) || string.IsNullOrWhiteSpace(csvContent))
             {
-                throw new InvalidOperationException("Select a CSV file before committing the import.");
+                throw new InvalidOperationException(Localizer["Imports.SelectFileBeforeCommit"]);
             }
 
             var result = await ImportClient.CommitAsync(new ContactImportCommitRequest(
@@ -291,7 +300,7 @@
                 csvContent,
                 selectedTagIds.ToArray()));
 
-            successMessage = $"Import completed. Created {result.CreatedCount} contact(s), {result.DuplicateCount} duplicate row(s), {result.InvalidCount} invalid row(s).";
+            successMessage = Localizer["Imports.SuccessMessage", result.CreatedCount, result.DuplicateCount, result.InvalidCount];
             preview = null;
             selectedTagIds.Clear();
             await LoadReferenceDataAsync();
@@ -302,7 +311,7 @@
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {

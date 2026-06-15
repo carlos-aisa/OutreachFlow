@@ -11,8 +11,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if ($ChangeId -notmatch '^p\d{2}-[a-z0-9]+(-[a-z0-9]+)*$') {
-    throw "Change id '$ChangeId' must use the format p01-change-name."
+if ($ChangeId -notmatch '^[a-z0-9]+(-[a-z0-9]+)*$') {
+    throw "Change id '$ChangeId' must use kebab-case such as p01-change-name or refresh-web-ui."
 }
 
 if ($Version -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {

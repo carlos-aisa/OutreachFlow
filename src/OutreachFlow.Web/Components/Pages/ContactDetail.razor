@@ -4,226 +4,247 @@
 @using OutreachFlow.Application.Contacts
 @using OutreachFlow.Application.FollowUps
 @using OutreachFlow.Application.Tags
+@using Microsoft.Extensions.Localization
+@using OutreachFlow.Web
 @using OutreachFlow.Web.Contacts
 @using OutreachFlow.Web.FollowUps
 @using OutreachFlow.Web.Tags
 @inject ContactApiClient ContactClient
 @inject FollowUpTaskApiClient FollowUpClient
 @inject TagApiClient TagClient
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Contact Detail</PageTitle>
+<PageTitle>@Localizer["ContactDetail.PageTitle"]</PageTitle>
 
-<h1>Contact Detail</h1>
-
-@if (!string.IsNullOrWhiteSpace(errorMessage))
-{
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
-}
-
-@if (isLoading)
-{
-    <p>Loading contact detail...</p>
-}
-else if (contact is null)
-{
-    <p>Contact not found.</p>
-}
-else
-{
-    <section class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-0">Contact summary</h2>
-            <a class="btn btn-sm btn-outline-primary" href="/contacts">Back to contacts</a>
+<div class="page-shell">
+    <div class="page-intro page-intro--split">
+        <div>
+            <p class="page-kicker">@Localizer["ContactDetail.Kicker"]</p>
+            <h1 class="page-title">@Localizer["ContactDetail.PageTitle"]</h1>
+            <p class="page-description">@Localizer["ContactDetail.Description"]</p>
         </div>
-        <div class="card-body">
-            <dl class="row mb-0">
-                <dt class="col-sm-3">Display name</dt>
-                <dd class="col-sm-9">@contact.DisplayName</dd>
-
-                <dt class="col-sm-3">Email</dt>
-                <dd class="col-sm-9">@contact.Email</dd>
-
-                <dt class="col-sm-3">Organization</dt>
-                <dd class="col-sm-9">@(contact.OrganizationName ?? "-")</dd>
-
-                <dt class="col-sm-3">Status</dt>
-                <dd class="col-sm-9">@contact.Status</dd>
-
-                <dt class="col-sm-3">Do not contact</dt>
-                <dd class="col-sm-9">@(contact.DoNotContact ? "Yes" : "No")</dd>
-
-                <dt class="col-sm-3">Role</dt>
-                <dd class="col-sm-9">@(contact.Role ?? "-")</dd>
-
-                <dt class="col-sm-3">Source</dt>
-                <dd class="col-sm-9">@(contact.Source ?? "-")</dd>
-
-                <dt class="col-sm-3">Phone</dt>
-                <dd class="col-sm-9">@(contact.Phone ?? "-")</dd>
-
-                <dt class="col-sm-3">Last contacted</dt>
-                <dd class="col-sm-9">@FormatDate(contact.LastContactedAt)</dd>
-            </dl>
+        <div class="page-actions">
+            <a class="btn btn-outline-primary" href="/contacts">@Localizer["ContactDetail.BackAction"]</a>
         </div>
-    </section>
+    </div>
 
-    <section class="card mb-4">
-        <div class="card-header">
-            <h2 class="h5 mb-0">Contact tags</h2>
-        </div>
-        <div class="card-body">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-9">
-                    <label class="form-label" for="contact-tag-select">Add tag</label>
-                    <select id="contact-tag-select"
-                            class="form-select"
-                            @bind="selectedTagId"
-                            disabled="@isTagSaving">
-                        <option value="">Select a tag</option>
-                        @foreach (var tag in assignableTags)
-                        {
-                            <option value="@tag.Id">@FormatTag(tag.Name, tag.Category)</option>
-                        }
-                    </select>
-                    @if (assignableTags.Count == 0)
-                    {
-                        @if (tags.Count == 0)
-                        {
-                            <div class="form-text">No tags are available. Create tags first.</div>
-                        }
-                        else
-                        {
-                            <div class="form-text">All available tags are already assigned to this contact.</div>
-                        }
-                    }
-                </div>
-                <div class="col-md-3">
-                    <button type="button"
-                            class="btn btn-primary w-100"
-                            id="assign-contact-tag"
-                            @onclick="AssignTagAsync"
-                            disabled="@(!CanAssignTag)">
-                        Add tag
-                    </button>
-                </div>
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
+    }
+
+    @if (isLoading)
+    {
+        <p>@Localizer["ContactDetail.Loading"]</p>
+    }
+    else if (contact is null)
+    {
+        <p>@Localizer["ContactDetail.NotFound"]</p>
+    }
+    else
+    {
+        <section class="card page-section">
+            <div class="card-header">
+                <h2 class="workspace-card-title mb-0">@Localizer["ContactDetail.SummaryTitle"]</h2>
             </div>
+            <div class="card-body">
+                <dl class="row detail-list">
+                    <dt class="col-sm-3">@Localizer["Common.DisplayName"]</dt>
+                    <dd class="col-sm-9">@contact.DisplayName</dd>
 
-            @if (contact.Tags.Count == 0)
-            {
-                <p class="text-muted mt-3 mb-0">No tags assigned yet.</p>
-            }
-            else
-            {
-                <div class="table-responsive mt-3">
-                    <table class="table table-sm align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th scope="col">Tag</th>
-                                <th scope="col" class="text-end">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var tag in contact.Tags)
-                            {
-                                <tr>
-                                    <td>@FormatTag(tag.Name, tag.Category)</td>
-                                    <td class="text-end">
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-danger"
-                                                @onclick="() => RemoveTagAsync(tag.Id)"
-                                                disabled="@isTagSaving">
-                                            Remove
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </div>
-    </section>
+                    <dt class="col-sm-3">@Localizer["Common.Email"]</dt>
+                    <dd class="col-sm-9">@contact.Email</dd>
 
-    <section class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-0">Activity timeline</h2>
-            <span class="badge text-bg-secondary">@activities.Count events</span>
-        </div>
-        <div class="card-body">
-            @if (activities.Count == 0)
-            {
-                <p class="mb-0">No activity has been recorded for this contact yet.</p>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th scope="col">Occurred</th>
-                                <th scope="col">Type</th>
-                                <th scope="col">Subject</th>
-                                <th scope="col">Body preview</th>
-                                <th scope="col">Metadata</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var activity in activities)
-                            {
-                                <tr>
-                                    <td>@FormatDate(activity.OccurredAt)</td>
-                                    <td>@activity.Type</td>
-                                    <td>@(string.IsNullOrWhiteSpace(activity.Subject) ? "-" : activity.Subject)</td>
-                                    <td>@(string.IsNullOrWhiteSpace(activity.BodyPreview) ? "-" : activity.BodyPreview)</td>
-                                    <td><code>@(string.IsNullOrWhiteSpace(activity.MetadataJson) ? "-" : activity.MetadataJson)</code></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </div>
-    </section>
+                    <dt class="col-sm-3">@Localizer["Common.Organization"]</dt>
+                    <dd class="col-sm-9">@(contact.OrganizationName ?? "-")</dd>
 
-    <section class="card mt-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-0">Follow-up tasks</h2>
-            <a class="btn btn-sm btn-outline-primary" href="/follow-ups">Manage follow-ups</a>
-        </div>
-        <div class="card-body">
-            @if (followUps.Count == 0)
-            {
-                <p class="mb-0">No follow-up tasks for this contact.</p>
-            }
-            else
-            {
-                <div class="table-responsive">
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th scope="col">Due</th>
-                                <th scope="col">Type</th>
-                                <th scope="col">Notes</th>
-                                <th scope="col">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var task in followUps)
+                    <dt class="col-sm-3">@Localizer["Common.Status"]</dt>
+                    <dd class="col-sm-9">@SharedResourceDisplayNames.ContactStatus(Localizer, contact.Status)</dd>
+
+                    <dt class="col-sm-3">@Localizer["Common.DoNotContact"]</dt>
+                    <dd class="col-sm-9">@(contact.DoNotContact ? Localizer["Common.Yes"] : Localizer["Common.No"])</dd>
+
+                    <dt class="col-sm-3">@Localizer["Common.Role"]</dt>
+                    <dd class="col-sm-9">@(contact.Role ?? "-")</dd>
+
+                    <dt class="col-sm-3">@Localizer["Common.Source"]</dt>
+                    <dd class="col-sm-9">@(contact.Source ?? "-")</dd>
+
+                    <dt class="col-sm-3">@Localizer["Common.Phone"]</dt>
+                    <dd class="col-sm-9">@(contact.Phone ?? "-")</dd>
+
+                    <dt class="col-sm-3">@Localizer["Contacts.List.LastContacted"]</dt>
+                    <dd class="col-sm-9">@FormatDate(contact.LastContactedAt)</dd>
+                </dl>
+            </div>
+        </section>
+
+        <section class="card page-section">
+            <div class="card-header">
+                <h2 class="workspace-card-title mb-0">@Localizer["ContactDetail.TagsTitle"]</h2>
+            </div>
+            <div class="card-body">
+                <div class="workspace-panel">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-9">
+                            <label class="form-label" for="contact-tag-select">@Localizer["ContactDetail.AddTag"]</label>
+                            <select id="contact-tag-select"
+                                    class="form-select"
+                                    @bind="selectedTagId"
+                                    disabled="@isTagSaving">
+                                <option value="">@Localizer["ContactDetail.SelectTag"]</option>
+                                @foreach (var tag in assignableTags)
+                                {
+                                    <option value="@tag.Id">@FormatTag(tag.Name, tag.Category)</option>
+                                }
+                            </select>
+                            @if (assignableTags.Count == 0)
                             {
-                                <tr>
-                                    <td>@FormatDate(task.DueAt)</td>
-                                    <td>@task.Type</td>
-                                    <td>@(string.IsNullOrWhiteSpace(task.Notes) ? "-" : task.Notes)</td>
-                                    <td>@(task.IsCompleted ? "Completed" : "Pending")</td>
-                                </tr>
+                                @if (tags.Count == 0)
+                                {
+                                    <div class="form-text">@Localizer["ContactDetail.NoTagsAvailable"]</div>
+                                }
+                                else
+                                {
+                                    <div class="form-text">@Localizer["ContactDetail.AllTagsAssigned"]</div>
+                                }
                             }
-                        </tbody>
-                    </table>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button"
+                                    class="btn btn-primary w-100"
+                                    id="assign-contact-tag"
+                                    @onclick="AssignTagAsync"
+                                    disabled="@(!CanAssignTag)">
+                                @Localizer["ContactDetail.AddTag"]
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            }
-        </div>
-    </section>
-}
+
+                @if (contact.Tags.Count == 0)
+                {
+                    <p class="text-muted mt-3 mb-0">@Localizer["ContactDetail.NoTagsAssigned"]</p>
+                }
+                else
+                {
+                    <div class="table-responsive mt-3">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">@Localizer["Common.Tag"]</th>
+                                    <th scope="col" class="text-end">@Localizer["Common.Actions"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var tag in contact.Tags)
+                                {
+                                    <tr>
+                                        <td>@FormatTag(tag.Name, tag.Category)</td>
+                                        <td class="text-end">
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    @onclick="() => RemoveTagAsync(tag.Id)"
+                                                    disabled="@isTagSaving">
+                                                @Localizer["Common.Remove"]
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="card page-section">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="workspace-card-title mb-0">@Localizer["ContactDetail.ActivityTitle"]</h2>
+                    <p class="workspace-card-subtitle">@Localizer["ContactDetail.ActivitySubtitle"]</p>
+                </div>
+                <span class="badge text-bg-secondary">@Localizer["ContactDetail.EventsCount", activities.Count]</span>
+            </div>
+            <div class="card-body">
+                @if (activities.Count == 0)
+                {
+                    <p class="mb-0">@Localizer["ContactDetail.NoActivity"]</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">@Localizer["ContactDetail.Occurred"]</th>
+                                    <th scope="col">@Localizer["Common.Type"]</th>
+                                    <th scope="col">@Localizer["Common.Subject"]</th>
+                                    <th scope="col">@Localizer["ContactDetail.BodyPreview"]</th>
+                                    <th scope="col">@Localizer["ContactDetail.Metadata"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var activity in activities)
+                                {
+                                    <tr>
+                                        <td>@FormatDate(activity.OccurredAt)</td>
+                                        <td>@SharedResourceDisplayNames.ContactActivityType(Localizer, activity.Type)</td>
+                                        <td>@(string.IsNullOrWhiteSpace(activity.Subject) ? "-" : activity.Subject)</td>
+                                        <td>@(string.IsNullOrWhiteSpace(activity.BodyPreview) ? "-" : activity.BodyPreview)</td>
+                                        <td><code>@(string.IsNullOrWhiteSpace(activity.MetadataJson) ? "-" : activity.MetadataJson)</code></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="workspace-card-title mb-0">@Localizer["ContactDetail.FollowUpsTitle"]</h2>
+                    <p class="workspace-card-subtitle">@Localizer["ContactDetail.FollowUpsSubtitle"]</p>
+                </div>
+                <a class="btn btn-sm btn-outline-primary" href="/follow-ups">@Localizer["ContactDetail.ManageFollowUps"]</a>
+            </div>
+            <div class="card-body">
+                @if (followUps.Count == 0)
+                {
+                    <p class="mb-0">@Localizer["ContactDetail.NoFollowUps"]</p>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col">@Localizer["Common.Due"]</th>
+                                    <th scope="col">@Localizer["Common.Type"]</th>
+                                    <th scope="col">@Localizer["Common.Notes"]</th>
+                                    <th scope="col">@Localizer["Common.Status"]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var task in followUps)
+                                {
+                                    <tr>
+                                        <td>@FormatDate(task.DueAt)</td>
+                                        <td>@SharedResourceDisplayNames.FollowUpTaskType(Localizer, task.Type)</td>
+                                        <td>@(string.IsNullOrWhiteSpace(task.Notes) ? "-" : task.Notes)</td>
+                                        <td>@(task.IsCompleted ? Localizer["Common.Completed"] : Localizer["Common.Pending"])</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+</div>
 
 @code {
     [Parameter]
@@ -274,7 +295,7 @@ else
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
             contact = null;
             activities = [];
             followUps = [];
@@ -331,7 +352,7 @@ else
         }
         catch (HttpRequestException exception)
         {
-            errorMessage = $"Could not reach the OutreachFlow API: {exception.Message}";
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
         finally
         {

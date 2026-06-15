@@ -124,4 +124,218 @@
   <data name="Contacts.List.LastContacted" xml:space="preserve"><value>Last contacted</value></data>
   <data name="Contacts.List.Loading" xml:space="preserve"><value>Loading contacts...</value></data>
   <data name="Contacts.List.Empty" xml:space="preserve"><value>No contacts match the current filters.</value></data>
+  <data name="Contacts.List.Subtitle" xml:space="preserve"><value>Browse the current contact set and jump straight into detail when a record needs action.</value></data>
+  <data name="Layout.Workspace" xml:space="preserve"><value>Workspace</value></data>
+  <data name="Layout.Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Layout.SidebarDescription" xml:space="preserve"><value>Contacts, templates, drafts, and follow-ups in one focused workspace.</value></data>
+  <data name="Layout.TopRowTitle" xml:space="preserve"><value>Outreach Workspace</value></data>
+  <data name="Layout.TopRowCaption" xml:space="preserve"><value>Controlled contact operations, drafts, templates, and follow-ups</value></data>
+  <data name="Layout.ErrorUnhandled" xml:space="preserve"><value>An unhandled error has occurred.</value></data>
+  <data name="Layout.ErrorReload" xml:space="preserve"><value>Reload</value></data>
+  <data name="Home.Overview" xml:space="preserve"><value>Overview</value></data>
+  <data name="Home.Description" xml:space="preserve"><value>Track the current health of contacts, drafts, and follow-ups from one clear operational view.</value></data>
+  <data name="Home.NewContacts" xml:space="preserve"><value>New contacts</value></data>
+  <data name="Home.NeedsReviewDrafts" xml:space="preserve"><value>Needs review drafts</value></data>
+  <data name="Home.ApprovedDrafts" xml:space="preserve"><value>Approved drafts</value></data>
+  <data name="Home.FailedSends" xml:space="preserve"><value>Failed sends</value></data>
+  <data name="Home.PendingFollowUps.Title" xml:space="preserve"><value>Pending follow-ups</value></data>
+  <data name="Home.PendingFollowUps.Subtitle" xml:space="preserve"><value>What needs attention next across your outreach workflow.</value></data>
+  <data name="Home.PendingFollowUps.Action" xml:space="preserve"><value>Open follow-ups</value></data>
+  <data name="Home.PendingFollowUps.Empty" xml:space="preserve"><value>No pending follow-up tasks.</value></data>
+  <data name="ContactDetail.PageTitle" xml:space="preserve"><value>Contact detail</value></data>
+  <data name="ContactDetail.Kicker" xml:space="preserve"><value>Contact workspace</value></data>
+  <data name="ContactDetail.Description" xml:space="preserve"><value>Review the current contact profile, assigned tags, recent activity, and follow-up workload from one focused record view.</value></data>
+  <data name="ContactDetail.BackAction" xml:space="preserve"><value>Back to contacts</value></data>
+  <data name="ContactDetail.Loading" xml:space="preserve"><value>Loading contact detail...</value></data>
+  <data name="ContactDetail.NotFound" xml:space="preserve"><value>Contact not found.</value></data>
+  <data name="ContactDetail.SummaryTitle" xml:space="preserve"><value>Contact summary</value></data>
+  <data name="ContactDetail.TagsTitle" xml:space="preserve"><value>Contact tags</value></data>
+  <data name="ContactDetail.AddTag" xml:space="preserve"><value>Add tag</value></data>
+  <data name="ContactDetail.SelectTag" xml:space="preserve"><value>Select a tag</value></data>
+  <data name="ContactDetail.NoTagsAvailable" xml:space="preserve"><value>No tags are available. Create tags first.</value></data>
+  <data name="ContactDetail.AllTagsAssigned" xml:space="preserve"><value>All available tags are already assigned to this contact.</value></data>
+  <data name="ContactDetail.NoTagsAssigned" xml:space="preserve"><value>No tags assigned yet.</value></data>
+  <data name="ContactDetail.ActivityTitle" xml:space="preserve"><value>Activity timeline</value></data>
+  <data name="ContactDetail.ActivitySubtitle" xml:space="preserve"><value>Recent contact-level events and rendering context.</value></data>
+  <data name="ContactDetail.EventsCount" xml:space="preserve"><value>{0} events</value></data>
+  <data name="ContactDetail.NoActivity" xml:space="preserve"><value>No activity has been recorded for this contact yet.</value></data>
+  <data name="ContactDetail.Occurred" xml:space="preserve"><value>Occurred</value></data>
+  <data name="ContactDetail.BodyPreview" xml:space="preserve"><value>Body preview</value></data>
+  <data name="ContactDetail.Metadata" xml:space="preserve"><value>Metadata</value></data>
+  <data name="ContactDetail.FollowUpsTitle" xml:space="preserve"><value>Follow-up tasks</value></data>
+  <data name="ContactDetail.FollowUpsSubtitle" xml:space="preserve"><value>Outstanding contact-specific tasks that still need action.</value></data>
+  <data name="ContactDetail.ManageFollowUps" xml:space="preserve"><value>Manage follow-ups</value></data>
+  <data name="ContactDetail.NoFollowUps" xml:space="preserve"><value>No follow-up tasks for this contact.</value></data>
+  <data name="Drafts.PageTitle" xml:space="preserve"><value>Drafts</value></data>
+  <data name="Drafts.Description" xml:space="preserve"><value>Review generated drafts, confirm quality, and move approved messages toward delivery.</value></data>
+  <data name="Drafts.FiltersTitle" xml:space="preserve"><value>Filters</value></data>
+  <data name="Drafts.ListTitle" xml:space="preserve"><value>Draft list</value></data>
+  <data name="Drafts.Loading" xml:space="preserve"><value>Loading drafts...</value></data>
+  <data name="Drafts.Empty" xml:space="preserve"><value>No drafts found for the selected filters.</value></data>
+  <data name="Drafts.ReviewAction" xml:space="preserve"><value>Review</value></data>
+  <data name="DraftDetail.PageTitle" xml:space="preserve"><value>Draft review</value></data>
+  <data name="DraftDetail.Kicker" xml:space="preserve"><value>Draft review</value></data>
+  <data name="DraftDetail.Description" xml:space="preserve"><value>Inspect generated content, fix issues, and move a draft from review toward approval and sending.</value></data>
+  <data name="DraftDetail.Loading" xml:space="preserve"><value>Loading draft...</value></data>
+  <data name="DraftDetail.NotFound" xml:space="preserve"><value>Draft not found.</value></data>
+  <data name="DraftDetail.SummaryTitle" xml:space="preserve"><value>Summary</value></data>
+  <data name="DraftDetail.ContentTitle" xml:space="preserve"><value>Draft content</value></data>
+  <data name="DraftDetail.DiagnosticsTitle" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="DraftDetail.AttachmentsTitle" xml:space="preserve"><value>Attachments</value></data>
+  <data name="DraftDetail.NoAttachments" xml:space="preserve"><value>No attachments associated with this draft.</value></data>
+  <data name="DraftDetail.FailureReason" xml:space="preserve"><value>Failure reason</value></data>
+  <data name="DraftDetail.Save" xml:space="preserve"><value>Save</value></data>
+  <data name="DraftDetail.Approve" xml:space="preserve"><value>Approve</value></data>
+  <data name="DraftDetail.Send" xml:space="preserve"><value>Send</value></data>
+  <data name="DraftDetail.Cancel" xml:space="preserve"><value>Cancel draft</value></data>
+  <data name="DraftDetail.RenderErrors" xml:space="preserve"><value>Render errors</value></data>
+  <data name="DraftDetail.MissingVariables" xml:space="preserve"><value>Missing variables</value></data>
+  <data name="DraftDetail.UnknownVariables" xml:space="preserve"><value>Unknown variables</value></data>
+  <data name="DraftDetail.UpdatedSuccess" xml:space="preserve"><value>Draft updated.</value></data>
+  <data name="DraftDetail.ApprovedSuccess" xml:space="preserve"><value>Draft approved.</value></data>
+  <data name="DraftDetail.CancelledSuccess" xml:space="preserve"><value>Draft cancelled.</value></data>
+  <data name="DraftDetail.SentSuccess" xml:space="preserve"><value>Draft sent.</value></data>
+  <data name="DraftDetail.SendFailedStatus" xml:space="preserve"><value>Draft send attempt recorded with failure status.</value></data>
+  <data name="DraftGeneration.PageTitle" xml:space="preserve"><value>Draft generation</value></data>
+  <data name="DraftGeneration.Kicker" xml:space="preserve"><value>Draft generation</value></data>
+  <data name="DraftGeneration.Description" xml:space="preserve"><value>Generate personalized drafts from selected contacts with template rendering diagnostics and controlled attachment selection.</value></data>
+  <data name="DraftGeneration.StepTitle" xml:space="preserve"><value>Step {0} of 5</value></data>
+  <data name="DraftGeneration.RecipientsFilters" xml:space="preserve"><value>Recipients filters</value></data>
+  <data name="DraftGeneration.TemplateSender" xml:space="preserve"><value>Template and sender profile</value></data>
+  <data name="DraftGeneration.OptionalAttachments" xml:space="preserve"><value>Optional attachments</value></data>
+  <data name="DraftGeneration.NoAttachments" xml:space="preserve"><value>No active attachments available.</value></data>
+  <data name="DraftGeneration.PreviewTitle" xml:space="preserve"><value>Preview</value></data>
+  <data name="DraftGeneration.PreviewLoading" xml:space="preserve"><value>Loading preview contacts...</value></data>
+  <data name="DraftGeneration.ContactsMatching" xml:space="preserve"><value>Contacts matching filters</value></data>
+  <data name="DraftGeneration.GenerateAction" xml:space="preserve"><value>Generate drafts</value></data>
+  <data name="DraftGeneration.ResultTitle" xml:space="preserve"><value>Generation result</value></data>
+  <data name="DraftGeneration.EmptyResult" xml:space="preserve"><value>No generation has been executed yet.</value></data>
+  <data name="DraftGeneration.RequestedContacts" xml:space="preserve"><value>Requested contacts</value></data>
+  <data name="DraftGeneration.GeneratedDrafts" xml:space="preserve"><value>Generated drafts</value></data>
+  <data name="DraftGeneration.SkippedContacts" xml:space="preserve"><value>Skipped contacts</value></data>
+  <data name="DraftGeneration.GeneratedDraftsTitle" xml:space="preserve"><value>Generated drafts</value></data>
+  <data name="DraftGeneration.SkippedContactsTitle" xml:space="preserve"><value>Skipped contacts</value></data>
+  <data name="DraftGeneration.SelectTemplateAndSender" xml:space="preserve"><value>Select both a template and a sender profile before continuing.</value></data>
+  <data name="DraftGeneration.SelectTemplateAndSenderToGenerate" xml:space="preserve"><value>Select both a template and a sender profile before generating drafts.</value></data>
+  <data name="DraftGeneration.GenerateMore" xml:space="preserve"><value>Generate more drafts</value></data>
+  <data name="DraftGeneration.Back" xml:space="preserve"><value>Back</value></data>
+  <data name="DraftGeneration.Next" xml:space="preserve"><value>Next</value></data>
+  <data name="DraftGeneration.SelectTemplate" xml:space="preserve"><value>Select template</value></data>
+  <data name="DraftGeneration.SelectSender" xml:space="preserve"><value>Select sender</value></data>
+  <data name="FollowUps.PageTitle" xml:space="preserve"><value>Follow-ups</value></data>
+  <data name="FollowUps.Description" xml:space="preserve"><value>Create time-based outreach tasks, monitor pending work, and close the loop on contact follow-up.</value></data>
+  <data name="FollowUps.CreateTitle" xml:space="preserve"><value>Create follow-up task</value></data>
+  <data name="FollowUps.ListTitle" xml:space="preserve"><value>Task list</value></data>
+  <data name="FollowUps.PendingAction" xml:space="preserve"><value>Pending</value></data>
+  <data name="FollowUps.AllAction" xml:space="preserve"><value>All</value></data>
+  <data name="FollowUps.Loading" xml:space="preserve"><value>Loading follow-up tasks...</value></data>
+  <data name="FollowUps.Empty" xml:space="preserve"><value>No follow-up tasks found.</value></data>
+  <data name="FollowUps.SelectContact" xml:space="preserve"><value>Select a contact</value></data>
+  <data name="FollowUps.DueAt" xml:space="preserve"><value>Due at</value></data>
+  <data name="FollowUps.CreateAction" xml:space="preserve"><value>Create</value></data>
+  <data name="FollowUps.CompleteAction" xml:space="preserve"><value>Complete</value></data>
+  <data name="FollowUps.ContactRequired" xml:space="preserve"><value>A contact must be selected.</value></data>
+  <data name="FollowUps.CreatedSuccess" xml:space="preserve"><value>Follow-up task created.</value></data>
+  <data name="FollowUps.CompletedSuccess" xml:space="preserve"><value>Follow-up task completed.</value></data>
+  <data name="Imports.PageTitle" xml:space="preserve"><value>Imports</value></data>
+  <data name="Imports.Description" xml:space="preserve"><value>Validate CSV data before commit, enrich imported contacts with tags, and review recent import job outcomes.</value></data>
+  <data name="Imports.CsvTitle" xml:space="preserve"><value>CSV import</value></data>
+  <data name="Imports.FileLabel" xml:space="preserve"><value>CSV file</value></data>
+  <data name="Imports.SelectedFile" xml:space="preserve"><value>Selected file: {0}</value></data>
+  <data name="Imports.RequiredHeaders" xml:space="preserve"><value>Required headers: &lt;code&gt;displayName,email&lt;/code&gt;. Optional: &lt;code&gt;phone,role,source&lt;/code&gt;.</value></data>
+  <data name="Imports.PreviewAction" xml:space="preserve"><value>Preview</value></data>
+  <data name="Imports.SummaryTitle" xml:space="preserve"><value>Preview summary</value></data>
+  <data name="Imports.TotalRows" xml:space="preserve"><value>Total rows</value></data>
+  <data name="Imports.ValidRows" xml:space="preserve"><value>Valid</value></data>
+  <data name="Imports.DuplicateRows" xml:space="preserve"><value>Duplicates</value></data>
+  <data name="Imports.InvalidRows" xml:space="preserve"><value>Invalid</value></data>
+  <data name="Imports.AssignTags" xml:space="preserve"><value>Assign tags to imported contacts</value></data>
+  <data name="Imports.NoTags" xml:space="preserve"><value>No tags available. Create tags first if needed.</value></data>
+  <data name="Imports.CommitAction" xml:space="preserve"><value>Commit import</value></data>
+  <data name="Imports.RowsTitle" xml:space="preserve"><value>Preview rows</value></data>
+  <data name="Imports.JobsTitle" xml:space="preserve"><value>Recent import jobs</value></data>
+  <data name="Imports.NoJobs" xml:space="preserve"><value>No import jobs found.</value></data>
+  <data name="Imports.ReadFileError" xml:space="preserve"><value>Could not read the selected file: {0}</value></data>
+  <data name="Imports.SelectFileBeforePreview" xml:space="preserve"><value>Select a CSV file before requesting preview.</value></data>
+  <data name="Imports.SelectFileBeforeCommit" xml:space="preserve"><value>Select a CSV file before committing the import.</value></data>
+  <data name="Imports.SuccessMessage" xml:space="preserve"><value>Import completed. Created {0} contact(s), {1} duplicate row(s), {2} invalid row(s).</value></data>
+  <data name="Attachments.PageTitle" xml:space="preserve"><value>Attachments</value></data>
+  <data name="Attachments.Description" xml:space="preserve"><value>Manage reusable files that can be attached to templates and reused in controlled outreach workflows.</value></data>
+  <data name="Attachments.UploadTitle" xml:space="preserve"><value>Upload attachment</value></data>
+  <data name="Attachments.ListTitle" xml:space="preserve"><value>Attachment list</value></data>
+  <data name="Attachments.Count" xml:space="preserve"><value>{0} files</value></data>
+  <data name="Attachments.Loading" xml:space="preserve"><value>Loading attachments...</value></data>
+  <data name="Attachments.Empty" xml:space="preserve"><value>No attachments uploaded yet.</value></data>
+  <data name="Attachments.FileLabel" xml:space="preserve"><value>File</value></data>
+  <data name="Attachments.SelectedFile" xml:space="preserve"><value>Selected: {0} ({1})</value></data>
+  <data name="Attachments.UploadAction" xml:space="preserve"><value>Upload</value></data>
+  <data name="Attachments.SelectFileError" xml:space="preserve"><value>Please select a file to upload.</value></data>
+  <data name="Error.Kicker" xml:space="preserve"><value>System</value></data>
+  <data name="Error.PageTitle" xml:space="preserve"><value>Error</value></data>
+  <data name="Error.Description" xml:space="preserve"><value>The request could not be completed. Review the details below and retry once the issue is resolved.</value></data>
+  <data name="Error.RequestDetails" xml:space="preserve"><value>Request details</value></data>
+  <data name="Common.File" xml:space="preserve"><value>File</value></data>
+  <data name="Common.Size" xml:space="preserve"><value>Size</value></data>
+  <data name="Common.Contact" xml:space="preserve"><value>Contact</value></data>
+  <data name="Common.Due" xml:space="preserve"><value>Due</value></data>
+  <data name="Common.Body" xml:space="preserve"><value>Body</value></data>
+  <data name="Common.Template" xml:space="preserve"><value>Template</value></data>
+  <data name="Common.Reason" xml:space="preserve"><value>Reason</value></data>
+  <data name="Common.Row" xml:space="preserve"><value>Row</value></data>
+  <data name="Common.Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="Common.Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="ContactStatus.New" xml:space="preserve"><value>New</value></data>
+  <data name="ContactStatus.Contacted" xml:space="preserve"><value>Contacted</value></data>
+  <data name="ContactStatus.Replied" xml:space="preserve"><value>Replied</value></data>
+  <data name="ContactStatus.MeetingScheduled" xml:space="preserve"><value>Meeting scheduled</value></data>
+  <data name="ContactStatus.NotInterested" xml:space="preserve"><value>Not interested</value></data>
+  <data name="ContactStatus.DoNotContact" xml:space="preserve"><value>Do not contact</value></data>
+  <data name="ContactStatus.Archived" xml:space="preserve"><value>Archived</value></data>
+  <data name="EmailDraftStatus.Draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="EmailDraftStatus.NeedsReview" xml:space="preserve"><value>Needs review</value></data>
+  <data name="EmailDraftStatus.Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="EmailDraftStatus.Queued" xml:space="preserve"><value>Queued</value></data>
+  <data name="EmailDraftStatus.Sent" xml:space="preserve"><value>Sent</value></data>
+  <data name="EmailDraftStatus.Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="EmailDraftStatus.Cancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="FollowUpTaskType.General" xml:space="preserve"><value>General</value></data>
+  <data name="FollowUpTaskType.Email" xml:space="preserve"><value>Email</value></data>
+  <data name="FollowUpTaskType.Call" xml:space="preserve"><value>Call</value></data>
+  <data name="FollowUpTaskType.Meeting" xml:space="preserve"><value>Meeting</value></data>
+  <data name="ImportJobStatus.Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="ImportJobStatus.Completed" xml:space="preserve"><value>Completed</value></data>
+  <data name="ImportJobStatus.Failed" xml:space="preserve"><value>Failed</value></data>
+  <data name="ContactActivityType.ContactCreated" xml:space="preserve"><value>Contact created</value></data>
+  <data name="ContactActivityType.ContactUpdated" xml:space="preserve"><value>Contact updated</value></data>
+  <data name="ContactActivityType.EmailDraftCreated" xml:space="preserve"><value>Email draft created</value></data>
+  <data name="ContactActivityType.EmailSent" xml:space="preserve"><value>Email sent</value></data>
+  <data name="ContactActivityType.EmailFailed" xml:space="preserve"><value>Email failed</value></data>
+  <data name="ContactActivityType.ReplyReceived" xml:space="preserve"><value>Reply received</value></data>
+  <data name="ContactActivityType.NoteAdded" xml:space="preserve"><value>Note added</value></data>
+  <data name="ContactActivityType.StatusChanged" xml:space="preserve"><value>Status changed</value></data>
+  <data name="ContactActivityType.FollowUpCreated" xml:space="preserve"><value>Follow-up created</value></data>
+  <data name="ContactActivityType.FollowUpCompleted" xml:space="preserve"><value>Follow-up completed</value></data>
+  <data name="Common.Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Common.Updated" xml:space="preserve"><value>Updated</value></data>
+  <data name="Sandbox.Kicker" xml:space="preserve"><value>Sandbox</value></data>
+  <data name="Sandbox.Counter.PageTitle" xml:space="preserve"><value>Counter</value></data>
+  <data name="Sandbox.Counter.Description" xml:space="preserve"><value>Simple interaction sandbox for checking the shared page hierarchy and action styling.</value></data>
+  <data name="Sandbox.Counter.StateTitle" xml:space="preserve"><value>Counter state</value></data>
+  <data name="Sandbox.Counter.CurrentCount" xml:space="preserve"><value>Current count:</value></data>
+  <data name="Sandbox.Counter.IncrementAction" xml:space="preserve"><value>Increment</value></data>
+  <data name="Sandbox.Weather.PageTitle" xml:space="preserve"><value>Weather</value></data>
+  <data name="Sandbox.Weather.Description" xml:space="preserve"><value>Reference page for validating shared table styling and loading states.</value></data>
+  <data name="Sandbox.Weather.ForecastTitle" xml:space="preserve"><value>Forecast</value></data>
+  <data name="Sandbox.Weather.Loading" xml:space="preserve"><value>Loading...</value></data>
+  <data name="Sandbox.Weather.Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Sandbox.Weather.TemperatureC" xml:space="preserve"><value>Temp. (C)</value></data>
+  <data name="Sandbox.Weather.TemperatureF" xml:space="preserve"><value>Temp. (F)</value></data>
+  <data name="Sandbox.Weather.Summary" xml:space="preserve"><value>Summary</value></data>
+  <data name="Error.Occurred" xml:space="preserve"><value>An error occurred while processing your request.</value></data>
+  <data name="Error.DevelopmentMode" xml:space="preserve"><value>Development mode</value></data>
+  <data name="Error.DevelopmentDescription" xml:space="preserve"><value>Switching to the Development environment will display more detailed information about the error that occurred.</value></data>
+  <data name="Error.DevelopmentWarning" xml:space="preserve"><value>The Development environment should not be enabled for deployed applications. It can result in displaying sensitive information from exceptions to end users.</value></data>
+  <data name="Error.DevelopmentDebugging" xml:space="preserve"><value>For local debugging, enable the Development environment by setting the ASPNETCORE_ENVIRONMENT environment variable to Development and restarting the app.</value></data>
+  <data name="Common.Approved" xml:space="preserve"><value>Approved</value></data>
+  <data name="Common.RequestId" xml:space="preserve"><value>Request ID</value></data>
 </root>

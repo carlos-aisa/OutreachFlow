@@ -17,188 +17,193 @@
 
 <PageTitle>@Localizer["Contacts.PageTitle"]</PageTitle>
 
-<h1>@Localizer["Contacts.PageTitle"]</h1>
-
-<p class="text-muted">
-    @Localizer["Contacts.Description"]
-</p>
-
-@if (!string.IsNullOrWhiteSpace(errorMessage))
-{
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
-}
-
-<section class="card mb-4">
-    <div class="card-header">
-        <h2 class="h5 mb-0">@Localizer["Contacts.Filters.Title"]</h2>
+<div class="page-shell">
+    <div class="page-intro">
+        <p class="page-kicker">@Localizer["Contacts.PageTitle"]</p>
+        <h1 class="page-title">@Localizer["Contacts.PageTitle"]</h1>
+        <p class="page-description">@Localizer["Contacts.Description"]</p>
     </div>
-    <div class="card-body">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label" for="contact-search">@Localizer["Common.Search"]</label>
-                <input id="contact-search" class="form-control" @bind="search" placeholder="@Localizer["Contacts.Filters.SearchPlaceholder"]" />
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" for="contact-status">@Localizer["Common.Status"]</label>
-                <select id="contact-status" class="form-select" @bind="selectedStatus">
-                    <option value="">@Localizer["Contacts.Filters.AnyStatus"]</option>
-                    @foreach (var status in StatusValues)
-                    {
-                        <option value="@status">@status</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" for="contact-organization-filter">@Localizer["Common.Organization"]</label>
-                <select id="contact-organization-filter" class="form-select" @bind="selectedOrganizationId">
-                    <option value="">@Localizer["Contacts.Filters.AnyOrganization"]</option>
-                    @foreach (var organization in organizations)
-                    {
-                        <option value="@organization.Id">@organization.Name</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label" for="contact-tag-filter">@Localizer["Common.Tag"]</label>
-                <select id="contact-tag-filter" class="form-select" @bind="selectedTagId">
-                    <option value="">@Localizer["Contacts.Filters.AnyTag"]</option>
-                    @foreach (var tag in tags)
-                    {
-                        <option value="@tag.Id">@FormatTag(tag)</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" for="contact-dnc-filter">@Localizer["Common.DoNotContact"]</label>
-                <select id="contact-dnc-filter" class="form-select" @bind="selectedDoNotContact">
-                    <option value="">@Localizer["Common.Any"]</option>
-                    <option value="true">@Localizer["Contacts.Filters.OnlyDoNotContact"]</option>
-                    <option value="false">@Localizer["Contacts.Filters.ExcludeDoNotContact"]</option>
-                </select>
-            </div>
-            <div class="col-md-9 d-flex gap-2">
-                <button type="button" class="btn btn-primary" @onclick="LoadContactsAsync" disabled="@isLoading">@Localizer["Common.ApplyFilters"]</button>
-                <button type="button" class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@isLoading">@Localizer["Common.Clear"]</button>
-            </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
+    }
+
+    <section class="card page-section">
+        <div class="card-header">
+            <h2 class="workspace-card-title mb-0">@Localizer["Contacts.Filters.Title"]</h2>
         </div>
-    </div>
-</section>
-
-<section class="card mb-4">
-    <div class="card-header">
-        <h2 class="h5 mb-0">@Localizer["Contacts.Form.CreateTitle"]</h2>
-    </div>
-    <div class="card-body">
-        <EditForm Model="newContact" OnValidSubmit="CreateContactAsync">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
-            <div class="row g-3">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
                 <div class="col-md-4">
-                    <label class="form-label" for="new-contact-name">@Localizer["Common.DisplayName"]</label>
-                    <InputText id="new-contact-name" class="form-control" @bind-Value="newContact.DisplayName" />
+                    <label class="form-label" for="contact-search">@Localizer["Common.Search"]</label>
+                    <input id="contact-search" class="form-control" @bind="search" placeholder="@Localizer["Contacts.Filters.SearchPlaceholder"]" />
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="new-contact-email">@Localizer["Common.Email"]</label>
-                    <InputText id="new-contact-email" class="form-control" @bind-Value="newContact.Email" />
+                <div class="col-md-3">
+                    <label class="form-label" for="contact-status">@Localizer["Common.Status"]</label>
+                    <select id="contact-status" class="form-select" @bind="selectedStatus">
+                        <option value="">@Localizer["Contacts.Filters.AnyStatus"]</option>
+                        @foreach (var status in StatusValues)
+                        {
+                            <option value="@status">@SharedResourceDisplayNames.ContactStatus(Localizer, status)</option>
+                        }
+                    </select>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="new-contact-organization">@Localizer["Common.Organization"]</label>
-                    <InputSelect id="new-contact-organization" class="form-select" @bind-Value="newContact.OrganizationId">
-                        <option value="">@Localizer["Contacts.Form.NoOrganization"]</option>
+                <div class="col-md-3">
+                    <label class="form-label" for="contact-organization-filter">@Localizer["Common.Organization"]</label>
+                    <select id="contact-organization-filter" class="form-select" @bind="selectedOrganizationId">
+                        <option value="">@Localizer["Contacts.Filters.AnyOrganization"]</option>
                         @foreach (var organization in organizations)
                         {
                             <option value="@organization.Id">@organization.Name</option>
                         }
-                    </InputSelect>
+                    </select>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="new-contact-phone">@Localizer["Common.Phone"]</label>
-                    <InputText id="new-contact-phone" class="form-control" @bind-Value="newContact.Phone" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="new-contact-role">@Localizer["Common.Role"]</label>
-                    <InputText id="new-contact-role" class="form-control" @bind-Value="newContact.Role" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="new-contact-source">@Localizer["Common.Source"]</label>
-                    <InputText id="new-contact-source" class="form-control" @bind-Value="newContact.Source" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="new-contact-status">@Localizer["Common.Status"]</label>
-                    <InputSelect id="new-contact-status" class="form-select" @bind-Value="newContact.Status">
-                        @foreach (var status in StatusValues)
+                <div class="col-md-2">
+                    <label class="form-label" for="contact-tag-filter">@Localizer["Common.Tag"]</label>
+                    <select id="contact-tag-filter" class="form-select" @bind="selectedTagId">
+                        <option value="">@Localizer["Contacts.Filters.AnyTag"]</option>
+                        @foreach (var tag in tags)
                         {
-                            <option value="@status">@status</option>
+                            <option value="@tag.Id">@FormatTag(tag)</option>
                         }
-                    </InputSelect>
+                    </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="form-check">
-                        <InputCheckbox id="new-contact-dnc" class="form-check-input" @bind-Value="newContact.DoNotContact" />
-                        <label class="form-check-label" for="new-contact-dnc">@Localizer["Common.DoNotContact"]</label>
-                    </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="contact-dnc-filter">@Localizer["Common.DoNotContact"]</label>
+                    <select id="contact-dnc-filter" class="form-select" @bind="selectedDoNotContact">
+                        <option value="">@Localizer["Common.Any"]</option>
+                        <option value="true">@Localizer["Contacts.Filters.OnlyDoNotContact"]</option>
+                        <option value="false">@Localizer["Contacts.Filters.ExcludeDoNotContact"]</option>
+                    </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end justify-content-md-end">
-                    <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Contacts.Form.CreateAction"]</button>
+                <div class="col-md-9 d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-primary" @onclick="LoadContactsAsync" disabled="@isLoading">@Localizer["Common.ApplyFilters"]</button>
+                    <button type="button" class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@isLoading">@Localizer["Common.Clear"]</button>
                 </div>
             </div>
-        </EditForm>
-    </div>
-</section>
+        </div>
+    </section>
 
-<section class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">@Localizer["Contacts.List.Title"]</h2>
-        <span class="badge text-bg-secondary">@Localizer["Contacts.List.Count", contacts.Count]</span>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-striped table-hover mb-0">
-            <thead>
-                <tr>
-                    <th scope="col">@Localizer["Common.Name"]</th>
-                    <th scope="col">@Localizer["Common.Email"]</th>
-                    <th scope="col">@Localizer["Common.Organization"]</th>
-                    <th scope="col">@Localizer["Common.Status"]</th>
-                    <th scope="col">@Localizer["Common.DoNotContact"]</th>
-                    <th scope="col">@Localizer["Common.Tags"]</th>
-                    <th scope="col">@Localizer["Contacts.List.LastContacted"]</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (isLoading)
-                {
+    <section class="card page-section">
+        <div class="card-header">
+            <h2 class="workspace-card-title mb-0">@Localizer["Contacts.Form.CreateTitle"]</h2>
+        </div>
+        <div class="card-body">
+            <EditForm Model="newContact" OnValidSubmit="CreateContactAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="new-contact-name">@Localizer["Common.DisplayName"]</label>
+                        <InputText id="new-contact-name" class="form-control" @bind-Value="newContact.DisplayName" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="new-contact-email">@Localizer["Common.Email"]</label>
+                        <InputText id="new-contact-email" class="form-control" @bind-Value="newContact.Email" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="new-contact-organization">@Localizer["Common.Organization"]</label>
+                        <InputSelect id="new-contact-organization" class="form-select" @bind-Value="newContact.OrganizationId">
+                            <option value="">@Localizer["Contacts.Form.NoOrganization"]</option>
+                            @foreach (var organization in organizations)
+                            {
+                                <option value="@organization.Id">@organization.Name</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="new-contact-phone">@Localizer["Common.Phone"]</label>
+                        <InputText id="new-contact-phone" class="form-control" @bind-Value="newContact.Phone" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="new-contact-role">@Localizer["Common.Role"]</label>
+                        <InputText id="new-contact-role" class="form-control" @bind-Value="newContact.Role" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="new-contact-source">@Localizer["Common.Source"]</label>
+                        <InputText id="new-contact-source" class="form-control" @bind-Value="newContact.Source" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="new-contact-status">@Localizer["Common.Status"]</label>
+                        <InputSelect id="new-contact-status" class="form-select" @bind-Value="newContact.Status">
+                            @foreach (var status in StatusValues)
+                            {
+                                <option value="@status">@SharedResourceDisplayNames.ContactStatus(Localizer, status)</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-center">
+                        <div class="form-check">
+                            <InputCheckbox id="new-contact-dnc" class="form-check-input" @bind-Value="newContact.DoNotContact" />
+                            <label class="form-check-label" for="new-contact-dnc">@Localizer["Common.DoNotContact"]</label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end justify-content-md-end">
+                        <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Contacts.Form.CreateAction"]</button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="workspace-card-title mb-0">@Localizer["Contacts.List.Title"]</h2>
+                <p class="workspace-card-subtitle">@Localizer["Contacts.List.Subtitle"]</p>
+            </div>
+            <span class="badge text-bg-secondary">@Localizer["Contacts.List.Count", contacts.Count]</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead>
                     <tr>
-                        <td colspan="7">@Localizer["Contacts.List.Loading"]</td>
+                        <th scope="col">@Localizer["Common.Name"]</th>
+                        <th scope="col">@Localizer["Common.Email"]</th>
+                        <th scope="col">@Localizer["Common.Organization"]</th>
+                        <th scope="col">@Localizer["Common.Status"]</th>
+                        <th scope="col">@Localizer["Common.DoNotContact"]</th>
+                        <th scope="col">@Localizer["Common.Tags"]</th>
+                        <th scope="col">@Localizer["Contacts.List.LastContacted"]</th>
                     </tr>
-                }
-                else if (contacts.Count == 0)
-                {
-                    <tr>
-                        <td colspan="7">@Localizer["Contacts.List.Empty"]</td>
-                    </tr>
-                }
-                else
-                {
-                    @foreach (var contact in contacts)
+                </thead>
+                <tbody>
+                    @if (isLoading)
                     {
                         <tr>
-                            <td>
-                                <a href="@($"/contacts/{contact.Id}")">@contact.DisplayName</a>
-                            </td>
-                            <td>@contact.Email</td>
-                            <td>@(contact.OrganizationName ?? "-")</td>
-                            <td>@contact.Status</td>
-                            <td>@(contact.DoNotContact ? Localizer["Common.Yes"] : Localizer["Common.No"])</td>
-                            <td>@FormatContactTags(contact.Tags)</td>
-                            <td>@FormatDate(contact.LastContactedAt)</td>
+                            <td colspan="7">@Localizer["Contacts.List.Loading"]</td>
                         </tr>
                     }
-                }
-            </tbody>
-        </table>
-    </div>
-</section>
+                    else if (contacts.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="7">@Localizer["Contacts.List.Empty"]</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var contact in contacts)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="@($"/contacts/{contact.Id}")">@contact.DisplayName</a>
+                                </td>
+                                <td>@contact.Email</td>
+                                <td>@(contact.OrganizationName ?? "-")</td>
+                                <td>@SharedResourceDisplayNames.ContactStatus(Localizer, contact.Status)</td>
+                                <td>@(contact.DoNotContact ? Localizer["Common.Yes"] : Localizer["Common.No"])</td>
+                                <td>@FormatContactTags(contact.Tags)</td>
+                                <td>@FormatDate(contact.LastContactedAt)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
 
 @code {
     private static readonly ContactStatus[] StatusValues = Enum.GetValues<ContactStatus>();
