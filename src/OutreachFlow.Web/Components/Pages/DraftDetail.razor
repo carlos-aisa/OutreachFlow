@@ -2,24 +2,29 @@
 @rendermode InteractiveServer
 @using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.EmailDrafts
-@using OutreachFlow.Domain.EmailDrafts
 @using OutreachFlow.Web
+@using OutreachFlow.Domain.EmailDrafts
 @using OutreachFlow.Web.EmailDrafts
 @inject EmailDraftApiClient DraftClient
 @inject IStringLocalizer<SharedResource> Localizer
 
 <PageTitle>@Localizer["DraftDetail.PageTitle"]</PageTitle>
 
-<h1>@Localizer["DraftDetail.PageTitle"]</h1>
+<div class="page-shell">
+<div class="page-intro">
+    <p class="page-kicker">@Localizer["DraftDetail.Kicker"]</p>
+    <h1 class="page-title">@Localizer["DraftDetail.PageTitle"]</h1>
+    <p class="page-description">@Localizer["DraftDetail.Description"]</p>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
+    <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
 }
 
 @if (!string.IsNullOrWhiteSpace(successMessage))
 {
-    <div class="alert alert-success" role="alert">@successMessage</div>
+    <div class="alert alert-success page-section" role="alert">@successMessage</div>
 }
 
 @if (isLoading)
@@ -34,7 +39,7 @@ else
 {
     <section class="card mb-4">
         <div class="card-header">
-            <h2 class="h5 mb-0">@Localizer["Common.Summary"]</h2>
+            <h2 class="workspace-card-title mb-0">@Localizer["DraftDetail.SummaryTitle"]</h2>
         </div>
         <div class="card-body">
             <dl class="row mb-0">
@@ -42,7 +47,7 @@ else
                 <dd class="col-sm-9">@draft.ContactDisplayName (@draft.ContactEmail)</dd>
 
                 <dt class="col-sm-3">@Localizer["Common.Status"]</dt>
-                <dd class="col-sm-9">@FormatStatus(draft.Status)</dd>
+                <dd class="col-sm-9">@SharedResourceDisplayNames.EmailDraftStatus(Localizer, draft.Status)</dd>
 
                 <dt class="col-sm-3">@Localizer["Common.Created"]</dt>
                 <dd class="col-sm-9">@FormatDate(draft.CreatedAt)</dd>
@@ -50,16 +55,16 @@ else
                 <dt class="col-sm-3">@Localizer["Common.Updated"]</dt>
                 <dd class="col-sm-9">@FormatDate(draft.UpdatedAt)</dd>
 
-                <dt class="col-sm-3">@Localizer["Common.Approved"]</dt>
+                <dt class="col-sm-3">@Localizer["DraftDetail.Approve"]</dt>
                 <dd class="col-sm-9">@FormatDate(draft.ApprovedAt)</dd>
 
-                <dt class="col-sm-3">@Localizer["Common.Cancelled"]</dt>
+                <dt class="col-sm-3">@Localizer["EmailDraftStatus.Cancelled"]</dt>
                 <dd class="col-sm-9">@FormatDate(draft.CancelledAt)</dd>
 
-                <dt class="col-sm-3">@Localizer["Common.Sent"]</dt>
+                <dt class="col-sm-3">@Localizer["EmailDraftStatus.Sent"]</dt>
                 <dd class="col-sm-9">@FormatDate(draft.SentAt)</dd>
 
-                <dt class="col-sm-3">@Localizer["Common.FailureReason"]</dt>
+                <dt class="col-sm-3">@Localizer["DraftDetail.FailureReason"]</dt>
                 <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(draft.FailureReason) ? "-" : draft.FailureReason)</dd>
             </dl>
         </div>
@@ -67,7 +72,7 @@ else
 
     <section class="card mb-4">
         <div class="card-header">
-            <h2 class="h5 mb-0">@Localizer["DraftDetail.Content.Title"]</h2>
+            <h2 class="workspace-card-title mb-0">@Localizer["DraftDetail.ContentTitle"]</h2>
         </div>
         <div class="card-body">
             <div class="mb-3">
@@ -79,39 +84,39 @@ else
                 <textarea class="form-control" rows="12" @bind="editableBody"></textarea>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isBusy">@Localizer["Common.Save"]</button>
-                <button class="btn btn-success" @onclick="ApproveAsync" disabled="@isBusy">@Localizer["Common.Approve"]</button>
-                <button class="btn btn-warning" @onclick="SendAsync" disabled="@(!canSend || isBusy)">@Localizer["Common.Send"]</button>
-                <button class="btn btn-outline-danger" @onclick="CancelAsync" disabled="@isBusy">@Localizer["DraftDetail.Actions.CancelDraft"]</button>
+                <button class="btn btn-primary" @onclick="SaveAsync" disabled="@isBusy">@Localizer["DraftDetail.Save"]</button>
+                <button class="btn btn-success" @onclick="ApproveAsync" disabled="@isBusy">@Localizer["DraftDetail.Approve"]</button>
+                <button class="btn btn-warning" @onclick="SendAsync" disabled="@(!canSend || isBusy)">@Localizer["DraftDetail.Send"]</button>
+                <button class="btn btn-outline-danger" @onclick="CancelAsync" disabled="@isBusy">@Localizer["DraftDetail.Cancel"]</button>
             </div>
         </div>
     </section>
 
     <section class="card mb-4">
         <div class="card-header">
-            <h2 class="h5 mb-0">@Localizer["DraftDetail.Diagnostics.Title"]</h2>
+            <h2 class="workspace-card-title mb-0">@Localizer["DraftDetail.DiagnosticsTitle"]</h2>
         </div>
         <div class="card-body">
             <p class="mb-1">
-                @Localizer["DraftDetail.Diagnostics.RenderErrors"]: <strong>@(draft.HasRenderErrors ? Localizer["Common.Yes"] : Localizer["Common.No"])</strong>
+                @Localizer["DraftDetail.RenderErrors"]: <strong>@(draft.HasRenderErrors ? Localizer["Common.Yes"] : Localizer["Common.No"])</strong>
             </p>
             <p class="mb-1">
-                @Localizer["DraftDetail.Diagnostics.MissingVariables"]: <strong>@FormatVariables(draft.MissingVariables)</strong>
+                @Localizer["DraftDetail.MissingVariables"]: <strong>@FormatVariables(draft.MissingVariables)</strong>
             </p>
             <p class="mb-0">
-                @Localizer["DraftDetail.Diagnostics.UnknownVariables"]: <strong>@FormatVariables(draft.UnknownVariables)</strong>
+                @Localizer["DraftDetail.UnknownVariables"]: <strong>@FormatVariables(draft.UnknownVariables)</strong>
             </p>
         </div>
     </section>
 
     <section class="card">
         <div class="card-header">
-            <h2 class="h5 mb-0">@Localizer["Nav.Attachments"]</h2>
+            <h2 class="workspace-card-title mb-0">@Localizer["DraftDetail.AttachmentsTitle"]</h2>
         </div>
         <div class="card-body">
             @if (draft.AttachmentAssetIds.Count == 0)
             {
-                <p class="mb-0">@Localizer["DraftDetail.Attachments.Empty"]</p>
+                <p class="mb-0">@Localizer["DraftDetail.NoAttachments"]</p>
             }
             else
             {
@@ -125,6 +130,7 @@ else
         </div>
     </section>
 }
+</div>
 
 @code {
     [Parameter]
@@ -194,7 +200,7 @@ else
                 new UpdateEmailDraftRequest(editableSubject, editableBody));
             editableSubject = draft.Subject;
             editableBody = draft.Body;
-            successMessage = Localizer["DraftDetail.Success.Updated"];
+            successMessage = Localizer["DraftDetail.UpdatedSuccess"];
         }
         catch (InvalidOperationException exception)
         {
@@ -224,7 +230,7 @@ else
         try
         {
             draft = await DraftClient.ApproveAsync(draft.Id);
-            successMessage = Localizer["DraftDetail.Success.Approved"];
+            successMessage = Localizer["DraftDetail.ApprovedSuccess"];
         }
         catch (InvalidOperationException exception)
         {
@@ -254,7 +260,7 @@ else
         try
         {
             draft = await DraftClient.CancelAsync(draft.Id);
-            successMessage = Localizer["DraftDetail.Success.Cancelled"];
+            successMessage = Localizer["DraftDetail.CancelledSuccess"];
         }
         catch (InvalidOperationException exception)
         {
@@ -285,8 +291,8 @@ else
         {
             draft = await DraftClient.SendApprovedAsync(draft.Id);
             successMessage = draft.Status == EmailDraftStatus.Sent
-                ? Localizer["DraftDetail.Success.Sent"]
-                : Localizer["DraftDetail.Success.SendFailed"];
+                ? Localizer["DraftDetail.SentSuccess"]
+                : Localizer["DraftDetail.SendFailedStatus"];
         }
         catch (InvalidOperationException exception)
         {
@@ -305,11 +311,6 @@ else
     private static string FormatVariables(IReadOnlyList<string> variables)
     {
         return variables.Count == 0 ? "-" : string.Join(", ", variables);
-    }
-
-    private string FormatStatus(EmailDraftStatus status)
-    {
-        return Localizer[$"EmailDraftStatus.{status}"];
     }
 
     private static string FormatDate(DateTimeOffset? value)

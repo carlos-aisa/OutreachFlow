@@ -10,20 +10,21 @@
 
 <PageTitle>@Localizer["Tags.PageTitle"]</PageTitle>
 
-<h1>@Localizer["Tags.PageTitle"]</h1>
-
-<p class="text-muted">
-    @Localizer["Tags.Description"]
-</p>
+<div class="page-shell">
+<div class="page-intro">
+    <p class="page-kicker">@Localizer["Tags.PageTitle"]</p>
+    <h1 class="page-title">@Localizer["Tags.PageTitle"]</h1>
+    <p class="page-description">@Localizer["Tags.Description"]</p>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
+    <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
 }
 
 <section class="card mb-4">
     <div class="card-header">
-        <h2 class="h5 mb-0">@Localizer["Tags.Form.CreateTitle"]</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["Tags.Form.CreateTitle"]</h2>
     </div>
     <div class="card-body">
         <EditForm Model="newTag" OnValidSubmit="CreateTagAsync">
@@ -49,7 +50,7 @@
 
 <section class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">@Localizer["Tags.List.Title"]</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["Tags.List.Title"]</h2>
         <span class="badge text-bg-secondary">@Localizer["Tags.List.Count", tags.Count]</span>
     </div>
     <div class="table-responsive">
@@ -89,6 +90,7 @@
         </table>
     </div>
 </section>
+</div>
 
 @code {
     private IReadOnlyList<TagDto> tags = [];

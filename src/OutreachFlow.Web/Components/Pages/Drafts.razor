@@ -2,38 +2,39 @@
 @rendermode InteractiveServer
 @using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.EmailDrafts
-@using OutreachFlow.Domain.EmailDrafts
 @using OutreachFlow.Web
+@using OutreachFlow.Domain.EmailDrafts
 @using OutreachFlow.Web.EmailDrafts
 @inject EmailDraftApiClient DraftClient
 @inject IStringLocalizer<SharedResource> Localizer
 
 <PageTitle>@Localizer["Drafts.PageTitle"]</PageTitle>
 
-<h1>@Localizer["Drafts.PageTitle"]</h1>
-
-<p class="text-muted">
-    @Localizer["Drafts.Description"]
-</p>
+<div class="page-shell">
+<div class="page-intro">
+    <p class="page-kicker">@Localizer["Drafts.PageTitle"]</p>
+    <h1 class="page-title">@Localizer["Drafts.PageTitle"]</h1>
+    <p class="page-description">@Localizer["Drafts.Description"]</p>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
+    <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
 }
 
 <section class="card mb-4">
     <div class="card-header">
-        <h2 class="h5 mb-0">@Localizer["Drafts.Filters.Title"]</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["Drafts.FiltersTitle"]</h2>
     </div>
     <div class="card-body">
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label">@Localizer["Common.Status"]</label>
                 <select class="form-select" @bind="selectedStatus">
-                    <option value="">@Localizer["Drafts.Filters.AnyStatus"]</option>
+                    <option value="">@Localizer["Common.Any"]</option>
                     @foreach (var status in statusValues)
                     {
-                        <option value="@status">@FormatStatus(status)</option>
+                        <option value="@status">@SharedResourceDisplayNames.EmailDraftStatus(Localizer, status)</option>
                     }
                 </select>
             </div>
@@ -47,16 +48,16 @@
 
 <section class="card">
     <div class="card-header">
-        <h2 class="h5 mb-0">@Localizer["Drafts.List.Title"]</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["Drafts.ListTitle"]</h2>
     </div>
     <div class="card-body">
         @if (isLoading)
         {
-            <p class="mb-0">@Localizer["Drafts.List.Loading"]</p>
+            <p class="mb-0">@Localizer["Drafts.Loading"]</p>
         }
         else if (drafts.Count == 0)
         {
-            <p class="mb-0">@Localizer["Drafts.List.Empty"]</p>
+            <p class="mb-0">@Localizer["Drafts.Empty"]</p>
         }
         else
         {
@@ -78,12 +79,12 @@
                             <tr>
                                 <td>@draft.ContactDisplayName</td>
                                 <td>@draft.ContactEmail</td>
-                                <td>@FormatStatus(draft.Status)</td>
+                                <td>@SharedResourceDisplayNames.EmailDraftStatus(Localizer, draft.Status)</td>
                                 <td>@draft.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                                 <td>@FormatDate(draft.ApprovedAt)</td>
                                 <td class="text-end">
                                     <a class="btn btn-sm btn-outline-primary" href="@($"/drafts/{draft.Id}")">
-                                        @Localizer["Drafts.List.ReviewAction"]
+                                        @Localizer["Drafts.ReviewAction"]
                                     </a>
                                 </td>
                             </tr>
@@ -94,6 +95,7 @@
         }
     </div>
 </section>
+</div>
 
 @code {
     private readonly EmailDraftStatus[] statusValues = Enum.GetValues<EmailDraftStatus>();
@@ -139,11 +141,6 @@
     private static EmailDraftStatus? ParseStatus(string? value)
     {
         return Enum.TryParse<EmailDraftStatus>(value, out var status) ? status : null;
-    }
-
-    private string FormatStatus(EmailDraftStatus status)
-    {
-        return Localizer[$"EmailDraftStatus.{status}"];
     }
 
     private static string FormatDate(DateTimeOffset? value)

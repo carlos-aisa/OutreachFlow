@@ -11,20 +11,21 @@
 
 <PageTitle>@Localizer["SenderProfiles.PageTitle"]</PageTitle>
 
-<h1>@Localizer["SenderProfiles.PageTitle"]</h1>
-
-<p class="text-muted">
-    @Localizer["SenderProfiles.Description"]
-</p>
+<div class="page-shell">
+<div class="page-intro">
+    <p class="page-kicker">@Localizer["SenderProfiles.PageTitle"]</p>
+    <h1 class="page-title">@Localizer["SenderProfiles.PageTitle"]</h1>
+    <p class="page-description">@Localizer["SenderProfiles.Description"]</p>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
+    <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
 }
 
 <section class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">@(editingId is null ? Localizer["SenderProfiles.Form.CreateTitle"] : Localizer["SenderProfiles.Form.EditTitle"])</h2>
+        <h2 class="workspace-card-title mb-0">@(editingId is null ? Localizer["SenderProfiles.Form.CreateTitle"] : Localizer["SenderProfiles.Form.EditTitle"])</h2>
         @if (editingId is not null)
         {
             <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="ResetForm">@Localizer["Common.CancelEdit"]</button>
@@ -90,7 +91,7 @@
 
 <section class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">@Localizer["SenderProfiles.List.Title"]</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["SenderProfiles.List.Title"]</h2>
         <span class="badge text-bg-secondary">@Localizer["SenderProfiles.List.Count", senderProfiles.Count]</span>
     </div>
     <div class="table-responsive">
@@ -135,6 +136,7 @@
         </table>
     </div>
 </section>
+</div>
 
 @code {
     private static readonly SenderSignatureFormat[] SignatureFormats = Enum.GetValues<SenderSignatureFormat>();

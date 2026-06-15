@@ -9,13 +9,12 @@
 @using OutreachFlow.Application.SenderProfiles
 @using OutreachFlow.Application.Tags
 @using OutreachFlow.Domain.Contacts
-@using OutreachFlow.Domain.EmailDrafts
-@using OutreachFlow.Web
 @using OutreachFlow.Web.Attachments
 @using OutreachFlow.Web.Contacts
 @using OutreachFlow.Web.EmailDrafts
 @using OutreachFlow.Web.EmailTemplates
 @using OutreachFlow.Web.Organizations
+@using OutreachFlow.Web
 @using OutreachFlow.Web.SenderProfiles
 @using OutreachFlow.Web.Tags
 @inject ContactApiClient ContactClient
@@ -29,37 +28,38 @@
 
 <PageTitle>@Localizer["DraftGeneration.PageTitle"]</PageTitle>
 
-<h1>@Localizer["DraftGeneration.PageTitle"]</h1>
-
-<p class="text-muted">
-    @Localizer["DraftGeneration.Description"]
-</p>
+<div class="page-shell">
+<div class="page-intro">
+    <p class="page-kicker">@Localizer["DraftGeneration.Kicker"]</p>
+    <h1 class="page-title">@Localizer["DraftGeneration.PageTitle"]</h1>
+    <p class="page-description">@Localizer["DraftGeneration.Description"]</p>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
+    <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
 }
 
 <section class="card mb-4">
     <div class="card-header">
-        <h2 class="h5 mb-0">@Localizer["DraftGeneration.StepTitle", currentStep, 5]</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["DraftGeneration.StepTitle", currentStep]</h2>
     </div>
     <div class="card-body">
         @if (currentStep == 1)
         {
-            <h3 class="h6 mb-3">@Localizer["DraftGeneration.Step.Recipients"]</h3>
+            <h3 class="h6 mb-3">@Localizer["DraftGeneration.RecipientsFilters"]</h3>
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">@Localizer["Common.Search"]</label>
-                    <input class="form-control" @bind="search" placeholder="@Localizer["DraftGeneration.Filters.SearchPlaceholder"]" />
+                    <input class="form-control" @bind="search" placeholder="@Localizer["Contacts.Filters.SearchPlaceholder"]" />
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">@Localizer["Common.Status"]</label>
                     <select class="form-select" @bind="selectedStatus">
-                        <option value="">@Localizer["DraftGeneration.Filters.AnyStatus"]</option>
+                        <option value="">@Localizer["Common.Any"]</option>
                         @foreach (var status in statusValues)
                         {
-                            <option value="@status">@FormatContactStatus(status)</option>
+                            <option value="@status">@SharedResourceDisplayNames.ContactStatus(Localizer, status)</option>
                         }
                     </select>
                 </div>
@@ -67,14 +67,14 @@
                     <label class="form-label">@Localizer["Common.DoNotContact"]</label>
                     <select class="form-select" @bind="selectedDoNotContact">
                         <option value="">@Localizer["Common.Any"]</option>
-                        <option value="true">@Localizer["DraftGeneration.Filters.OnlyDoNotContact"]</option>
-                        <option value="false">@Localizer["DraftGeneration.Filters.ExcludeDoNotContact"]</option>
+                        <option value="true">@Localizer["Contacts.Filters.OnlyDoNotContact"]</option>
+                        <option value="false">@Localizer["Contacts.Filters.ExcludeDoNotContact"]</option>
                     </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">@Localizer["Common.Organization"]</label>
                     <select class="form-select" @bind="selectedOrganizationId">
-                        <option value="">@Localizer["DraftGeneration.Filters.AnyOrganization"]</option>
+                        <option value="">@Localizer["Common.Any"]</option>
                         @foreach (var organization in organizations)
                         {
                             <option value="@organization.Id">@organization.Name</option>
@@ -84,7 +84,7 @@
                 <div class="col-md-6">
                     <label class="form-label">@Localizer["Common.Tag"]</label>
                     <select class="form-select" @bind="selectedTagId">
-                        <option value="">@Localizer["DraftGeneration.Filters.AnyTag"]</option>
+                        <option value="">@Localizer["Common.Any"]</option>
                         @foreach (var tag in tags)
                         {
                             <option value="@tag.Id">@FormatTag(tag)</option>
@@ -95,12 +95,12 @@
         }
         else if (currentStep == 2)
         {
-            <h3 class="h6 mb-3">@Localizer["DraftGeneration.Step.TemplateAndSender"]</h3>
+            <h3 class="h6 mb-3">@Localizer["DraftGeneration.TemplateSender"]</h3>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">@Localizer["Common.Template"]</label>
                     <select class="form-select" @bind="selectedTemplateId">
-                        <option value="">@Localizer["DraftGeneration.Template.Select"]</option>
+                        <option value="">@Localizer["DraftGeneration.SelectTemplate"]</option>
                         @foreach (var template in templates)
                         {
                             <option value="@template.Id">@template.Name</option>
@@ -108,9 +108,9 @@
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">@Localizer["Common.SenderProfile"]</label>
+                    <label class="form-label">@Localizer["Nav.SenderProfiles"]</label>
                     <select class="form-select" @bind="selectedSenderProfileId">
-                        <option value="">@Localizer["DraftGeneration.SenderProfile.Select"]</option>
+                        <option value="">@Localizer["DraftGeneration.SelectSender"]</option>
                         @foreach (var senderProfile in senderProfiles)
                         {
                             <option value="@senderProfile.Id">@senderProfile.Name (@senderProfile.Email)</option>
@@ -121,10 +121,10 @@
         }
         else if (currentStep == 3)
         {
-            <h3 class="h6 mb-3">@Localizer["DraftGeneration.Step.Attachments"]</h3>
+            <h3 class="h6 mb-3">@Localizer["DraftGeneration.OptionalAttachments"]</h3>
             @if (attachments.Count == 0)
             {
-                <p class="mb-0">@Localizer["DraftGeneration.Attachments.Empty"]</p>
+                <p class="mb-0">@Localizer["DraftGeneration.NoAttachments"]</p>
             }
             else
             {
@@ -148,25 +148,25 @@
         }
         else if (currentStep == 4)
         {
-            <h3 class="h6 mb-3">@Localizer["Common.Preview"]</h3>
+            <h3 class="h6 mb-3">@Localizer["DraftGeneration.PreviewTitle"]</h3>
             <p class="mb-2">
                 @Localizer["Common.Template"]: <strong>@SelectedTemplateName</strong>
             </p>
             <p class="mb-2">
-                @Localizer["Common.Sender"]: <strong>@SelectedSenderName</strong>
+                @Localizer["Nav.SenderProfiles"]: <strong>@SelectedSenderName</strong>
             </p>
             <p class="mb-3">
-                @Localizer["DraftGeneration.Preview.OptionalAttachments"]: <strong>@selectedAttachmentIds.Count</strong>
+                @Localizer["DraftGeneration.OptionalAttachments"]: <strong>@selectedAttachmentIds.Count</strong>
             </p>
 
             @if (isLoadingPreview)
             {
-                <p>@Localizer["DraftGeneration.Preview.LoadingContacts"]</p>
+                <p>@Localizer["DraftGeneration.PreviewLoading"]</p>
             }
             else
             {
                 <p class="mb-2">
-                    @Localizer["DraftGeneration.Preview.MatchingContacts"]: <strong>@previewContacts.Count</strong>
+                    @Localizer["DraftGeneration.ContactsMatching"]: <strong>@previewContacts.Count</strong>
                 </p>
 
                 @if (previewContacts.Count > 0)
@@ -187,8 +187,8 @@
                                     <tr>
                                         <td>@contact.DisplayName</td>
                                         <td>@contact.Email</td>
-                                        <td>@FormatContactStatus(contact.Status)</td>
-                                        <td>@(contact.DoNotContact ? Localizer["Common.Yes"] : Localizer["Common.No"])</td>
+                                        <td>@SharedResourceDisplayNames.ContactStatus(Localizer, contact.Status)</td>
+                                        <td>@(contact.DoNotContact ? "Yes" : "No")</td>
                                     </tr>
                                 }
                             </tbody>
@@ -203,29 +203,29 @@
         }
         else
         {
-            <h3 class="h6 mb-3">@Localizer["DraftGeneration.Step.Result"]</h3>
+            <h3 class="h6 mb-3">@Localizer["DraftGeneration.ResultTitle"]</h3>
 
             @if (generationResult is null)
             {
-                <p>@Localizer["DraftGeneration.Result.Empty"]</p>
+                <p>@Localizer["DraftGeneration.EmptyResult"]</p>
             }
             else
             {
-                <p class="mb-1">@Localizer["DraftGeneration.Result.RequestedContacts"]: <strong>@generationResult.RequestedContacts</strong></p>
-                <p class="mb-1">@Localizer["DraftGeneration.Result.GeneratedDrafts"]: <strong>@generationResult.GeneratedDrafts</strong></p>
-                <p class="mb-3">@Localizer["DraftGeneration.Result.SkippedContacts"]: <strong>@generationResult.SkippedContacts</strong></p>
+                <p class="mb-1">@Localizer["DraftGeneration.RequestedContacts"]: <strong>@generationResult.RequestedContacts</strong></p>
+                <p class="mb-1">@Localizer["DraftGeneration.GeneratedDrafts"]: <strong>@generationResult.GeneratedDrafts</strong></p>
+                <p class="mb-3">@Localizer["DraftGeneration.SkippedContacts"]: <strong>@generationResult.SkippedContacts</strong></p>
 
                 @if (generationResult.Drafts.Count > 0)
                 {
-                    <h4 class="h6">@Localizer["DraftGeneration.Result.GeneratedTitle"]</h4>
+                    <h4 class="h6">@Localizer["DraftGeneration.GeneratedDraftsTitle"]</h4>
                     <div class="table-responsive mb-3">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
                                     <th>@Localizer["Common.Contact"]</th>
                                     <th>@Localizer["Common.Status"]</th>
-                                    <th>@Localizer["DraftGeneration.Result.Missing"]</th>
-                                    <th>@Localizer["DraftGeneration.Result.Unknown"]</th>
+                                    <th>@Localizer["DraftDetail.MissingVariables"]</th>
+                                    <th>@Localizer["DraftDetail.UnknownVariables"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -233,7 +233,7 @@
                                 {
                                     <tr>
                                         <td>@draft.ContactDisplayName</td>
-                                        <td>@FormatDraftStatus(draft.Status)</td>
+                                        <td>@SharedResourceDisplayNames.EmailDraftStatus(Localizer, draft.Status)</td>
                                         <td>@FormatVariables(draft.MissingVariables)</td>
                                         <td>@FormatVariables(draft.UnknownVariables)</td>
                                     </tr>
@@ -245,14 +245,14 @@
 
                 @if (generationResult.Skipped.Count > 0)
                 {
-                    <h4 class="h6">@Localizer["DraftGeneration.Result.SkippedTitle"]</h4>
+                    <h4 class="h6">@Localizer["DraftGeneration.SkippedContactsTitle"]</h4>
                     <div class="table-responsive">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
                                     <th>@Localizer["Common.Contact"]</th>
                                     <th>@Localizer["Common.Email"]</th>
-                                    <th>@Localizer["DraftGeneration.Result.Reason"]</th>
+                                    <th>@Localizer["Common.Reason"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -272,17 +272,18 @@
         }
     </div>
     <div class="card-footer d-flex gap-2">
-        <button class="btn btn-outline-secondary" @onclick="PreviousStep" disabled="@(currentStep == 1 || isBusy)">@Localizer["Common.Back"]</button>
+        <button class="btn btn-outline-secondary" @onclick="PreviousStep" disabled="@(currentStep == 1 || isBusy)">@Localizer["DraftGeneration.Back"]</button>
         @if (currentStep < 4)
         {
-            <button class="btn btn-primary" @onclick="NextStepAsync" disabled="@isBusy">@Localizer["Common.Next"]</button>
+            <button class="btn btn-primary" @onclick="NextStepAsync" disabled="@isBusy">@Localizer["DraftGeneration.Next"]</button>
         }
         else if (currentStep == 5)
         {
-            <button class="btn btn-primary" @onclick="RestartWizard">@Localizer["DraftGeneration.GenerateMoreAction"]</button>
+            <button class="btn btn-primary" @onclick="RestartWizard">@Localizer["DraftGeneration.GenerateMore"]</button>
         }
     </div>
 </section>
+</div>
 
 @code {
     private readonly ContactStatus[] statusValues = Enum.GetValues<ContactStatus>();
@@ -351,7 +352,7 @@
         {
             if (ParseGuid(selectedTemplateId) is null || ParseGuid(selectedSenderProfileId) is null)
             {
-                errorMessage = Localizer["DraftGeneration.Error.SelectTemplateAndSender"];
+                errorMessage = Localizer["DraftGeneration.SelectTemplateAndSender"];
                 return;
             }
         }
@@ -402,7 +403,7 @@
         if (ParseGuid(selectedTemplateId) is not Guid templateId ||
             ParseGuid(selectedSenderProfileId) is not Guid senderProfileId)
         {
-            errorMessage = Localizer["DraftGeneration.Error.SelectTemplateAndSenderForGeneration"];
+            errorMessage = Localizer["DraftGeneration.SelectTemplateAndSenderToGenerate"];
             return;
         }
 
@@ -488,16 +489,6 @@
     private static string FormatTag(TagDto tag)
     {
         return string.IsNullOrWhiteSpace(tag.Category) ? tag.Name : $"{tag.Category}: {tag.Name}";
-    }
-
-    private string FormatContactStatus(ContactStatus status)
-    {
-        return Localizer[$"ContactStatus.{status}"];
-    }
-
-    private string FormatDraftStatus(EmailDraftStatus status)
-    {
-        return Localizer[$"EmailDraftStatus.{status}"];
     }
 
     private static string FormatVariables(IReadOnlyList<string> variables)

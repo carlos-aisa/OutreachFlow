@@ -15,11 +15,14 @@ using OutreachFlow.Web.Tags;
 
 namespace OutreachFlow.IntegrationTests.Web;
 
+[Collection(CultureSensitiveTestCollectionDefinition.Name)]
 public sealed class ContactDetailTagManagementComponentTests : BunitContext
 {
     [Fact]
     public void ShouldEnableAssignTagButtonWhenAssignableTagsExist()
     {
+        using var cultureScope = CultureTestScope.Use("en-US");
+
         var contactId = Guid.NewGuid();
         var candidateTag = new TagDto(Guid.NewGuid(), "Prospect", "Audience", DateTimeOffset.UtcNow);
         var handler = new ContactDetailHttpMessageHandler(
@@ -46,6 +49,8 @@ public sealed class ContactDetailTagManagementComponentTests : BunitContext
     [Fact]
     public void ShouldSendAssignTagRequestFromContactDetail()
     {
+        using var cultureScope = CultureTestScope.Use("en-US");
+
         var contactId = Guid.NewGuid();
         var existingTag = new TagDto(Guid.NewGuid(), "VIP", "Audience", DateTimeOffset.UtcNow);
         var candidateTag = new TagDto(Guid.NewGuid(), "Prospect", "Audience", DateTimeOffset.UtcNow);
@@ -67,7 +72,7 @@ public sealed class ContactDetailTagManagementComponentTests : BunitContext
             .Add(page => page.ContactId, contactId));
 
         component.WaitForAssertion(() =>
-            component.Markup.Should().Contain("Contact tags"));
+            component.FindAll("#contact-tag-select option").Should().HaveCount(2));
 
         component.Find("#contact-tag-select").Change(candidateTag.Id.ToString());
         component.Find("#assign-contact-tag").Click();

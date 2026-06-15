@@ -14,22 +14,23 @@
 
 <PageTitle>@Localizer["Templates.PageTitle"]</PageTitle>
 
-<h1>@Localizer["Templates.PageTitle"]</h1>
+<div class="page-shell">
+    <div class="page-intro">
+        <p class="page-kicker">@Localizer["Templates.PageTitle"]</p>
+        <h1 class="page-title">@Localizer["Templates.PageTitle"]</h1>
+        <p class="page-description">@Localizer["Templates.Description"]</p>
+    </div>
 
-<p class="text-muted">
-    @Localizer["Templates.Description"]
-</p>
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
+    }
 
-@if (!string.IsNullOrWhiteSpace(errorMessage))
-{
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
-}
-
-<div class="row g-4">
-    <div class="col-lg-8">
+    <div class="row g-4">
+        <div class="col-lg-8">
         <section class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 class="h5 mb-0">@(editingId is null ? Localizer["Templates.Form.CreateTitle"] : Localizer["Templates.Form.EditTitle"])</h2>
+                <h2 class="workspace-card-title mb-0">@(editingId is null ? Localizer["Templates.Form.CreateTitle"] : Localizer["Templates.Form.EditTitle"])</h2>
                 @if (editingId is not null)
                 {
                     <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="ResetForm">@Localizer["Common.CancelEdit"]</button>
@@ -125,7 +126,7 @@
 
         <section class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 class="h5 mb-0">@Localizer["Templates.List.Title"]</h2>
+                <h2 class="workspace-card-title mb-0">@Localizer["Templates.List.Title"]</h2>
                 <span class="badge text-bg-secondary">@Localizer["Templates.List.Count", templates.Count]</span>
             </div>
             <div class="table-responsive">
@@ -168,12 +169,12 @@
                 </table>
             </div>
         </section>
-    </div>
+        </div>
 
-    <div class="col-lg-4">
+        <div class="col-lg-4">
         <section class="card">
             <div class="card-header">
-                <h2 class="h5 mb-0">@Localizer["Templates.Variables.Title"]</h2>
+                <h2 class="workspace-card-title mb-0">@Localizer["Templates.Variables.Title"]</h2>
             </div>
             <div class="card-body">
                 <p class="text-muted small">
@@ -198,6 +199,7 @@
             </div>
         </section>
     </div>
+</div>
 </div>
 
 @code {

@@ -1,89 +1,94 @@
 @page "/"
 @rendermode InteractiveServer
-@using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.Contacts
 @using OutreachFlow.Application.EmailDrafts
 @using OutreachFlow.Application.FollowUps
 @using OutreachFlow.Domain.Contacts
 @using OutreachFlow.Domain.EmailDrafts
-@using OutreachFlow.Web
 @using OutreachFlow.Web.Contacts
 @using OutreachFlow.Web.EmailDrafts
 @using OutreachFlow.Web.FollowUps
+@using Microsoft.Extensions.Localization
+@using OutreachFlow.Web
 @inject ContactApiClient ContactClient
 @inject EmailDraftApiClient DraftClient
 @inject FollowUpTaskApiClient FollowUpClient
 @inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>@Localizer["Dashboard.PageTitle"]</PageTitle>
+<PageTitle>@Localizer["Nav.Dashboard"]</PageTitle>
 
-<h1>@Localizer["Dashboard.PageTitle"]</h1>
+<div class="page-shell">
+    <div class="page-intro">
+        <p class="page-kicker">@Localizer["Home.Overview"]</p>
+        <h1 class="page-title">@Localizer["Nav.Dashboard"]</h1>
+        <p class="page-description">@Localizer["Home.Description"]</p>
+    </div>
 
-@if (!string.IsNullOrWhiteSpace(errorMessage))
-{
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
-}
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
+    }
 
-<section class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card h-100">
+    <section class="summary-grid">
+        <div class="card metric-card">
             <div class="card-body">
-                <h2 class="h6 text-muted">@Localizer["Dashboard.Metrics.NewContacts"]</h2>
-                <p class="display-6 mb-0">@newContactsCount</p>
+                <h2 class="metric-label">@Localizer["Home.NewContacts"]</h2>
+                <p class="metric-value">@newContactsCount</p>
             </div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card h-100">
+        <div class="card metric-card">
             <div class="card-body">
-                <h2 class="h6 text-muted">@Localizer["Dashboard.Metrics.NeedsReviewDrafts"]</h2>
-                <p class="display-6 mb-0">@needsReviewDraftsCount</p>
+                <h2 class="metric-label">@Localizer["Home.NeedsReviewDrafts"]</h2>
+                <p class="metric-value">@needsReviewDraftsCount</p>
             </div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card h-100">
+        <div class="card metric-card">
             <div class="card-body">
-                <h2 class="h6 text-muted">@Localizer["Dashboard.Metrics.ApprovedDrafts"]</h2>
-                <p class="display-6 mb-0">@approvedDraftsCount</p>
+                <h2 class="metric-label">@Localizer["Home.ApprovedDrafts"]</h2>
+                <p class="metric-value">@approvedDraftsCount</p>
             </div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card h-100">
+        <div class="card metric-card">
             <div class="card-body">
-                <h2 class="h6 text-muted">@Localizer["Dashboard.Metrics.FailedSends"]</h2>
-                <p class="display-6 mb-0">@failedDraftsCount</p>
+                <h2 class="metric-label">@Localizer["Home.FailedSends"]</h2>
+                <p class="metric-value">@failedDraftsCount</p>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<section class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">@Localizer["Dashboard.FollowUps.Title"]</h2>
-        <a class="btn btn-sm btn-outline-primary" href="/follow-ups">@Localizer["Dashboard.FollowUps.Action"]</a>
-    </div>
-    <div class="card-body">
-        @if (pendingFollowUps.Count == 0)
-        {
-            <p class="mb-0">@Localizer["Dashboard.FollowUps.Empty"]</p>
-        }
-        else
-        {
-            <ul class="mb-0">
-                @foreach (var task in pendingFollowUps)
-                {
-                    <li>
-                        <strong>@task.DueAt.ToLocalTime().ToString("yyyy-MM-dd")</strong>
-                        - <a href="@($"/contacts/{task.ContactId}")">@task.ContactDisplayName</a>
-                        (@task.Type)
-                    </li>
-                }
-            </ul>
-        }
-    </div>
-</section>
+    <section class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="workspace-card-title mb-0">@Localizer["Home.PendingFollowUps.Title"]</h2>
+                <p class="workspace-card-subtitle">@Localizer["Home.PendingFollowUps.Subtitle"]</p>
+            </div>
+            <a class="btn btn-sm btn-outline-primary" href="/follow-ups">@Localizer["Home.PendingFollowUps.Action"]</a>
+        </div>
+        <div class="card-body">
+            @if (pendingFollowUps.Count == 0)
+            {
+                <p class="mb-0">@Localizer["Home.PendingFollowUps.Empty"]</p>
+            }
+            else
+            {
+                <div class="list-group">
+                    @foreach (var task in pendingFollowUps)
+                    {
+                        <div class="list-group-item d-flex justify-content-between align-items-center gap-3">
+                            <div>
+                                <div class="fw-semibold">
+                                    <a href="@($"/contacts/{task.ContactId}")">@task.ContactDisplayName</a>
+                                </div>
+                                <div class="small text-muted">@SharedResourceDisplayNames.FollowUpTaskType(Localizer, task.Type)</div>
+                            </div>
+                            <span class="badge text-bg-secondary">@task.DueAt.ToLocalTime().ToString("yyyy-MM-dd")</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+</div>
 
 @code {
     private int newContactsCount;

@@ -5,23 +5,28 @@
 @inject IStringLocalizer<SharedResource> Localizer
 
 <div class="page">
-    <div class="sidebar">
+    <aside class="sidebar">
         <NavMenu />
-    </div>
+    </aside>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">@Localizer["Layout.About"]</a>
+    <main class="workspace-main">
+        <div class="top-row">
+            <div class="top-row-shell">
+                <div class="top-row-copy">
+                    <p class="top-row-kicker">@Localizer["Layout.TopRowTitle"]</p>
+                    <p class="top-row-caption">@Localizer["Layout.TopRowCaption"]</p>
+                </div>
+            </div>
         </div>
 
-        <article class="content px-4">
+        <article class="content workspace-content px-4">
             @Body
         </article>
     </main>
 </div>
 
 <div id="blazor-error-ui">
-    @Localizer["Layout.Error.Unhandled"]
-    <a href="" class="reload">@Localizer["Layout.Error.Reload"]</a>
+    @Localizer["Layout.ErrorUnhandled"]
+    <a href="" class="reload">@Localizer["Layout.ErrorReload"]</a>
     <a class="dismiss">x</a>
 </div>

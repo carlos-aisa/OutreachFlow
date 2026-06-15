@@ -4,8 +4,8 @@
 @using Microsoft.Extensions.Localization
 @using OutreachFlow.Application.Contacts
 @using OutreachFlow.Application.FollowUps
-@using OutreachFlow.Domain.FollowUps
 @using OutreachFlow.Web
+@using OutreachFlow.Domain.FollowUps
 @using OutreachFlow.Web.Contacts
 @using OutreachFlow.Web.FollowUps
 @inject ContactApiClient ContactClient
@@ -14,21 +14,26 @@
 
 <PageTitle>@Localizer["FollowUps.PageTitle"]</PageTitle>
 
-<h1>@Localizer["FollowUps.PageTitle"]</h1>
+<div class="page-shell">
+<div class="page-intro">
+    <p class="page-kicker">@Localizer["FollowUps.PageTitle"]</p>
+    <h1 class="page-title">@Localizer["FollowUps.PageTitle"]</h1>
+    <p class="page-description">@Localizer["FollowUps.Description"]</p>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
-    <div class="alert alert-danger" role="alert">@errorMessage</div>
+    <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
 }
 
 @if (!string.IsNullOrWhiteSpace(successMessage))
 {
-    <div class="alert alert-success" role="alert">@successMessage</div>
+    <div class="alert alert-success page-section" role="alert">@successMessage</div>
 }
 
 <section class="card mb-4">
     <div class="card-header">
-        <h2 class="h5 mb-0">@Localizer["FollowUps.Form.Title"]</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["FollowUps.CreateTitle"]</h2>
     </div>
     <div class="card-body">
         <EditForm Model="newTask" OnValidSubmit="CreateAsync">
@@ -39,7 +44,7 @@
                 <div class="col-md-4">
                     <label class="form-label" for="followup-contact">@Localizer["Common.Contact"]</label>
                     <InputSelect id="followup-contact" class="form-select" @bind-Value="newTask.ContactId">
-                        <option value="">@Localizer["FollowUps.Form.SelectContact"]</option>
+                        <option value="">@Localizer["FollowUps.SelectContact"]</option>
                         @foreach (var contact in contacts)
                         {
                             <option value="@contact.Id">@contact.DisplayName (@contact.Email)</option>
@@ -47,7 +52,7 @@
                     </InputSelect>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label" for="followup-due">@Localizer["FollowUps.Form.DueAt"]</label>
+                    <label class="form-label" for="followup-due">@Localizer["FollowUps.DueAt"]</label>
                     <InputDate id="followup-due" class="form-control" @bind-Value="newTask.DueDate" />
                 </div>
                 <div class="col-md-3">
@@ -55,12 +60,12 @@
                     <InputSelect id="followup-type" class="form-select" @bind-Value="newTask.Type">
                         @foreach (var type in FollowUpTypes)
                         {
-                            <option value="@type">@FormatTaskType(type)</option>
+                            <option value="@type">@SharedResourceDisplayNames.FollowUpTaskType(Localizer, type)</option>
                         }
                     </InputSelect>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-primary w-100" type="submit" disabled="@isBusy">@Localizer["FollowUps.Form.CreateAction"]</button>
+                    <button class="btn btn-primary w-100" type="submit" disabled="@isBusy">@Localizer["FollowUps.CreateAction"]</button>
                 </div>
                 <div class="col-12">
                     <label class="form-label" for="followup-notes">@Localizer["Common.Notes"]</label>
@@ -73,10 +78,10 @@
 
 <section class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h2 class="h5 mb-0">@Localizer["FollowUps.List.Title"]</h2>
+        <h2 class="workspace-card-title mb-0">@Localizer["FollowUps.ListTitle"]</h2>
         <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-secondary" @onclick="ShowPendingAsync" disabled="@isBusy">@Localizer["FollowUps.List.PendingAction"]</button>
-            <button class="btn btn-sm btn-outline-secondary" @onclick="ShowAllAsync" disabled="@isBusy">@Localizer["FollowUps.List.AllAction"]</button>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="ShowPendingAsync" disabled="@isBusy">@Localizer["FollowUps.PendingAction"]</button>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="ShowAllAsync" disabled="@isBusy">@Localizer["FollowUps.AllAction"]</button>
         </div>
     </div>
     <div class="table-responsive">
@@ -94,11 +99,11 @@
             <tbody>
                 @if (isLoading)
                 {
-                    <tr><td colspan="6">@Localizer["FollowUps.List.Loading"]</td></tr>
+                    <tr><td colspan="6">@Localizer["FollowUps.Loading"]</td></tr>
                 }
                 else if (tasks.Count == 0)
                 {
-                    <tr><td colspan="6">@Localizer["FollowUps.List.Empty"]</td></tr>
+                    <tr><td colspan="6">@Localizer["FollowUps.Empty"]</td></tr>
                 }
                 else
                 {
@@ -107,13 +112,13 @@
                         <tr>
                             <td>@task.DueAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                             <td><a href="@($"/contacts/{task.ContactId}")">@task.ContactDisplayName</a></td>
-                            <td>@FormatTaskType(task.Type)</td>
+                            <td>@SharedResourceDisplayNames.FollowUpTaskType(Localizer, task.Type)</td>
                             <td>@(string.IsNullOrWhiteSpace(task.Notes) ? "-" : task.Notes)</td>
-                            <td>@(task.IsCompleted ? Localizer["FollowUps.Status.Completed"] : Localizer["FollowUps.Status.Pending"])</td>
+                            <td>@(task.IsCompleted ? Localizer["Common.Completed"] : Localizer["Common.Pending"])</td>
                             <td>
                                 @if (!task.IsCompleted)
                                 {
-                                    <button class="btn btn-sm btn-success" @onclick="() => CompleteAsync(task.Id)" disabled="@isBusy">@Localizer["FollowUps.Actions.Complete"]</button>
+                                    <button class="btn btn-sm btn-success" @onclick="() => CompleteAsync(task.Id)" disabled="@isBusy">@Localizer["FollowUps.CompleteAction"]</button>
                                 }
                             </td>
                         </tr>
@@ -123,6 +128,7 @@
         </table>
     </div>
 </section>
+</div>
 
 @code {
     private static readonly FollowUpTaskType[] FollowUpTypes = Enum.GetValues<FollowUpTaskType>();
@@ -203,7 +209,7 @@
         {
             if (!Guid.TryParse(newTask.ContactId, out var contactId))
             {
-                throw new InvalidOperationException(Localizer["FollowUps.Error.ContactRequired"]);
+                throw new InvalidOperationException(Localizer["FollowUps.ContactRequired"]);
             }
 
             _ = await FollowUpClient.CreateAsync(new CreateFollowUpTaskRequest(
@@ -214,7 +220,7 @@
                 newTask.Notes));
 
             newTask = new FollowUpTaskFormModel();
-            successMessage = Localizer["FollowUps.Success.Created"];
+            successMessage = Localizer["FollowUps.CreatedSuccess"];
             await LoadTasksAsync(isCompleted: false);
         }
         catch (InvalidOperationException exception)
@@ -240,7 +246,7 @@
         try
         {
             _ = await FollowUpClient.CompleteAsync(taskId);
-            successMessage = Localizer["FollowUps.Success.Completed"];
+            successMessage = Localizer["FollowUps.CompletedSuccess"];
             await LoadTasksAsync(isCompleted: false);
         }
         catch (InvalidOperationException exception)
@@ -255,11 +261,6 @@
         {
             isSaving = false;
         }
-    }
-
-    private string FormatTaskType(FollowUpTaskType type)
-    {
-        return Localizer[$"FollowUpTaskType.{type}"];
     }
 
     private sealed class FollowUpTaskFormModel

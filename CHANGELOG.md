@@ -6,9 +6,28 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-06-15
+
+### Added
+
+- Web contact detail page now supports direct tag management for existing contacts, including direct assignment and removal from the detail view.
+- Main OpenSpec spec coverage now includes `web-ui-appearance`, synchronized from the archived `refresh-web-ui` change.
+
 ### Changed
 
-- Web contact detail page now supports direct tag management for existing contacts (assign and remove).
+- Refreshed the web workspace visual system across layout, navigation, cards, forms, tables, and dense operational pages for a more coherent application shell.
+- Expanded Spanish localization coverage across navigation, page headers, workflow pages, error surfaces, and supporting resource-based enum/status display names.
+- Release validation now accepts archived OpenSpec change ids that use the current kebab-case naming scheme, including `refresh-web-ui`.
+- Repository release metadata now targets the `0.18.0` stable line.
+
+### Fixed
+
+- Web language selection now persists across navigation and restart flows instead of reverting unexpectedly.
+- Contact detail and localization component tests are now isolated from cross-test culture leakage, avoiding intermittent failures in mixed-language runs.
+
+### Removed
+
+- Deleted the superseded superpowers UI refresh design spec after migrating the finalized design direction into OpenSpec artifacts and shipped web styling.
 
 ## [0.17.0] - 2026-05-08
 
