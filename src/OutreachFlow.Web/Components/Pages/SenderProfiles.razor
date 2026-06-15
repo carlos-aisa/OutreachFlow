@@ -73,7 +73,7 @@
                         <option value="">@Localizer["Common.SignatureFormatPlaceholder"]</option>
                         @foreach (var signatureFormat in SignatureFormats)
                         {
-                            <option value="@signatureFormat">@signatureFormat</option>
+                            <option value="@signatureFormat">@FormatSignatureFormat(signatureFormat)</option>
                         }
                     </InputSelect>
                 </div>
@@ -264,6 +264,11 @@
     {
         editingId = null;
         form = new SenderProfileFormModel();
+    }
+
+    private string FormatSignatureFormat(SenderSignatureFormat format)
+    {
+        return Localizer[$"SenderSignatureFormat.{format}"];
     }
 
     private sealed class SenderProfileFormModel

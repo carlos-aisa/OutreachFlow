@@ -34,6 +34,23 @@ This means:
 - The preference is reused on later visits without adding `culture` to normal navigation URLs.
 - The last selected supported culture remains active after restarting the Web application because the browser continues sending the cookie.
 
+## Current Spanish Coverage
+
+The supported Web workflows now localize shared navigation/layout labels plus the primary product pages for:
+
+- dashboard
+- organizations
+- contacts and contact detail
+- tags
+- sender profiles
+- templates
+- attachments
+- drafts, draft detail, and draft generation
+- follow-up tasks
+- imports
+
+Coverage includes page titles, headings, forms, action labels, placeholders, loading states, empty states, and the user-facing status labels owned by those Web screens.
+
 ## Resource File Conventions
 
 Web resources:
@@ -51,6 +68,7 @@ API user-facing error resources:
 - Navigation keys: `Nav.*`
 - Shared labels/actions: `Common.*`
 - Feature/page keys: `<Feature>.*` (for example `Contacts.*`, `Templates.*`)
+- User-facing enum labels: `<EnumType>.*` (for example `ContactStatus.*`, `EmailDraftStatus.*`)
 - API error keys: `ApiError.*`
 
 ## Localized API Errors
