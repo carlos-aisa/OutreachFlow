@@ -1,9 +1,6 @@
-@using System.Globalization
 @using Microsoft.Extensions.Localization
 @using OutreachFlow.Web
 @inject IStringLocalizer<SharedResource> Localizer
-@inject IJSRuntime JS
-@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
 <div class="sidebar-shell">
@@ -17,17 +14,6 @@
             <p class="sidebar-eyebrow">@Localizer["Layout.Workspace"]</p>
             <a class="navbar-brand" href="">OutreachFlow</a>
             <p class="sidebar-description">@Localizer["Layout.SidebarDescription"]</p>
-        </div>
-
-        <div class="nav-control-panel">
-            <label class="nav-control-label" for="sidebar-language-select">@Localizer["Layout.Language"]</label>
-            <select id="sidebar-language-select"
-                    class="form-select form-select-sm language-select"
-                    @bind="_selectedCulture"
-                    @bind:after="PersistLanguageSelectionAsync">
-                <option value="en-US">English</option>
-                <option value="es-ES">Español</option>
-            </select>
         </div>
     </div>
 
@@ -100,58 +86,12 @@
                     <span class="bi bi-upload-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Imports"]
                 </NavLink>
             </div>
+
+            <div class="nav-item nav-item--settings">
+                <NavLink class="nav-link" href="settings">
+                    <span class="bi bi-gear-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Settings"]
+                </NavLink>
+            </div>
         </nav>
     </div>
 </div>
-
-@code {
-    private string _selectedCulture = NormalizeCulture(CultureInfo.CurrentUICulture.Name);
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-        {
-            return;
-        }
-
-        try
-        {
-            var persistedCulture = await JS.InvokeAsync<string>("cultureHelper.getCulture");
-            _selectedCulture = NormalizeCulture(persistedCulture);
-        }
-        catch
-        {
-            _selectedCulture = NormalizeCulture(CultureInfo.CurrentUICulture.Name);
-        }
-
-        StateHasChanged();
-    }
-
-    private async Task PersistLanguageSelectionAsync()
-    {
-        var culture = NormalizeCulture(_selectedCulture);
-
-        try
-        {
-            _selectedCulture = await JS.InvokeAsync<string>("cultureHelper.setCulture", culture);
-            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
-            return;
-        }
-        catch
-        {
-            _selectedCulture = culture;
-        }
-
-        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-        var redirectUri = string.IsNullOrWhiteSpace(relativePath) ? "/" : $"/{relativePath}";
-        var setCultureUri = $"/culture/set?culture={Uri.EscapeDataString(culture)}&redirectUri={Uri.EscapeDataString(redirectUri)}";
-        NavigationManager.NavigateTo(setCultureUri, forceLoad: true);
-    }
-
-    private static string NormalizeCulture(string? culture)
-    {
-        return string.Equals(culture, "es-ES", StringComparison.OrdinalIgnoreCase)
-            ? "es-ES"
-            : "en-US";
-    }
-}

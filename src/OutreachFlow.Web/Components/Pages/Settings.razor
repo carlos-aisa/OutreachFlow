@@ -1,0 +1,157 @@
+@page "/settings"
+@rendermode InteractiveServer
+@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using OutreachFlow.Web
+@inject IStringLocalizer<SharedResource> Localizer
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<PageTitle>@Localizer["Settings.PageTitle"]</PageTitle>
+
+<div class="page-shell">
+    <div class="page-intro page-intro--split">
+        <div>
+            <p class="page-kicker">@Localizer["Settings.Kicker"]</p>
+            <h1 class="page-title">@Localizer["Settings.PageTitle"]</h1>
+            <p class="page-description">@Localizer["Settings.Description"]</p>
+        </div>
+    </div>
+
+    <div class="workspace-grid workspace-grid--two settings-grid">
+        <section class="card">
+            <div class="card-header">
+                <h2 class="workspace-card-title mb-0">@Localizer["Settings.General.Title"]</h2>
+                <p class="workspace-card-subtitle">@Localizer["Settings.General.Subtitle"]</p>
+            </div>
+
+            <div class="card-body">
+                <div class="settings-preference-list">
+                    <section class="settings-preference-item">
+                        <label class="form-label" for="settings-language-select">@Localizer["Settings.Language.Label"]</label>
+                        <p class="settings-preference-help">@Localizer["Settings.Language.Help"]</p>
+                        <select id="settings-language-select"
+                                class="form-select"
+                                @bind="_selectedCulture"
+                                @bind:after="PersistLanguageSelectionAsync">
+                            <option value="en-US">English</option>
+                            <option value="es-ES">Español</option>
+                        </select>
+                    </section>
+
+                    <section class="settings-preference-item">
+                        <label class="form-label" for="settings-theme-select">@Localizer["Settings.Theme.Label"]</label>
+                        <p class="settings-preference-help">@Localizer["Settings.Theme.Help"]</p>
+                        <select id="settings-theme-select"
+                                class="form-select"
+                                @bind="_selectedTheme"
+                                @bind:after="PersistThemeSelectionAsync">
+                            <option value="system">@Localizer["Settings.Theme.System"]</option>
+                            <option value="light">@Localizer["Settings.Theme.Light"]</option>
+                            <option value="dark">@Localizer["Settings.Theme.Dark"]</option>
+                        </select>
+                    </section>
+                </div>
+            </div>
+        </section>
+
+        <aside class="card settings-side-panel">
+            <div class="card-body settings-side-panel-body">
+                <p class="page-kicker">@Localizer["Settings.Apply.Kicker"]</p>
+                <h2 class="workspace-card-title">@Localizer["Settings.Apply.Title"]</h2>
+                <p class="workspace-card-subtitle">@Localizer["Settings.Apply.Description"]</p>
+
+                <div class="workspace-panel settings-note">
+                    <p class="mb-0">@Localizer["Settings.Apply.Note"]</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+@code {
+    private string _selectedCulture = NormalizeCulture(CultureInfo.CurrentUICulture.Name);
+    private string _selectedTheme = "system";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            var persistedCulture = await JS.InvokeAsync<string>("cultureHelper.getCulture");
+            _selectedCulture = NormalizeCulture(persistedCulture);
+        }
+        catch
+        {
+            _selectedCulture = NormalizeCulture(CultureInfo.CurrentUICulture.Name);
+        }
+
+        try
+        {
+            var persistedTheme = await JS.InvokeAsync<string>("themeHelper.getTheme");
+            _selectedTheme = NormalizeTheme(persistedTheme);
+        }
+        catch
+        {
+            _selectedTheme = "system";
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task PersistLanguageSelectionAsync()
+    {
+        var culture = NormalizeCulture(_selectedCulture);
+
+        try
+        {
+            _selectedCulture = await JS.InvokeAsync<string>("cultureHelper.setCulture", culture);
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            return;
+        }
+        catch
+        {
+            _selectedCulture = culture;
+        }
+
+        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        var redirectUri = string.IsNullOrWhiteSpace(relativePath) ? "/" : $"/{relativePath}";
+        var setCultureUri = $"/culture/set?culture={Uri.EscapeDataString(culture)}&redirectUri={Uri.EscapeDataString(redirectUri)}";
+        NavigationManager.NavigateTo(setCultureUri, forceLoad: true);
+    }
+
+    private async Task PersistThemeSelectionAsync()
+    {
+        var theme = NormalizeTheme(_selectedTheme);
+
+        try
+        {
+            _selectedTheme = await JS.InvokeAsync<string>("themeHelper.setTheme", theme);
+        }
+        catch
+        {
+            _selectedTheme = theme;
+        }
+    }
+
+    private static string NormalizeCulture(string? culture)
+    {
+        return string.Equals(culture, "es-ES", StringComparison.OrdinalIgnoreCase)
+            ? "es-ES"
+            : "en-US";
+    }
+
+    private static string NormalizeTheme(string? theme)
+    {
+        return theme?.ToLowerInvariant() switch
+        {
+            "light" => "light",
+            "dark" => "dark",
+            _ => "system"
+        };
+    }
+}

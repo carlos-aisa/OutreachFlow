@@ -24,6 +24,7 @@
   <data name="Nav.DraftGeneration" xml:space="preserve"><value>Generación de borradores</value></data>
   <data name="Nav.FollowUps" xml:space="preserve"><value>Seguimientos</value></data>
   <data name="Nav.Imports" xml:space="preserve"><value>Importaciones</value></data>
+  <data name="Nav.Settings" xml:space="preserve"><value>Configuraci&#243;n</value></data>
   <data name="Common.Name" xml:space="preserve"><value>Nombre</value></data>
   <data name="Common.DisplayName" xml:space="preserve"><value>Nombre visible</value></data>
   <data name="Common.Type" xml:space="preserve"><value>Tipo</value></data>
@@ -132,6 +133,22 @@
   <data name="Layout.TopRowCaption" xml:space="preserve"><value>Operativa controlada de contactos, borradores, plantillas y seguimientos</value></data>
   <data name="Layout.ErrorUnhandled" xml:space="preserve"><value>Se ha producido un error no controlado.</value></data>
   <data name="Layout.ErrorReload" xml:space="preserve"><value>Recargar</value></data>
+  <data name="Settings.Kicker" xml:space="preserve"><value>Preferencias</value></data>
+  <data name="Settings.PageTitle" xml:space="preserve"><value>Configuraci&#243;n</value></data>
+  <data name="Settings.Description" xml:space="preserve"><value>Gestiona las preferencias del espacio de trabajo para idioma y tema desde una &#250;nica p&#225;gina de configuraci&#243;n.</value></data>
+  <data name="Settings.General.Title" xml:space="preserve"><value>Preferencias generales</value></data>
+  <data name="Settings.General.Subtitle" xml:space="preserve"><value>Elige c&#243;mo se ve OutreachFlow y qu&#233; idioma usa durante la visita actual y las siguientes.</value></data>
+  <data name="Settings.Language.Label" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Settings.Language.Help" xml:space="preserve"><value>Cambia el idioma de la navegaci&#243;n, del contenido de las p&#225;ginas y de los flujos compatibles.</value></data>
+  <data name="Settings.Theme.Label" xml:space="preserve"><value>Tema</value></data>
+  <data name="Settings.Theme.Help" xml:space="preserve"><value>Elige si el espacio de trabajo debe mantenerse claro, oscuro o seguir la preferencia del sistema.</value></data>
+  <data name="Settings.Theme.System" xml:space="preserve"><value>Sistema</value></data>
+  <data name="Settings.Theme.Light" xml:space="preserve"><value>Claro</value></data>
+  <data name="Settings.Theme.Dark" xml:space="preserve"><value>Oscuro</value></data>
+  <data name="Settings.Apply.Kicker" xml:space="preserve"><value>Comportamiento</value></data>
+  <data name="Settings.Apply.Title" xml:space="preserve"><value>Los cambios se aplican al momento</value></data>
+  <data name="Settings.Apply.Description" xml:space="preserve"><value>El tema se actualiza de inmediato y el idioma recarga la p&#225;gina actual para mantener el contenido localizado de forma coherente.</value></data>
+  <data name="Settings.Apply.Note" xml:space="preserve"><value>El idioma y el tema seleccionados se recuerdan para futuras visitas a este espacio de trabajo.</value></data>
   <data name="Home.Overview" xml:space="preserve"><value>Resumen</value></data>
   <data name="Home.Description" xml:space="preserve"><value>Supervisa el estado actual de contactos, borradores y seguimientos desde una vista operativa clara.</value></data>
   <data name="Home.NewContacts" xml:space="preserve"><value>Contactos nuevos</value></data>

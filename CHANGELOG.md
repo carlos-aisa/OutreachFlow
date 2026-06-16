@@ -6,6 +6,20 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-06-16
+
+### Added
+
+- Web workspace now includes a dedicated Settings page for general preferences, with a new navigation entry and a consolidated home for user-facing configuration.
+- Theme preference support now lets users choose `System`, `Light`, or `Dark` mode and keeps that choice across visits.
+- OpenSpec archive and main spec coverage now include `web-settings-preferences`, synchronized from the archived `add-web-theme-selector` change.
+
+### Changed
+
+- Language selection moved from the sidebar header into the new Settings page so workspace preferences live in one predictable place.
+- Shared workspace styling now adapts across light and dark themes, including navigation states, cards, forms, and dense page surfaces.
+- English and Spanish localization coverage now includes the Settings page, theme selector, and preference copy.
+
 ## [0.18.0] - 2026-06-15
 
 ### Added

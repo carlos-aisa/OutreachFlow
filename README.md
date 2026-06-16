@@ -9,7 +9,7 @@
 
 OutreachFlow is a lightweight CRM and controlled email outreach manager for small teams and independent professionals. It helps organize contacts, classify audiences with flexible tags, generate personalized drafts from reusable templates, attach reusable assets, send through configurable providers, and keep a complete communication history.
 
-Current stable line: `v0.18.0` ([CHANGELOG](CHANGELOG.md), [Releases](https://github.com/carlos-aisa/OutreachFlow/releases)).
+Current stable line: `v0.19.0` ([CHANGELOG](CHANGELOG.md), [Releases](https://github.com/carlos-aisa/OutreachFlow/releases)).
 
 ## Table of Contents
 
@@ -81,6 +81,7 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 - CSV contact imports with preview, duplicate detection, tag assignment, and import job tracking
 - Windows installer wizard distribution (`setup.exe` + `.msi`) for API and Web deployment
 - Spanish localization across the supported Web workflows, including dashboard, contacts, sender profiles, templates, drafts, follow-ups, attachments, and imports, with persisted language selection
+- Dedicated Settings page with persisted language and theme preferences, including system/light/dark workspace theming
 
 ### Next
 

@@ -29,8 +29,7 @@
 }
 
 .sidebar-header {
-    display: grid;
-    gap: 1rem;
+    display: block;
     padding: 1.15rem 1rem 1rem;
     border-bottom: 1px solid rgba(150, 160, 181, 0.16);
 }
@@ -69,30 +68,6 @@
     color: var(--workspace-sidebar-text);
     font-size: 0.92rem;
     line-height: 1.55;
-}
-
-.nav-control-panel {
-    display: grid;
-    gap: 0.45rem;
-    padding: 0.75rem 0.8rem 0.85rem;
-    background: rgba(24, 32, 51, 0.42);
-    border: 1px solid rgba(150, 160, 181, 0.14);
-    border-radius: 20px;
-}
-
-.nav-control-label {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--workspace-sidebar-muted);
-}
-
-.language-select {
-    max-width: 100%;
-    min-height: 2.65rem;
-    border-color: rgba(150, 160, 181, 0.22);
-    background-color: rgba(255, 255, 255, 0.96);
 }
 
 .bi {
@@ -172,6 +147,11 @@
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='black' d='M.5 9.9a.5.5 0 0 1 .5.5v2.6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.6a.5.5 0 0 1 1 0v2.6a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.6a.5.5 0 0 1 .5-.5'/%3E%3Cpath fill='black' d='M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 1 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z'/%3E%3C/svg%3E");
 }
 
+.bi-gear-nav-menu {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='black' d='M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.46 1.46 0 0 1-2.105.872l-.31-.17c-1.272-.698-2.67.7-1.973 1.972l.17.31a1.46 1.46 0 0 1-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.46 1.46 0 0 1 .872 2.105l-.17.31c-.698 1.272.7 2.67 1.972 1.973l.31-.17a1.46 1.46 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.46 1.46 0 0 1 2.105-.872l.31.17c1.272.698 2.67-.7 1.973-1.972l-.17-.31a1.46 1.46 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.46 1.46 0 0 1-.872-2.105l.17-.31c.698-1.272-.7-2.67-1.972-1.973l-.31.17a1.46 1.46 0 0 1-2.105-.872l-.1-.34ZM8 10.93a2.93 2.93 0 1 1 0-5.86 2.93 2.93 0 0 1 0 5.86Z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='black' d='M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.46 1.46 0 0 1-2.105.872l-.31-.17c-1.272-.698-2.67.7-1.973 1.972l.17.31a1.46 1.46 0 0 1-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.46 1.46 0 0 1 .872 2.105l-.17.31c-.698 1.272.7 2.67 1.972 1.973l.31-.17a1.46 1.46 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.46 1.46 0 0 1 2.105-.872l.31.17c1.272.698 2.67-.7 1.973-1.972l-.17-.31a1.46 1.46 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.46 1.46 0 0 1-.872-2.105l.17-.31c.698-1.272-.7-2.67-1.972-1.973l-.31.17a1.46 1.46 0 0 1-2.105-.872l-.1-.34ZM8 10.93a2.93 2.93 0 1 1 0-5.86 2.93 2.93 0 0 1 0 5.86Z'/%3E%3C/svg%3E");
+}
+
 .nav-scrollable {
     display: none;
     padding: 0.25rem 1rem 1.15rem;
@@ -203,7 +183,7 @@
     width: 100%;
     border-radius: 16px;
     padding: 0.7rem 0.85rem;
-    color: var(--workspace-sidebar-text);
+    color: var(--workspace-sidebar-link);
     background: transparent;
     border: 1px solid transparent;
     text-decoration: none;
@@ -212,32 +192,39 @@
 }
 
 .nav-item ::deep .nav-link .bi {
-    color: rgba(217, 229, 251, 0.74);
+    color: var(--workspace-sidebar-icon);
 }
 
 .nav-item ::deep .nav-link:hover,
 .nav-item ::deep .nav-link:focus-visible {
-    color: rgba(245, 248, 255, 0.96);
-    background: rgba(39, 50, 74, 0.44);
-    border-color: rgba(150, 160, 181, 0.14);
+    color: var(--workspace-sidebar-link-hover);
+    background: var(--workspace-sidebar-link-hover-bg);
+    border-color: var(--workspace-sidebar-link-hover-border);
     transform: translateX(1px);
 }
 
 .nav-item ::deep .nav-link:hover .bi,
 .nav-item ::deep .nav-link:focus-visible .bi {
-    opacity: 0.76;
+    color: var(--workspace-sidebar-icon-hover);
+    opacity: 0.82;
 }
 
 .nav-item ::deep a.active {
     color: #fff;
-    background: rgba(56, 66, 87, 0.96);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: var(--workspace-sidebar-link-active-bg);
+    border-color: var(--workspace-sidebar-link-active-border);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 .nav-item ::deep a.active .bi {
-    color: #fff;
+    color: var(--workspace-sidebar-icon-active);
     opacity: 1;
+}
+
+.nav-item--settings {
+    margin-top: 0.55rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgba(150, 160, 181, 0.16);
 }
 
 .navbar-toggler:checked ~ .nav-scrollable {
