@@ -1,5 +1,6 @@
 :root {
     --workspace-bg: #f4f7fb;
+    --workspace-body-top: #f8fbff;
     --workspace-surface: #ffffff;
     --workspace-surface-alt: #eef3fb;
     --workspace-border: #d9e2ef;
@@ -15,10 +16,36 @@
     --workspace-accent-strong: #6fc33a;
     --workspace-accent-ink: #173018;
     --workspace-sidebar: #182033;
+    --workspace-sidebar-depth: #111827;
     --workspace-sidebar-alt: #27324a;
     --workspace-sidebar-border: rgba(150, 160, 181, 0.22);
     --workspace-sidebar-text: #d9e5fb;
     --workspace-sidebar-muted: #96a0b5;
+    --workspace-sidebar-link: #d9e5fb;
+    --workspace-sidebar-link-hover: rgba(245, 248, 255, 0.96);
+    --workspace-sidebar-link-hover-bg: rgba(39, 50, 74, 0.44);
+    --workspace-sidebar-link-hover-border: rgba(150, 160, 181, 0.14);
+    --workspace-sidebar-link-active-bg: rgba(56, 66, 87, 0.96);
+    --workspace-sidebar-link-active-border: rgba(255, 255, 255, 0.08);
+    --workspace-sidebar-icon: rgba(217, 229, 251, 0.74);
+    --workspace-sidebar-icon-hover: rgba(217, 229, 251, 0.92);
+    --workspace-sidebar-icon-active: #ffffff;
+    --workspace-shell-overlay: rgba(248, 251, 255, 0.94);
+    --workspace-shell-overlay-strong: rgba(244, 247, 251, 0.72);
+    --workspace-top-row-surface: rgba(255, 255, 255, 0.76);
+    --workspace-top-row-border: rgba(194, 206, 222, 0.6);
+    --workspace-card-bg: rgba(255, 255, 255, 0.95);
+    --workspace-card-bg-alt: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 249, 255, 0.96));
+    --workspace-card-header-bg: linear-gradient(180deg, rgba(245, 248, 253, 0.98), rgba(238, 243, 251, 0.98));
+    --workspace-list-bg: rgba(255, 255, 255, 0.92);
+    --workspace-table-header-bg: rgba(244, 247, 251, 0.92);
+    --workspace-input-bg: rgba(255, 255, 255, 0.97);
+    --workspace-input-placeholder: #7f8ca4;
+    --workspace-outline-surface: rgba(255, 255, 255, 0.86);
+    --workspace-outline-surface-muted: rgba(255, 255, 255, 0.8);
+    --workspace-outline-hover-surface: rgba(238, 243, 251, 0.92);
+    --workspace-alert-danger-bg: rgba(252, 236, 239, 0.96);
+    --workspace-alert-success-bg: rgba(232, 247, 239, 0.96);
     --workspace-danger: #c15463;
     --workspace-success: #2f8f5b;
     --workspace-warning: #dca24f;
@@ -30,6 +57,57 @@
     --workspace-transition: 160ms ease;
 }
 
+html[data-theme="dark"] {
+    color-scheme: dark;
+}
+
+[data-theme="dark"] {
+    --workspace-bg: #0f1725;
+    --workspace-body-top: #09111d;
+    --workspace-surface: #162033;
+    --workspace-surface-alt: #1b2740;
+    --workspace-border: rgba(112, 130, 162, 0.34);
+    --workspace-border-strong: rgba(140, 159, 189, 0.48);
+    --workspace-shadow: 0 30px 60px rgba(0, 0, 0, 0.32);
+    --workspace-shadow-soft: 0 16px 36px rgba(0, 0, 0, 0.24);
+    --workspace-text: #e6edf8;
+    --workspace-text-muted: #a5b4cb;
+    --workspace-heading: #f7fbff;
+    --workspace-link: #dce6fb;
+    --workspace-link-hover: #ffffff;
+    --workspace-sidebar: #0d1422;
+    --workspace-sidebar-depth: #070b14;
+    --workspace-sidebar-alt: #172235;
+    --workspace-sidebar-border: rgba(129, 151, 186, 0.24);
+    --workspace-sidebar-text: #e9f0ff;
+    --workspace-sidebar-muted: #9baac4;
+    --workspace-sidebar-link: #e0e9fb;
+    --workspace-sidebar-link-hover: #ffffff;
+    --workspace-sidebar-link-hover-bg: rgba(67, 88, 121, 0.34);
+    --workspace-sidebar-link-hover-border: rgba(184, 203, 234, 0.18);
+    --workspace-sidebar-link-active-bg: rgba(116, 144, 191, 0.28);
+    --workspace-sidebar-link-active-border: rgba(196, 220, 255, 0.22);
+    --workspace-sidebar-icon: rgba(214, 226, 251, 0.82);
+    --workspace-sidebar-icon-hover: #ffffff;
+    --workspace-sidebar-icon-active: #ffffff;
+    --workspace-shell-overlay: rgba(12, 18, 30, 0.92);
+    --workspace-shell-overlay-strong: rgba(12, 18, 30, 0.76);
+    --workspace-top-row-surface: rgba(17, 24, 39, 0.72);
+    --workspace-top-row-border: rgba(107, 126, 156, 0.34);
+    --workspace-card-bg: rgba(22, 32, 51, 0.94);
+    --workspace-card-bg-alt: linear-gradient(180deg, rgba(27, 39, 64, 0.94), rgba(19, 28, 46, 0.96));
+    --workspace-card-header-bg: linear-gradient(180deg, rgba(29, 42, 68, 0.96), rgba(21, 31, 51, 0.96));
+    --workspace-list-bg: rgba(18, 27, 44, 0.9);
+    --workspace-table-header-bg: rgba(21, 31, 51, 0.96);
+    --workspace-input-bg: rgba(15, 23, 37, 0.95);
+    --workspace-input-placeholder: #8ea0bd;
+    --workspace-outline-surface: rgba(19, 28, 46, 0.92);
+    --workspace-outline-surface-muted: rgba(19, 28, 46, 0.82);
+    --workspace-outline-hover-surface: rgba(33, 47, 74, 0.94);
+    --workspace-alert-danger-bg: rgba(76, 27, 38, 0.86);
+    --workspace-alert-success-bg: rgba(23, 72, 49, 0.82);
+}
+
 html,
 body {
     min-height: 100%;
@@ -39,7 +117,7 @@ body {
     font-family: "Aptos", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     background:
         radial-gradient(circle at top right, rgba(139, 216, 90, 0.08), transparent 24%),
-        linear-gradient(180deg, #f8fbff 0%, var(--workspace-bg) 100%);
+        linear-gradient(180deg, var(--workspace-body-top) 0%, var(--workspace-bg) 100%);
     color: var(--workspace-text);
 }
 
@@ -129,7 +207,7 @@ a:focus-visible,
 }
 
 .metric-card {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 249, 255, 0.96));
+    background: var(--workspace-card-bg-alt);
     border: 1px solid rgba(194, 206, 222, 0.7);
     border-radius: var(--workspace-radius-lg);
     box-shadow: var(--workspace-shadow-soft);
@@ -157,7 +235,7 @@ a:focus-visible,
 }
 
 .card {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--workspace-card-bg);
     border: 1px solid rgba(194, 206, 222, 0.68);
     border-radius: var(--workspace-radius-lg);
     box-shadow: var(--workspace-shadow-soft);
@@ -166,7 +244,7 @@ a:focus-visible,
 
 .card-header,
 .card-footer {
-    background: linear-gradient(180deg, rgba(245, 248, 253, 0.98), rgba(238, 243, 251, 0.98));
+    background: var(--workspace-card-header-bg);
     border-color: var(--workspace-border);
     padding: 1rem 1.25rem;
 }
@@ -225,7 +303,7 @@ a:focus-visible,
 .list-group-item {
     border: 1px solid rgba(194, 206, 222, 0.7);
     border-radius: var(--workspace-radius-sm);
-    background: rgba(255, 255, 255, 0.92);
+    background: var(--workspace-list-bg);
     padding: 0.95rem 1rem;
 }
 
@@ -250,7 +328,7 @@ a:focus-visible,
     letter-spacing: 0.11em;
     text-transform: uppercase;
     color: var(--workspace-text-muted);
-    background: rgba(244, 247, 251, 0.92);
+    background: var(--workspace-table-header-bg);
 }
 
 .table tbody td {
@@ -281,7 +359,7 @@ a:focus-visible,
     min-height: var(--workspace-input-height);
     border-radius: var(--workspace-radius-sm);
     border-color: var(--workspace-border-strong);
-    background-color: rgba(255, 255, 255, 0.97);
+    background-color: var(--workspace-input-bg);
     color: var(--workspace-text);
     box-shadow: none;
 }
@@ -291,7 +369,7 @@ textarea.form-control {
 }
 
 .form-control::placeholder {
-    color: #7f8ca4;
+    color: var(--workspace-input-placeholder);
 }
 
 .form-control:focus,
@@ -378,7 +456,7 @@ textarea.form-control {
 .btn-outline-primary {
     color: var(--workspace-link);
     border-color: rgba(39, 50, 74, 0.24);
-    background-color: rgba(255, 255, 255, 0.86);
+    background-color: var(--workspace-outline-surface);
 }
 
 .btn-outline-primary:hover,
@@ -389,19 +467,19 @@ textarea.form-control {
 .btn-outline-danger:focus-visible {
     color: var(--workspace-heading);
     border-color: rgba(39, 50, 74, 0.3);
-    background-color: rgba(238, 243, 251, 0.92);
+    background-color: var(--workspace-outline-hover-surface);
 }
 
 .btn-outline-secondary {
     color: var(--workspace-text-muted);
     border-color: rgba(95, 108, 132, 0.22);
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--workspace-outline-surface-muted);
 }
 
 .btn-outline-danger {
     color: var(--workspace-danger);
     border-color: rgba(193, 84, 99, 0.28);
-    background-color: rgba(255, 255, 255, 0.86);
+    background-color: var(--workspace-outline-surface);
 }
 
 .alert {
@@ -412,13 +490,13 @@ textarea.form-control {
 
 .alert-danger {
     color: #6e2534;
-    background: rgba(252, 236, 239, 0.96);
+    background: var(--workspace-alert-danger-bg);
     border-color: rgba(193, 84, 99, 0.18);
 }
 
 .alert-success {
     color: #1f5a3b;
-    background: rgba(232, 247, 239, 0.96);
+    background: var(--workspace-alert-success-bg);
     border-color: rgba(47, 143, 91, 0.18);
 }
 

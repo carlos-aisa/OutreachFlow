@@ -59,4 +59,38 @@ public sealed class WebLanguageSelectionTests
         html.Should().Contain("Organizaciones");
         html.Should().Contain("Plantillas");
     }
+
+    [Fact]
+    public async Task ShouldRenderSettingsPageInSpanishWhenCultureCookieIsSelected()
+    {
+        string cultureCookie;
+
+        using (var initialFactory = new OutreachFlowWebFactory())
+        using (var initialClient = initialFactory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        }))
+        {
+            using var response = await initialClient.GetAsync("/culture/set?culture=es-ES&redirectUri=/settings");
+
+            response.Headers.TryGetValues("Set-Cookie", out var cookieValues).Should().BeTrue();
+            var setCookieHeader = cookieValues!
+                .Single(value => value.Contains(
+                    $"{CookieRequestCultureProvider.DefaultCookieName}=",
+                    StringComparison.Ordinal));
+            cultureCookie = setCookieHeader.Split(';', 2)[0];
+        }
+
+        using var laterFactory = new OutreachFlowWebFactory();
+        using var laterClient = laterFactory.CreateClient();
+        laterClient.DefaultRequestHeaders.Add("Cookie", cultureCookie);
+
+        var html = await laterClient.GetStringAsync("/settings");
+        var decodedHtml = WebUtility.HtmlDecode(html);
+
+        decodedHtml.Should().Contain("Configuración");
+        decodedHtml.Should().Contain("Preferencias generales");
+        decodedHtml.Should().Contain("Idioma");
+        decodedHtml.Should().Contain("Tema");
+    }
 }

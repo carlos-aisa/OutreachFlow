@@ -24,7 +24,6 @@ public sealed class WebLocalizationComponentTests : BunitContext
     public void ShouldRenderNavigationInSpanish()
     {
         using var cultureScope = CultureTestScope.Use("es-ES");
-        JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("es-ES");
         Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
         var component = Render<NavMenu>();
@@ -33,24 +32,45 @@ public sealed class WebLocalizationComponentTests : BunitContext
         component.Markup.Should().Contain("Organizaciones");
         component.Markup.Should().Contain("Plantillas");
         component.Markup.Should().Contain("Espacio de trabajo");
-        component.Markup.Should().Contain("Idioma");
+        component.Markup.Should().Contain("Configuración");
     }
 
     [Fact]
-    public void ShouldRenderSpanishLanguageSelectorAsSelected()
+    public void ShouldRenderSettingsPageInSpanish()
     {
         using var cultureScope = CultureTestScope.Use("es-ES");
         JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("es-ES");
+        JSInterop.Setup<string>("themeHelper.getTheme").SetResult("dark");
         Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-        var component = Render<NavMenu>();
+        var component = Render<Settings>();
 
-        component.WaitForAssertion(() =>
-            component.Find("#sidebar-language-select").GetAttribute("value").Should().Be("es-ES"));
+        component.Markup.Should().Contain("Configuración");
+        component.Markup.Should().Contain("Preferencias generales");
+        component.Markup.Should().Contain("Idioma");
+        component.Markup.Should().Contain("Tema");
+        component.Markup.Should().Contain("Oscuro");
     }
 
     [Fact]
-    public void ShouldRenderSidebarBrandAndLanguageSelectorInsideNavigationShell()
+    public void ShouldRenderPersistedLanguageAndThemeSelectionsInSettings()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("es-ES");
+        JSInterop.Setup<string>("themeHelper.getTheme").SetResult("dark");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        var component = Render<Settings>();
+
+        component.WaitForAssertion(() =>
+        {
+            component.Find("#settings-language-select").GetAttribute("value").Should().Be("es-ES");
+            component.Find("#settings-theme-select").GetAttribute("value").Should().Be("dark");
+        });
+    }
+
+    [Fact]
+    public void ShouldRenderSidebarBrandAndSettingsDestinationInsideNavigationShell()
     {
         using var cultureScope = CultureTestScope.Use("en-US");
         JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("en-US");
@@ -59,22 +79,22 @@ public sealed class WebLocalizationComponentTests : BunitContext
         var component = Render<NavMenu>();
 
         component.Find(".sidebar-brand-panel").TextContent.Should().Contain("OutreachFlow");
-        component.Find(".nav-control-panel #sidebar-language-select").Should().NotBeNull();
+        component.Find("a[href='settings']").TextContent.Should().Contain("Settings");
+        component.FindAll("#sidebar-language-select").Should().BeEmpty();
     }
 
     [Fact]
     public void ShouldMarkCurrentNavigationItemAsActive()
     {
         using var cultureScope = CultureTestScope.Use("en-US");
-        JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("en-US");
         Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
         var nav = Services.GetRequiredService<BunitNavigationManager>();
-        nav.NavigateTo("http://localhost/contacts");
+        nav.NavigateTo("http://localhost/settings");
 
         var component = Render<NavMenu>();
 
-        component.Find("a[href='contacts']").ClassList.Should().Contain("active");
+        component.Find("a[href='settings']").ClassList.Should().Contain("active");
     }
 
     [Fact]
@@ -83,6 +103,7 @@ public sealed class WebLocalizationComponentTests : BunitContext
         using var cultureScope = CultureTestScope.Use("en-US");
         JSInterop.Mode = JSRuntimeMode.Strict;
         JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("en-US");
+        JSInterop.Setup<string>("themeHelper.getTheme").SetResult("system");
         var setCultureCall = JSInterop.Setup<string>("cultureHelper.setCulture", invocation =>
             invocation.Arguments.Count == 1 &&
             string.Equals(invocation.Arguments[0]?.ToString(), "es-ES", StringComparison.Ordinal))
@@ -91,9 +112,9 @@ public sealed class WebLocalizationComponentTests : BunitContext
 
         var nav = Services.GetRequiredService<BunitNavigationManager>();
         var currentUri = nav.Uri;
-        var component = Render<NavMenu>();
+        var component = Render<Settings>();
 
-        await component.InvokeAsync(() => component.Find("#sidebar-language-select").Change("es-ES"));
+        await component.InvokeAsync(() => component.Find("#settings-language-select").Change("es-ES"));
 
         component.WaitForAssertion(() =>
         {
@@ -102,6 +123,34 @@ public sealed class WebLocalizationComponentTests : BunitContext
             nav.History.Should().NotBeEmpty();
             nav.History.First().Uri.Should().Be(currentUri);
             nav.History.First().Options.ForceLoad.Should().BeTrue();
+        });
+    }
+
+    [Fact]
+    public async Task ShouldPersistThemeSelectionWithoutReloadingCurrentRoute()
+    {
+        using var cultureScope = CultureTestScope.Use("en-US");
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("en-US");
+        JSInterop.Setup<string>("themeHelper.getTheme").SetResult("system");
+        var setThemeCall = JSInterop.Setup<string>("themeHelper.setTheme", invocation =>
+            invocation.Arguments.Count == 1 &&
+            string.Equals(invocation.Arguments[0]?.ToString(), "dark", StringComparison.Ordinal))
+            .SetResult("dark");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        var nav = Services.GetRequiredService<BunitNavigationManager>();
+        var currentUri = nav.Uri;
+        var component = Render<Settings>();
+
+        await component.InvokeAsync(() => component.Find("#settings-theme-select").Change("dark"));
+
+        component.WaitForAssertion(() =>
+        {
+            setThemeCall.Invocations.Should().ContainSingle();
+            nav.Uri.Should().Be(currentUri);
+            nav.History.Should().BeEmpty();
+            component.Find("#settings-theme-select").GetAttribute("value").Should().Be("dark");
         });
     }
 
