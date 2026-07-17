@@ -73,15 +73,21 @@ The system SHALL allow users to filter contacts by search text, tag, status, do-
 - **THEN** the system returns only contacts matching both filters
 
 ### Requirement: Contact management UI
-The system SHALL provide Blazor screens for listing contacts and creating contacts.
+The system SHALL provide Blazor screens for listing contacts and creating contacts through a contact-first intake flow that makes organization association optional and supports existing or newly entered organizations.
 
 #### Scenario: Create contact from UI
-- **WHEN** a user submits the contact creation form with valid data
-- **THEN** the UI creates the contact and refreshes the contact list
+- **WHEN** a user submits the contact intake form with valid data
+- **THEN** the UI creates the contact and presents a contextual next action
 
+<<<<<<< HEAD
 ### Requirement: Contact group visibility
 The system SHALL show a contact's group memberships in contact management and allow group membership to be managed from the relevant contact or group experience.
 
 #### Scenario: View contact groups
 - **WHEN** a user views a contact that belongs to groups
 - **THEN** the user can identify those groups and manage manual membership where permitted
+=======
+#### Scenario: Create contact and organization from UI
+- **WHEN** a user submits valid contact data and inline organization data
+- **THEN** the UI creates the associated records without requiring navigation to the organizations page
+>>>>>>> origin/main

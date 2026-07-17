@@ -29,6 +29,17 @@
         <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
     }
 
+    @if (createdContact is not null)
+    {
+        <div class="alert alert-success page-section" role="status">
+            <p class="mb-2">@Localizer["Contacts.Intake.Success", createdContact.DisplayName]</p>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-sm btn-outline-primary" href="@($"/contacts/{createdContact.Id}")">@Localizer["Contacts.Intake.ViewContact"]</a>
+                <a class="btn btn-sm btn-outline-primary" href="/drafts/generate">@Localizer["Contacts.Intake.CreateDraft"]</a>
+            </div>
+        </div>
+    }
+
     <section class="card page-section">
         <div class="card-header">
             <h2 class="workspace-card-title mb-0">@Localizer["Contacts.Filters.Title"]</h2>
@@ -88,6 +99,7 @@
     <section class="card page-section">
         <div class="card-header">
             <h2 class="workspace-card-title mb-0">@Localizer["Contacts.Form.CreateTitle"]</h2>
+            <p class="workspace-card-subtitle">@Localizer["Contacts.Intake.Description"]</p>
         </div>
         <div class="card-body">
             <EditForm Model="newContact" OnValidSubmit="CreateContactAsync">
@@ -95,17 +107,17 @@
                 <ValidationSummary />
 
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label" for="new-contact-name">@Localizer["Common.DisplayName"]</label>
                         <InputText id="new-contact-name" class="form-control" @bind-Value="newContact.DisplayName" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label" for="new-contact-email">@Localizer["Common.Email"]</label>
                         <InputText id="new-contact-email" class="form-control" @bind-Value="newContact.Email" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label class="form-label" for="new-contact-organization">@Localizer["Common.Organization"]</label>
-                        <InputSelect id="new-contact-organization" class="form-select" @bind-Value="newContact.OrganizationId">
+                        <InputSelect id="new-contact-organization" class="form-select" @bind-Value="newContact.OrganizationId" disabled="@createOrganization">
                             <option value="">@Localizer["Contacts.Form.NoOrganization"]</option>
                             @foreach (var organization in organizations)
                             {
@@ -113,6 +125,42 @@
                             }
                         </InputSelect>
                     </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check mb-2">
+                            <InputCheckbox id="new-organization-toggle" class="form-check-input" @bind-Value="createOrganization" />
+                            <label class="form-check-label" for="new-organization-toggle">@Localizer["Contacts.Intake.CreateOrganization"]</label>
+                        </div>
+                    </div>
+                    @if (createOrganization)
+                    {
+                        <div class="col-12">
+                            <div class="workspace-panel">
+                                <p class="workspace-card-title mb-3">@Localizer["Contacts.Intake.OrganizationDetails"]</p>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="new-organization-name">@Localizer["Common.Name"]</label>
+                                        <InputText id="new-organization-name" class="form-control" @bind-Value="newOrganization.Name" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label" for="new-organization-type">@Localizer["Common.Type"]</label>
+                                        <InputText id="new-organization-type" class="form-control" @bind-Value="newOrganization.Type" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="new-organization-city">@Localizer["Common.City"]</label>
+                                        <InputText id="new-organization-city" class="form-control" @bind-Value="newOrganization.City" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="new-organization-province">@Localizer["Common.Province"]</label>
+                                        <InputText id="new-organization-province" class="form-control" @bind-Value="newOrganization.Province" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label" for="new-organization-country">@Localizer["Common.Country"]</label>
+                                        <InputText id="new-organization-country" class="form-control" @bind-Value="newOrganization.Country" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
                     <div class="col-md-4">
                         <label class="form-label" for="new-contact-phone">@Localizer["Common.Phone"]</label>
                         <InputText id="new-contact-phone" class="form-control" @bind-Value="newContact.Phone" />
@@ -212,6 +260,9 @@
     private IReadOnlyList<OrganizationDto> organizations = [];
     private IReadOnlyList<TagDto> tags = [];
     private ContactFormModel newContact = new();
+    private OrganizationFormModel newOrganization = new();
+    private ContactDto? createdContact;
+    private bool createOrganization;
     private string? search;
     private string? selectedStatus;
     private string? selectedOrganizationId;
@@ -288,11 +339,22 @@
     {
         isSaving = true;
         errorMessage = null;
+        createdContact = null;
 
         try
         {
-            await ContactClient.CreateAsync(new CreateContactRequest(
-                ParseGuid(newContact.OrganizationId),
+            createdContact = await ContactClient.CreateIntakeAsync(new CreateContactIntakeRequest(
+                createOrganization ? null : ParseGuid(newContact.OrganizationId),
+                createOrganization
+                    ? new CreateOrganizationRequest(
+                        newOrganization.Name,
+                        newOrganization.Type,
+                        null,
+                        newOrganization.City,
+                        newOrganization.Province,
+                        newOrganization.Country,
+                        null)
+                    : null,
                 newContact.DisplayName,
                 newContact.Email,
                 newContact.Phone,
@@ -302,6 +364,8 @@
                 newContact.DoNotContact));
 
             newContact = new ContactFormModel();
+            newOrganization = new OrganizationFormModel();
+            createOrganization = false;
             await LoadReferenceDataAsync();
             await LoadContactsAsync();
         }
@@ -372,5 +436,19 @@
         public ContactStatus Status { get; set; } = ContactStatus.New;
 
         public bool DoNotContact { get; set; }
+    }
+
+    private sealed class OrganizationFormModel
+    {
+        [LocalizedRequired]
+        public string Name { get; set; } = string.Empty;
+
+        public string? Type { get; set; }
+
+        public string? City { get; set; }
+
+        public string? Province { get; set; }
+
+        public string? Country { get; set; }
     }
 }

@@ -181,6 +181,42 @@ public sealed class CoreContactsEndpointTests
         error.Message.Should().Be("A contact with this email already exists.");
     }
 
+    [Fact]
+    public async Task ShouldCreateContactAndOrganizationFromIntake()
+    {
+        using var factory = new OutreachFlowApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        var contact = await PostAsync<ContactDto>(
+            client,
+            "/api/v1/contacts/intakes",
+            new CreateContactIntakeRequest(
+                OrganizationId: null,
+                NewOrganization: new CreateOrganizationRequest(
+                    "Northwind Studio",
+                    "Education",
+                    null,
+                    "Oviedo",
+                    "Asturias",
+                    "Spain",
+                    null),
+                DisplayName: "Alex Morgan",
+                Email: "alex@example.com",
+                Phone: null,
+                Role: null,
+                Source: "Manual",
+                Status: ContactStatus.New,
+                DoNotContact: false));
+
+        contact.OrganizationName.Should().Be("Northwind Studio");
+
+        var organizations = await GetAsync<IReadOnlyList<OrganizationDto>>(
+            client,
+            "/api/v1/organizations");
+        organizations.Should().ContainSingle(organization => organization.Id == contact.OrganizationId);
+    }
+
     private static async Task<T> GetAsync<T>(HttpClient client, string uri)
     {
         using var response = await client.GetAsync(uri);
