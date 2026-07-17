@@ -188,6 +188,31 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "409":
           $ref: "#/components/responses/ConflictError"
+  /api/v1/contacts/intakes:
+    post:
+      operationId: createContactIntake
+      summary: Creates a contact and optionally a new organization in one operation
+      tags:
+        - Contacts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContactIntakeRequest"
+      responses:
+        "201":
+          description: Contact created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
   /api/v1/contacts/{id}:
     get:
       operationId: getContact
@@ -1662,6 +1687,43 @@ components:
     UpdateContactRequest:
       allOf:
         - $ref: "#/components/schemas/CreateContactRequest"
+    CreateContactIntakeRequest:
+      type: object
+      required:
+        - displayName
+        - email
+        - status
+        - doNotContact
+      properties:
+        organizationId:
+          type: string
+          format: uuid
+          nullable: true
+        newOrganization:
+          allOf:
+            - $ref: "#/components/schemas/CreateOrganizationRequest"
+          nullable: true
+        displayName:
+          type: string
+          example: Alex Morgan
+        email:
+          type: string
+          format: email
+          example: alex@example.com
+        phone:
+          type: string
+          nullable: true
+        role:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/ContactStatus"
+        doNotContact:
+          type: boolean
+          example: false
     Organization:
       type: object
       required:

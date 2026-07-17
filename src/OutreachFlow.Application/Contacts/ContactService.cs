@@ -7,6 +7,7 @@ using OutreachFlow.Application.Tags;
 using OutreachFlow.Domain.Common;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.ContactActivities;
+using OutreachFlow.Domain.Organizations;
 
 namespace OutreachFlow.Application.Contacts;
 
@@ -27,6 +28,55 @@ public sealed class ContactService(
         await EnsureEmailIsUniqueAsync(request.Email, null, cancellationToken);
 
         var contact = CreateContact(request);
+        await contactRepository.AddAsync(contact, cancellationToken);
+        await contactActivityService.RecordAsync(new CreateContactActivityRequest(
+            contact.Id,
+            contact.OrganizationId,
+            ContactActivityType.ContactCreated,
+            Subject: "Contact created",
+            BodyPreview: null,
+            MetadataJson: null),
+            cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        return await contactLookupService.MapAsync(contact, cancellationToken);
+    }
+
+    public async Task<ContactDto> CreateIntakeAsync(
+        CreateContactIntakeRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request.OrganizationId is not null && request.NewOrganization is not null)
+        {
+            throw new ApplicationValidationException(
+                "Select an existing organization or enter a new organization, but not both.");
+        }
+
+        await EnsureEmailIsUniqueAsync(request.Email, null, cancellationToken);
+
+        var organizationId = request.OrganizationId;
+
+        if (request.NewOrganization is not null)
+        {
+            var organization = CreateOrganization(request.NewOrganization);
+            await organizationRepository.AddAsync(organization, cancellationToken);
+            organizationId = organization.Id;
+        }
+        else
+        {
+            await EnsureOrganizationExistsAsync(organizationId, cancellationToken);
+        }
+
+        var contact = CreateContact(new CreateContactRequest(
+            organizationId,
+            request.DisplayName,
+            request.Email,
+            request.Phone,
+            request.Role,
+            request.Source,
+            request.Status,
+            request.DoNotContact));
+
         await contactRepository.AddAsync(contact, cancellationToken);
         await contactActivityService.RecordAsync(new CreateContactActivityRequest(
             contact.Id,
@@ -202,6 +252,25 @@ public sealed class ContactService(
                 request.Source,
                 request.Status,
                 request.DoNotContact);
+        }
+        catch (DomainException exception)
+        {
+            throw new ApplicationValidationException(exception.Message);
+        }
+    }
+
+    private static Organization CreateOrganization(CreateOrganizationRequest request)
+    {
+        try
+        {
+            return new Organization(
+                request.Name,
+                request.Type,
+                request.Website,
+                request.City,
+                request.Province,
+                request.Country,
+                request.Notes);
         }
         catch (DomainException exception)
         {

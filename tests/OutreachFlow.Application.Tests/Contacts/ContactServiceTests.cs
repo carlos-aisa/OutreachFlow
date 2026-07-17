@@ -47,6 +47,64 @@ public sealed class ContactServiceTests
     }
 
     [Fact]
+    public async Task ShouldCreateContactAndNewOrganizationFromIntake()
+    {
+        var fixture = new ContactServiceFixture();
+
+        var contact = await fixture.ContactService.CreateIntakeAsync(new CreateContactIntakeRequest(
+            OrganizationId: null,
+            NewOrganization: new CreateOrganizationRequest(
+                "Northwind Studio",
+                "Education",
+                null,
+                "Oviedo",
+                "Asturias",
+                "Spain",
+                null),
+            DisplayName: "Alex Morgan",
+            Email: "alex@example.com",
+            Phone: null,
+            Role: null,
+            Source: "Manual",
+            Status: ContactStatus.New,
+            DoNotContact: false));
+
+        contact.OrganizationName.Should().Be("Northwind Studio");
+        fixture.OrganizationRepository.Organizations.Should().ContainSingle();
+        fixture.ContactRepository.Contacts.Should().ContainSingle();
+        fixture.ContactActivityRepository.Activities.Should().ContainSingle(activity =>
+            activity.ContactId == contact.Id && activity.Type == ContactActivityType.ContactCreated);
+    }
+
+    [Fact]
+    public async Task ShouldRejectIntakeWithExistingAndNewOrganization()
+    {
+        var fixture = new ContactServiceFixture();
+
+        var act = () => fixture.ContactService.CreateIntakeAsync(new CreateContactIntakeRequest(
+            OrganizationId: Guid.NewGuid(),
+            NewOrganization: new CreateOrganizationRequest(
+                "Northwind Studio",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null),
+            DisplayName: "Alex Morgan",
+            Email: "alex@example.com",
+            Phone: null,
+            Role: null,
+            Source: null,
+            Status: ContactStatus.New,
+            DoNotContact: false));
+
+        await act.Should().ThrowAsync<ApplicationValidationException>();
+        fixture.OrganizationRepository.Organizations.Should().BeEmpty();
+        fixture.ContactRepository.Contacts.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task ShouldRejectDuplicateContactEmail()
     {
         var fixture = new ContactServiceFixture();
