@@ -20,6 +20,7 @@ using OutreachFlow.Infrastructure.FollowUps;
 using OutreachFlow.Infrastructure.Persistence;
 using OutreachFlow.Infrastructure.Persistence.Queries;
 using OutreachFlow.Infrastructure.Persistence.Repositories;
+using OutreachFlow.Application.Campaigns;
 using OutreachFlow.Infrastructure.Storage;
 
 namespace OutreachFlow.Infrastructure.DependencyInjection;
@@ -118,6 +119,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<IContactGroupRepository, ContactGroupRepository>();
+        services.AddScoped<ICampaignRepository, CampaignRepository>();
         services.AddScoped<IImportJobRepository, ImportJobRepository>();
         services.AddScoped<IContactActivityRepository, ContactActivityRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
