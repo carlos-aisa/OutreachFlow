@@ -265,10 +265,10 @@
 
     private sealed class FollowUpTaskFormModel
     {
-        [Required]
+        [LocalizedRequired]
         public string? ContactId { get; set; }
 
-        [Required]
+        [LocalizedRequired]
         public DateOnly DueDate { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddDays(2));
 
         public FollowUpTaskType Type { get; set; } = FollowUpTaskType.General;

@@ -355,4 +355,6 @@
   <data name="Error.DevelopmentDebugging" xml:space="preserve"><value>Para depuración local, habilita el entorno Development estableciendo la variable de entorno ASPNETCORE_ENVIRONMENT con el valor Development y reinicia la aplicación.</value></data>
   <data name="Common.Approved" xml:space="preserve"><value>Aprobado</value></data>
   <data name="Common.RequestId" xml:space="preserve"><value>Id. de solicitud</value></data>
+  <data name="Validation.EmailAddress" xml:space="preserve"><value>Introduce una dirección de correo válida.</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
 </root>
