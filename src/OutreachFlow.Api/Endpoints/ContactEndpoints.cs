@@ -51,6 +51,18 @@ public static class ContactEndpoints
             .WithName("CreateContact")
             .WithOpenApi();
 
+        group.MapPost("/intakes", async (
+            CreateContactIntakeRequest request,
+            IContactService service,
+            CancellationToken cancellationToken) =>
+            await ApiEndpoint.HandleAsync(async () =>
+            {
+                var contact = await service.CreateIntakeAsync(request, cancellationToken);
+                return Results.Created($"/api/v1/contacts/{contact.Id}", contact);
+            }))
+            .WithName("CreateContactIntake")
+            .WithOpenApi();
+
         group.MapGet("/{id:guid}", async (
             Guid id,
             IContactService service,
