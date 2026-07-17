@@ -13,6 +13,7 @@ using OutreachFlow.Web.Contacts;
 using OutreachFlow.Web.EmailDrafts;
 using OutreachFlow.Web.FollowUps;
 using OutreachFlow.Web.Organizations;
+using OutreachFlow.Web.SenderProfiles;
 using OutreachFlow.Web.Tags;
 
 namespace OutreachFlow.IntegrationTests.Web;
@@ -205,6 +206,46 @@ public sealed class WebLocalizationComponentTests : BunitContext
         var errorMarkup = Render<Error>().Markup;
         errorMarkup.Should().Contain("Modo de desarrollo");
         errorMarkup.Should().Contain("Se produjo un error al procesar tu solicitud.");
+    }
+
+    [Fact]
+    public void ShouldRenderSenderProfileValidationMessagesInSpanish()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new SenderProfileApiClient(CreateHttpClient()));
+
+        var component = Render<SenderProfiles>();
+
+        component.Find("#sender-name").Change("Perfil de prueba");
+        component.Find("#sender-email").Change("correo-invalido");
+        component.Find("form").Submit();
+
+        component.WaitForAssertion(() =>
+        {
+            component.Markup.Should().Contain("Introduce una dirección de correo válida.");
+            component.Markup.Should().NotContain("The Email field is not a valid e-mail address.");
+        });
+    }
+
+    [Fact]
+    public void ShouldRenderSenderProfileValidationMessagesInEnglish()
+    {
+        using var cultureScope = CultureTestScope.Use("en-US");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new SenderProfileApiClient(CreateHttpClient()));
+
+        var component = Render<SenderProfiles>();
+
+        component.Find("#sender-name").Change("Test profile");
+        component.Find("#sender-email").Change("invalid-email");
+        component.Find("form").Submit();
+
+        component.WaitForAssertion(() =>
+        {
+            component.Markup.Should().Contain("Enter a valid email address.");
+            component.Markup.Should().NotContain("The Email field is not a valid e-mail address.");
+        });
     }
 
     private static HttpClient CreateHttpClient()

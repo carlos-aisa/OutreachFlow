@@ -356,11 +356,11 @@
     {
         public string? OrganizationId { get; set; }
 
-        [Required]
+        [LocalizedRequired]
         public string DisplayName { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
+        [LocalizedRequired]
+        [LocalizedEmailAddress]
         public string Email { get; set; } = string.Empty;
 
         public string? Phone { get; set; }

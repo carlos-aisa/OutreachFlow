@@ -355,4 +355,6 @@
   <data name="Error.DevelopmentDebugging" xml:space="preserve"><value>For local debugging, enable the Development environment by setting the ASPNETCORE_ENVIRONMENT environment variable to Development and restarting the app.</value></data>
   <data name="Common.Approved" xml:space="preserve"><value>Approved</value></data>
   <data name="Common.RequestId" xml:space="preserve"><value>Request ID</value></data>
+  <data name="Validation.EmailAddress" xml:space="preserve"><value>Enter a valid email address.</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>This field is required.</value></data>
 </root>

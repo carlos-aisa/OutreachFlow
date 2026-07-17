@@ -44,6 +44,9 @@
     --workspace-outline-surface: rgba(255, 255, 255, 0.86);
     --workspace-outline-surface-muted: rgba(255, 255, 255, 0.8);
     --workspace-outline-hover-surface: rgba(238, 243, 251, 0.92);
+    --workspace-badge-secondary-bg: rgba(226, 235, 248, 0.95);
+    --workspace-badge-secondary-border: rgba(157, 173, 199, 0.34);
+    --workspace-badge-secondary-text: #1a2840;
     --workspace-alert-danger-bg: rgba(252, 236, 239, 0.96);
     --workspace-alert-success-bg: rgba(232, 247, 239, 0.96);
     --workspace-danger: #c15463;
@@ -104,6 +107,9 @@ html[data-theme="dark"] {
     --workspace-outline-surface: rgba(19, 28, 46, 0.92);
     --workspace-outline-surface-muted: rgba(19, 28, 46, 0.82);
     --workspace-outline-hover-surface: rgba(33, 47, 74, 0.94);
+    --workspace-badge-secondary-bg: rgba(118, 140, 174, 0.3);
+    --workspace-badge-secondary-border: rgba(201, 217, 243, 0.18);
+    --workspace-badge-secondary-text: #f7fbff;
     --workspace-alert-danger-bg: rgba(76, 27, 38, 0.86);
     --workspace-alert-success-bg: rgba(23, 72, 49, 0.82);
 }
@@ -404,8 +410,9 @@ textarea.form-control {
 }
 
 .text-bg-secondary {
-    color: var(--workspace-heading) !important;
-    background-color: rgba(226, 235, 248, 0.95) !important;
+    color: var(--workspace-badge-secondary-text) !important;
+    background-color: var(--workspace-badge-secondary-bg) !important;
+    border: 1px solid var(--workspace-badge-secondary-border);
 }
 
 .bg-success,

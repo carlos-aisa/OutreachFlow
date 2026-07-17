@@ -394,15 +394,15 @@
 
     private sealed class EmailTemplateFormModel
     {
-        [Required]
+        [LocalizedRequired]
         public string Name { get; set; } = string.Empty;
 
         public string? Description { get; set; }
 
-        [Required]
+        [LocalizedRequired]
         public string SubjectTemplate { get; set; } = string.Empty;
 
-        [Required]
+        [LocalizedRequired]
         public string BodyTemplate { get; set; } = string.Empty;
 
         public bool IsActive { get; set; } = true;

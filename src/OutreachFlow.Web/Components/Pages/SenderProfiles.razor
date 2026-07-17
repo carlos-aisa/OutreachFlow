@@ -273,11 +273,11 @@
 
     private sealed class SenderProfileFormModel
     {
-        [Required]
+        [LocalizedRequired]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
+        [LocalizedRequired]
+        [LocalizedEmailAddress]
         public string Email { get; set; } = string.Empty;
 
         public string? Phone { get; set; }
