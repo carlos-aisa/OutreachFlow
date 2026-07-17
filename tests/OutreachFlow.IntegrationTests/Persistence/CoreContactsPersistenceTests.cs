@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.Tags;
+using OutreachFlow.Domain.ContactGroups;
 using OutreachFlow.Infrastructure.Persistence;
 
 namespace OutreachFlow.IntegrationTests.Persistence;
@@ -84,6 +85,26 @@ public sealed class CoreContactsPersistenceTests
         var act = () => context.SaveChangesAsync();
 
         await act.Should().ThrowAsync<DbUpdateException>();
+    }
+
+    [Fact]
+    public async Task ShouldPersistContactGroupCriteriaAndManualOverride()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = await CreateMigratedContextAsync(connection);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        var group = new ContactGroup("Asturias schools");
+
+        context.Contacts.Add(contact);
+        context.ContactGroups.Add(group);
+        context.ContactGroupCriteria.Add(new ContactGroupCriterion(group.Id, ContactGroupCriterionType.City, "Gijón"));
+        context.ContactGroupMembershipOverrides.Add(new ContactGroupMembershipOverride(group.Id, contact.Id, ContactGroupOverrideType.Include));
+        await context.SaveChangesAsync();
+
+        context.ChangeTracker.Clear();
+
+        (await context.ContactGroupCriteria.SingleAsync()).Value.Should().Be("Gijón");
+        (await context.ContactGroupMembershipOverrides.SingleAsync()).Type.Should().Be(ContactGroupOverrideType.Include);
     }
 
     private static async Task<SqliteConnection> OpenConnectionAsync()

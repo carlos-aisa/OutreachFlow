@@ -10,6 +10,7 @@ using OutreachFlow.Application.Tags;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Web.Components.Pages;
 using OutreachFlow.Web.Contacts;
+using OutreachFlow.Web.ContactGroups;
 using OutreachFlow.Web.FollowUps;
 using OutreachFlow.Web.Tags;
 
@@ -36,6 +37,7 @@ public sealed class ContactDetailTagManagementComponentTests : BunitContext
 
         Services.AddLocalization(options => options.ResourcesPath = "Resources");
         Services.AddSingleton(new ContactApiClient(httpClient));
+        Services.AddSingleton(new ContactGroupApiClient(httpClient));
         Services.AddSingleton(new FollowUpTaskApiClient(httpClient));
         Services.AddSingleton(new TagApiClient(httpClient));
 
@@ -65,6 +67,7 @@ public sealed class ContactDetailTagManagementComponentTests : BunitContext
 
         Services.AddLocalization(options => options.ResourcesPath = "Resources");
         Services.AddSingleton(new ContactApiClient(httpClient));
+        Services.AddSingleton(new ContactGroupApiClient(httpClient));
         Services.AddSingleton(new FollowUpTaskApiClient(httpClient));
         Services.AddSingleton(new TagApiClient(httpClient));
 
@@ -119,6 +122,11 @@ public sealed class ContactDetailTagManagementComponentTests : BunitContext
             if (request.Method == HttpMethod.Get && path == "/api/v1/tags")
             {
                 return Task.FromResult(JsonResponse(availableTags));
+            }
+
+            if (request.Method == HttpMethod.Get && path == $"/api/v1/contacts/{contactId}/groups")
+            {
+                return Task.FromResult(JsonResponse(Array.Empty<object>()));
             }
 
             if (request.Method == HttpMethod.Post &&

@@ -57,7 +57,6 @@
   <data name="Common.CancelEdit" xml:space="preserve"><value>Cancelar edición</value></data>
   <data name="Common.Remove" xml:space="preserve"><value>Quitar</value></data>
   <data name="Common.Add" xml:space="preserve"><value>Añadir</value></data>
-  <data name="Common.Edit" xml:space="preserve"><value>Editar</value></data>
   <data name="Common.Deactivate" xml:space="preserve"><value>Desactivar</value></data>
   <data name="Common.Yes" xml:space="preserve"><value>Sí</value></data>
   <data name="Common.No" xml:space="preserve"><value>No</value></data>
@@ -357,4 +356,27 @@
   <data name="Common.RequestId" xml:space="preserve"><value>Id. de solicitud</value></data>
   <data name="Validation.EmailAddress" xml:space="preserve"><value>Introduce una dirección de correo válida.</value></data>
   <data name="Validation.Required" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+  <data name="Nav.ContactGroups" xml:space="preserve"><value>Grupos de contactos</value></data>
+  <data name="ContactGroups.PageTitle" xml:space="preserve"><value>Grupos de contactos</value></data>
+  <data name="ContactGroups.Description" xml:space="preserve"><value>Crea audiencias reutilizables a partir de criterios y selecciones manuales.</value></data>
+  <data name="ContactGroups.CreateTitle" xml:space="preserve"><value>Crear grupo</value></data>
+  <data name="ContactGroups.ListTitle" xml:space="preserve"><value>Grupos</value></data>
+  <data name="ContactGroups.CriteriaCount" xml:space="preserve"><value>{0} criterios</value></data>
+  <data name="Common.Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Common.Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Common.Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="Common.Delete" xml:space="preserve"><value>Eliminar</value></data>
+  <data name="ContactGroups.EditTitle" xml:space="preserve"><value>Editar grupo</value></data>
+  <data name="ContactGroups.Provinces" xml:space="preserve"><value>Provincias</value></data>
+  <data name="ContactGroups.Cities" xml:space="preserve"><value>Ciudades</value></data>
+  <data name="ContactGroups.OrganizationTypes" xml:space="preserve"><value>Tipos de organización</value></data>
+  <data name="ContactGroups.Tags" xml:space="preserve"><value>Etiquetas</value></data>
+  <data name="ContactGroups.CriteriaHelp" xml:space="preserve"><value>Separa los valores de texto con comas. Dentro de un campo basta uno de los valores; los distintos campos se combinan.</value></data>
+  <data name="ContactGroups.MembersTitle" xml:space="preserve"><value>Miembros: {0}</value></data>
+  <data name="ContactGroups.MembersHelp" xml:space="preserve"><value>Incluye o excluye un contacto manualmente. La decisión manual prevalece sobre los criterios.</value></data>
+  <data name="ContactGroups.Include" xml:space="preserve"><value>Incluir</value></data>
+  <data name="ContactGroups.Exclude" xml:space="preserve"><value>Excluir</value></data>
+  <data name="ContactGroups.ContactMemberships" xml:space="preserve"><value>Grupos</value></data>
+  <data name="ContactGroups.NoMemberships" xml:space="preserve"><value>Este contacto no pertenece actualmente a ningún grupo.</value></data>
+  <data name="ContactGroups.Manage" xml:space="preserve"><value>Gestionar grupos</value></data>
 </root>

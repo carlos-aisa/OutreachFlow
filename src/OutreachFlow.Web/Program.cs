@@ -10,6 +10,7 @@ using OutreachFlow.Web.SenderProfiles;
 using OutreachFlow.Web.Tags;
 using OutreachFlow.Web.FollowUps;
 using OutreachFlow.Web.ContactImports;
+using OutreachFlow.Web.ContactGroups;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWindowsService();
@@ -45,6 +46,8 @@ var apiBaseUrl = builder.Configuration["OutreachFlowApi:BaseUrl"] ??
     throw new InvalidOperationException("OutreachFlow API base URL is not configured.");
 
 builder.Services.AddHttpClient<ContactApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<ContactGroupApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<OrganizationApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));

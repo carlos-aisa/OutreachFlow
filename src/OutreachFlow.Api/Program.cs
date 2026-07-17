@@ -73,6 +73,7 @@ app.MapGet("/api/v1/health", () =>
 
 app.MapOrganizationEndpoints();
 app.MapContactEndpoints();
+app.MapContactGroupEndpoints();
 app.MapTagEndpoints();
 app.MapSenderProfileEndpoints();
 app.MapEmailTemplateEndpoints();

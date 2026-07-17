@@ -6,6 +6,7 @@ using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.ContactImports;
+using OutreachFlow.Application.ContactGroups;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
@@ -116,6 +117,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IContactRepository, ContactRepository>();
+        services.AddScoped<IContactGroupRepository, ContactGroupRepository>();
         services.AddScoped<IImportJobRepository, ImportJobRepository>();
         services.AddScoped<IContactActivityRepository, ContactActivityRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
