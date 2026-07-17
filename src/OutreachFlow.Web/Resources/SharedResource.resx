@@ -120,6 +120,12 @@
   <data name="Contacts.Form.CreateTitle" xml:space="preserve"><value>Create contact</value></data>
   <data name="Contacts.Form.NoOrganization" xml:space="preserve"><value>No organization</value></data>
   <data name="Contacts.Form.CreateAction" xml:space="preserve"><value>Create contact</value></data>
+  <data name="Contacts.Intake.Description" xml:space="preserve"><value>Start with the person. Link an existing organization, add one here, or continue without one.</value></data>
+  <data name="Contacts.Intake.CreateOrganization" xml:space="preserve"><value>Add a new organization with this contact</value></data>
+  <data name="Contacts.Intake.OrganizationDetails" xml:space="preserve"><value>New organization details</value></data>
+  <data name="Contacts.Intake.Success" xml:space="preserve"><value>{0} was added successfully.</value></data>
+  <data name="Contacts.Intake.ViewContact" xml:space="preserve"><value>View contact</value></data>
+  <data name="Contacts.Intake.CreateDraft" xml:space="preserve"><value>Create email draft</value></data>
   <data name="Contacts.List.Title" xml:space="preserve"><value>Contact list</value></data>
   <data name="Contacts.List.Count" xml:space="preserve"><value>{0} contacts</value></data>
   <data name="Contacts.List.LastContacted" xml:space="preserve"><value>Last contacted</value></data>

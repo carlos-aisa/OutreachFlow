@@ -45,6 +45,19 @@ public sealed class ContactApiClient(HttpClient httpClient)
         return await ApiClientJson.ReadRequiredAsync<ContactDto>(response, cancellationToken);
     }
 
+    public async Task<ContactDto> CreateIntakeAsync(
+        CreateContactIntakeRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PostAsJsonAsync(
+            "api/v1/contacts/intakes",
+            request,
+            ApiClientJson.Options,
+            cancellationToken);
+
+        return await ApiClientJson.ReadRequiredAsync<ContactDto>(response, cancellationToken);
+    }
+
     public async Task<ContactDto> GetByIdAsync(
         Guid contactId,
         CancellationToken cancellationToken = default)

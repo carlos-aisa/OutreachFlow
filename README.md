@@ -71,6 +71,7 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 ### Completed
 
 - Organizations, contacts, tags, and status management
+- Contact-first intake with optional inline organization creation
 - Sender profiles and email templates with variable catalog
 - Sender profile signatures (HTML/RTF) with validation and draft-body append behavior
 - Attachment assets and template default attachments

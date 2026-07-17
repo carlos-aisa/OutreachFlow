@@ -173,6 +173,12 @@ public sealed class WebLocalizationComponentTests : BunitContext
         component.Markup.Should().Contain("Contactos");
         component.Markup.Should().Contain("Filtros");
         component.Markup.Should().Contain("Crear contacto");
+        component.Markup.Should().Contain("Empieza por la persona");
+
+        component.Find("#new-organization-toggle").Change(true);
+
+        component.Find("#new-organization-name").Should().NotBeNull();
+        component.Markup.Should().Contain("Datos de la nueva organizaci");
     }
 
     [Fact]
