@@ -188,17 +188,87 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "409":
           $ref: "#/components/responses/ConflictError"
+<<<<<<< HEAD
+  /api/v1/contact-groups:
+    get:
+      operationId: listContactGroups
+      summary: Lists contact groups
+      tags: [Contact groups]
+      responses:
+        "200":
+          description: Contact groups returned successfully
+    post:
+      operationId: createContactGroup
+      summary: Creates a contact group
+      tags: [Contact groups]
+=======
   /api/v1/contacts/intakes:
     post:
       operationId: createContactIntake
       summary: Creates a contact and optionally a new organization in one operation
       tags:
         - Contacts
+>>>>>>> origin/main
       requestBody:
         required: true
         content:
           application/json:
             schema:
+<<<<<<< HEAD
+              $ref: "#/components/schemas/CreateContactGroupRequest"
+      responses:
+        "201":
+          description: Contact group created successfully
+  /api/v1/contact-groups/{id}/members:
+    get:
+      operationId: listContactGroupMembers
+      summary: Lists evaluated group members
+      tags: [Contact groups]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: Members returned successfully }
+  /api/v1/contact-groups/{id}:
+    get:
+      operationId: getContactGroup
+      summary: Gets a contact group
+      tags: [Contact groups]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "200": { description: Contact group returned successfully }, "404": { $ref: "#/components/responses/NotFoundError" } }
+    put:
+      operationId: updateContactGroup
+      summary: Updates a contact group and its criteria
+      tags: [Contact groups]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/UpdateContactGroupRequest" } } } }
+      responses: { "200": { description: Contact group updated successfully } }
+    delete:
+      operationId: deleteContactGroup
+      summary: Deletes a contact group
+      tags: [Contact groups]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "204": { description: Contact group deleted successfully } }
+  /api/v1/contact-groups/{id}/members/{contactId}/membership-override:
+    put:
+      operationId: setContactGroupMemberOverride
+      summary: Sets a manual membership override
+      tags: [Contact groups]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: contactId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: type, in: query, required: true, schema: { $ref: "#/components/schemas/ContactGroupOverrideType" } }
+      responses: { "204": { description: Membership override saved successfully } }
+  /api/v1/contacts/{id}/groups:
+    get:
+      operationId: listContactGroupsForContact
+      summary: Lists groups containing a contact
+      tags: [Contacts]
+      parameters: [{ $ref: "#/components/parameters/ContactId" }]
+      responses: { "200": { description: Contact groups returned successfully } }
+=======
               $ref: "#/components/schemas/CreateContactIntakeRequest"
       responses:
         "201":
@@ -213,6 +283,7 @@ paths:
           $ref: "#/components/responses/NotFoundError"
         "409":
           $ref: "#/components/responses/ConflictError"
+>>>>>>> origin/main
   /api/v1/contacts/{id}:
     get:
       operationId: getContact
@@ -1203,6 +1274,30 @@ components:
           schema:
             $ref: "#/components/schemas/ApiError"
   schemas:
+    ContactGroupCriterionType:
+      type: string
+      enum: [province, city, organizationType, tag]
+    ContactGroupOverrideType:
+      type: string
+      enum: [include, exclude]
+    ContactGroupCriterionRequest:
+      type: object
+      required: [type, value]
+      properties:
+        type: { $ref: "#/components/schemas/ContactGroupCriterionType" }
+        value: { type: string }
+    CreateContactGroupRequest:
+      type: object
+      required: [name, criteria]
+      properties:
+        name: { type: string }
+        criteria: { type: array, items: { $ref: "#/components/schemas/ContactGroupCriterionRequest" } }
+    UpdateContactGroupRequest:
+      type: object
+      required: [name, criteria]
+      properties:
+        name: { type: string }
+        criteria: { type: array, items: { $ref: "#/components/schemas/ContactGroupCriterionRequest" } }
     ApiError:
       type: object
       required:

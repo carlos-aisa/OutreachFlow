@@ -2,14 +2,17 @@
 @rendermode InteractiveServer
 @using OutreachFlow.Application.ContactActivities
 @using OutreachFlow.Application.Contacts
+@using OutreachFlow.Application.ContactGroups
 @using OutreachFlow.Application.FollowUps
 @using OutreachFlow.Application.Tags
 @using Microsoft.Extensions.Localization
 @using OutreachFlow.Web
 @using OutreachFlow.Web.Contacts
+@using OutreachFlow.Web.ContactGroups
 @using OutreachFlow.Web.FollowUps
 @using OutreachFlow.Web.Tags
 @inject ContactApiClient ContactClient
+@inject ContactGroupApiClient ContactGroupClient
 @inject FollowUpTaskApiClient FollowUpClient
 @inject TagApiClient TagClient
 @inject IStringLocalizer<SharedResource> Localizer
@@ -43,6 +46,15 @@
     }
     else
     {
+        <section class="card page-section">
+            <div class="card-header"><h2 class="workspace-card-title mb-0">@Localizer["ContactGroups.ContactMemberships"]</h2></div>
+            <div class="card-body">
+                @if (contactGroups.Count == 0) { <p class="mb-0 text-muted">@Localizer["ContactGroups.NoMemberships"]</p> }
+                else { @foreach (var group in contactGroups) { <span class="badge text-bg-secondary me-1">@group.Name</span> } }
+                <a class="btn btn-sm btn-outline-primary ms-2" href="/contact-groups">@Localizer["ContactGroups.Manage"]</a>
+            </div>
+        </section>
+
         <section class="card page-section">
             <div class="card-header">
                 <h2 class="workspace-card-title mb-0">@Localizer["ContactDetail.SummaryTitle"]</h2>
@@ -254,6 +266,7 @@
     private IReadOnlyList<ContactActivityDto> activities = [];
     private IReadOnlyList<FollowUpTaskDto> followUps = [];
     private IReadOnlyList<TagDto> tags = [];
+    private IReadOnlyList<ContactGroupDto> contactGroups = [];
     private IReadOnlyList<TagDto> assignableTags = [];
     private bool isLoading;
     private bool isTagSaving;
@@ -281,6 +294,7 @@
                 DueTo: null,
                 Limit: 20));
             tags = await TagClient.ListAsync();
+            contactGroups = await ContactGroupClient.ListForContactAsync(ContactId);
             UpdateAssignableTagSelection(contact);
         }
         catch (InvalidOperationException exception)
@@ -290,6 +304,7 @@
             activities = [];
             followUps = [];
             tags = [];
+            contactGroups = [];
             assignableTags = [];
             selectedTagId = null;
         }
@@ -300,6 +315,7 @@
             activities = [];
             followUps = [];
             tags = [];
+            contactGroups = [];
             assignableTags = [];
             selectedTagId = null;
         }
