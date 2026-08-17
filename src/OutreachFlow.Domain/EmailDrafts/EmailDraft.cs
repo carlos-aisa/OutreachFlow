@@ -116,6 +116,15 @@ public sealed class EmailDraft
             createdAt);
     }
 
+    public static EmailDraft CreateCampaignGenerated(
+        Guid contactId,
+        Guid? organizationId,
+        Guid senderProfileId,
+        string subject,
+        string body,
+        DateTimeOffset? createdAt = null) =>
+        new(contactId, organizationId, null, senderProfileId, subject, body, false, null, null, createdAt);
+
     public bool AssignAttachment(AttachmentAsset attachmentAsset, DateTimeOffset updatedAt)
     {
         ArgumentNullException.ThrowIfNull(attachmentAsset);

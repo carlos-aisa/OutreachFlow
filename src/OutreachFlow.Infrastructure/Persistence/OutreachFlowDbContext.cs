@@ -11,6 +11,7 @@ using OutreachFlow.Domain.Organizations;
 using OutreachFlow.Domain.SenderProfiles;
 using OutreachFlow.Domain.Tags;
 using OutreachFlow.Domain.ContactGroups;
+using OutreachFlow.Domain.Campaigns;
 
 namespace OutreachFlow.Infrastructure.Persistence;
 
@@ -50,6 +51,10 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
     public DbSet<ContactGroupCriterion> ContactGroupCriteria => Set<ContactGroupCriterion>();
 
     public DbSet<ContactGroupMembershipOverride> ContactGroupMembershipOverrides => Set<ContactGroupMembershipOverride>();
+    public DbSet<Campaign> Campaigns => Set<Campaign>();
+    public DbSet<CampaignContact> CampaignContacts => Set<CampaignContact>();
+    public DbSet<CampaignContactGroup> CampaignContactGroups => Set<CampaignContactGroup>();
+    public DbSet<CampaignAttachment> CampaignAttachments => Set<CampaignAttachment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,6 +73,7 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
         ConfigureFollowUpTasks(modelBuilder);
         ConfigureImportJobs(modelBuilder);
         ConfigureContactGroups(modelBuilder);
+        ConfigureCampaigns(modelBuilder);
     }
 
     private static void ConfigureOrganizations(ModelBuilder modelBuilder)
@@ -541,5 +547,13 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
             builder.HasOne<ContactGroup>().WithMany().HasForeignKey(overrideItem => overrideItem.ContactGroupId).OnDelete(DeleteBehavior.Cascade);
             builder.HasOne<Contact>().WithMany().HasForeignKey(overrideItem => overrideItem.ContactId).OnDelete(DeleteBehavior.Cascade);
         });
+    }
+
+    private static void ConfigureCampaigns(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Campaign>(builder => { builder.ToTable("Campaigns"); builder.HasKey(item => item.Id); builder.Property(item => item.Name).HasMaxLength(200).IsRequired(); builder.Property(item => item.Subject).HasMaxLength(500); builder.Property(item => item.Body).HasMaxLength(20000); builder.HasIndex(item => item.Name); builder.HasOne<SenderProfile>().WithMany().HasForeignKey(item => item.SenderProfileId).OnDelete(DeleteBehavior.SetNull); });
+        modelBuilder.Entity<CampaignContact>(builder => { builder.ToTable("CampaignContacts"); builder.HasKey(item => new { item.CampaignId, item.ContactId }); builder.HasOne<Campaign>().WithMany().HasForeignKey(item => item.CampaignId).OnDelete(DeleteBehavior.Cascade); builder.HasOne<Contact>().WithMany().HasForeignKey(item => item.ContactId).OnDelete(DeleteBehavior.Cascade); });
+        modelBuilder.Entity<CampaignContactGroup>(builder => { builder.ToTable("CampaignContactGroups"); builder.HasKey(item => new { item.CampaignId, item.ContactGroupId }); builder.HasOne<Campaign>().WithMany().HasForeignKey(item => item.CampaignId).OnDelete(DeleteBehavior.Cascade); builder.HasOne<ContactGroup>().WithMany().HasForeignKey(item => item.ContactGroupId).OnDelete(DeleteBehavior.Cascade); });
+        modelBuilder.Entity<CampaignAttachment>(builder => { builder.ToTable("CampaignAttachments"); builder.HasKey(item => new { item.CampaignId, item.AttachmentAssetId }); builder.HasOne<Campaign>().WithMany().HasForeignKey(item => item.CampaignId).OnDelete(DeleteBehavior.Cascade); builder.HasOne<AttachmentAsset>().WithMany().HasForeignKey(item => item.AttachmentAssetId).OnDelete(DeleteBehavior.Restrict); });
     }
 }

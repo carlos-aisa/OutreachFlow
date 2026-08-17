@@ -1,0 +1,64 @@
+@page "/campaigns"
+@rendermode InteractiveServer
+@using OutreachFlow.Application.Campaigns
+@using OutreachFlow.Web.Campaigns
+@inject CampaignApiClient CampaignClient
+
+<PageTitle>Campaigns</PageTitle>
+
+<div class="page-shell">
+    <div class="page-intro">
+        <p class="page-kicker">Outreach</p>
+        <h1 class="page-title">Campaigns</h1>
+        <p class="page-description">Prepare the message, audience and sender in the order that works for you.</p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(error)) { <div class="alert alert-danger" role="alert">@error</div> }
+
+    <section class="card page-section">
+        <div class="card-body">
+            <EditForm Model="form" OnValidSubmit="SaveAsync">
+                <DataAnnotationsValidator />
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label">Name</label><InputText class="form-control" @bind-Value="form.Name" /></div>
+                    <div class="col-md-6"><label class="form-label">Sender profile id</label><InputText class="form-control" @bind-Value="form.SenderProfileId" /></div>
+                    <div class="col-12"><label class="form-label">Subject</label><InputText class="form-control" @bind-Value="form.Subject" /></div>
+                    <div class="col-12"><label class="form-label">Message</label><InputTextArea class="form-control" @bind-Value="form.Body" /></div>
+                    <div class="col-md-6"><label class="form-label">Contact ids (comma separated)</label><InputText class="form-control" @bind-Value="form.ContactIds" /></div>
+                    <div class="col-md-6"><label class="form-label">Group ids (comma separated)</label><InputText class="form-control" @bind-Value="form.GroupIds" /></div>
+                    <div class="col-12"><button class="btn btn-primary" type="submit">Save campaign</button></div>
+                </div>
+            </EditForm>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="list-group list-group-flush">
+            @foreach (var item in campaigns)
+            {
+                <div class="list-group-item d-flex justify-content-between align-items-center gap-3">
+                    <button class="btn btn-link p-0 text-start" type="button" @onclick="() => Edit(item)">
+                        <strong>@item.Name</strong>
+                        <span class="ms-2 text-muted">@(item.MissingPrerequisites.Count == 0 ? "Ready to generate" : $"Missing: {string.Join(", ", item.MissingPrerequisites)}")</span>
+                    </button>
+                    <button class="btn btn-sm btn-primary" type="button" disabled="@(item.MissingPrerequisites.Count > 0)" @onclick="() => GenerateAsync(item)">Generate drafts</button>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    private readonly CampaignForm form = new();
+    private IReadOnlyList<CampaignDto> campaigns = [];
+    private CampaignDto? selected;
+    private string? error;
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+    private async Task LoadAsync() { try { campaigns = await CampaignClient.ListAsync(); } catch (Exception exception) { error = exception.Message; } }
+    private async Task SaveAsync() { try { if (selected is null) selected = await CampaignClient.CreateAsync(new CreateCampaignRequest(form.Name)); await CampaignClient.UpdateAsync(selected.Id, new UpdateCampaignRequest(form.Name, form.Subject, form.Body, ParseSingle(form.SenderProfileId), null, ParseIds(form.ContactIds), ParseIds(form.GroupIds), [])); selected = null; form.Clear(); await LoadAsync(); } catch (Exception exception) { error = exception.Message; } }
+    private async Task GenerateAsync(CampaignDto campaign) { try { await CampaignClient.GenerateDraftsAsync(campaign.Id); await LoadAsync(); } catch (Exception exception) { error = exception.Message; } }
+    private void Edit(CampaignDto campaign) { selected = campaign; form.Name = campaign.Name; form.Subject = campaign.Subject ?? string.Empty; form.Body = campaign.Body ?? string.Empty; form.SenderProfileId = campaign.SenderProfileId?.ToString() ?? string.Empty; form.ContactIds = string.Join(',', campaign.ContactIds); form.GroupIds = string.Join(',', campaign.ContactGroupIds); }
+    private static Guid? ParseSingle(string value) => Guid.TryParse(value, out var id) ? id : null;
+    private static Guid[] ParseIds(string value) => value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(item => Guid.TryParse(item, out _)).Select(Guid.Parse).ToArray();
+    private sealed class CampaignForm { public string Name { get; set; } = string.Empty; public string Subject { get; set; } = string.Empty; public string Body { get; set; } = string.Empty; public string SenderProfileId { get; set; } = string.Empty; public string ContactIds { get; set; } = string.Empty; public string GroupIds { get; set; } = string.Empty; public void Clear() { Name = Subject = Body = SenderProfileId = ContactIds = GroupIds = string.Empty; } }
+}

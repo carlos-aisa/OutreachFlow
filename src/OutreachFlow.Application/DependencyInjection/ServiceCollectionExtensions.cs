@@ -3,6 +3,7 @@ using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.ContactImports;
 using OutreachFlow.Application.ContactGroups;
+using OutreachFlow.Application.Campaigns;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.Organizations;
@@ -21,6 +22,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IContactService, ContactService>();
         services.AddScoped<IContactImportService, ContactImportService>();
         services.AddScoped<IContactGroupService, ContactGroupService>();
+        services.AddScoped<ICampaignService, CampaignService>();
+        services.AddScoped<ICampaignDraftGenerationService, CampaignDraftGenerationService>();
         services.AddScoped<IOrganizationService, OrganizationService>();
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<IContactActivityService, ContactActivityService>();

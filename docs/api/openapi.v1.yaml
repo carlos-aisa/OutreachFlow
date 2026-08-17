@@ -219,6 +219,45 @@ paths:
       responses:
         "201":
           description: Contact group created successfully
+  /api/v1/campaigns:
+    get:
+      operationId: listCampaigns
+      summary: Lists persistent campaign workspaces
+      tags: [Campaigns]
+      responses: { "200": { description: Campaigns returned successfully } }
+    post:
+      operationId: createCampaign
+      summary: Creates a campaign in preparation
+      tags: [Campaigns]
+      responses: { "201": { description: Campaign created successfully } }
+  /api/v1/campaigns/{id}:
+    get:
+      operationId: getCampaign
+      summary: Gets a campaign workspace
+      tags: [Campaigns]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "200": { description: Campaign returned successfully } }
+    put:
+      operationId: updateCampaign
+      summary: Updates independent campaign preparation sections
+      tags: [Campaigns]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "200": { description: Campaign updated successfully } }
+    delete:
+      operationId: deleteCampaign
+      summary: Deletes a campaign
+      tags: [Campaigns]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { "204": { description: Campaign deleted successfully } }
+  /api/v1/campaigns/{id}/drafts:
+    post:
+      operationId: generateCampaignDrafts
+      summary: Generates drafts from a ready campaign
+      tags: [Campaigns]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        "200": { description: Campaign drafts generated successfully }
+        "400": { $ref: "#/components/responses/ValidationError" }
   /api/v1/contact-groups/{id}/members:
     get:
       operationId: listContactGroupMembers

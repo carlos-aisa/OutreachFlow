@@ -1,0 +1,2 @@
+namespace OutreachFlow.Application.Campaigns;
+public interface ICampaignService { Task<IReadOnlyList<CampaignDto>> ListAsync(CancellationToken cancellationToken = default); Task<CampaignDto> GetAsync(Guid id, CancellationToken cancellationToken = default); Task<CampaignDto> CreateAsync(CreateCampaignRequest request, CancellationToken cancellationToken = default); Task<CampaignDto> UpdateAsync(Guid id, UpdateCampaignRequest request, CancellationToken cancellationToken = default); Task DeleteAsync(Guid id, CancellationToken cancellationToken = default); }
