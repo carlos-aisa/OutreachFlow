@@ -6,6 +6,10 @@ The format is based on Keep a Changelog and this project follows Semantic Versio
 
 ## [Unreleased]
 
+### Added
+
+- Contact groups provide reusable audiences with province, city, organization type, and tag criteria. Values within a criterion use OR semantics, active criteria use AND semantics, and manual membership overrides take precedence.
+
 ## [0.19.0] - 2026-06-16
 
 ### Added
