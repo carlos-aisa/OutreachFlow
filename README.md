@@ -70,12 +70,9 @@ OutreachFlow is not a spam engine and is not designed for aggressive bulk mailin
 
 ### Completed
 
-<<<<<<< HEAD
 - Organizations, contacts, tags, contact groups, and status management
-=======
-- Organizations, contacts, tags, and status management
 - Contact-first intake with optional inline organization creation
->>>>>>> origin/main
+- Contact groups for reusable audiences. Groups can filter by province, city, organization type, and tags; values within one criterion are alternatives and active criteria are combined. Individual contacts can be manually included or excluded, with that override taking precedence.
 - Sender profiles and email templates with variable catalog
 - Sender profile signatures (HTML/RTF) with validation and draft-body append behavior
 - Attachment assets and template default attachments
@@ -311,4 +308,3 @@ See [SECURITY.md](SECURITY.md) for responsible disclosure and secret-handling ex
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-- `contact-groups` for reusable audiences. Groups can filter by province, city, organization type, and tags; values within one criterion are alternatives and active criteria are combined. Individual contacts can be manually included or excluded, with that override taking precedence.
