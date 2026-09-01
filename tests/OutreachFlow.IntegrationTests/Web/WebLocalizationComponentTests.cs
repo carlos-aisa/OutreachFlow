@@ -172,13 +172,55 @@ public sealed class WebLocalizationComponentTests : BunitContext
 
         component.Markup.Should().Contain("Contactos");
         component.Markup.Should().Contain("Filtros");
+
+        component.Find("#open-create-contact-panel").Click();
+
         component.Markup.Should().Contain("Crear contacto");
         component.Markup.Should().Contain("Empieza por la persona");
 
-        component.Find("#new-organization-toggle").Change(true);
+        component.Find("#new-contact-organization").Input("Nueva Organización S.L.");
+        component.Find(".combo-item--create").Click();
 
-        component.Find("#new-organization-name").Should().NotBeNull();
+        component.Markup.Should().Contain("Nueva organización");
+
+        component.Find(".org-extra-toggle").Click();
+
         component.Markup.Should().Contain("Datos de la nueva organizaci");
+    }
+
+    [Fact]
+    public void ShouldSelectExistingOrganizationAndDiscardPanelInputOnCancel()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        JSInterop.Setup<string>("cultureHelper.getCulture").SetResult("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        var httpClient = new HttpClient(new SingleOrganizationJsonHandler())
+        {
+            BaseAddress = new Uri("http://localhost")
+        };
+
+        Services.AddSingleton(new ContactApiClient(httpClient));
+        Services.AddSingleton(new OrganizationApiClient(httpClient));
+        Services.AddSingleton(new TagApiClient(httpClient));
+
+        var component = Render<Contacts>();
+
+        component.Find("#open-create-contact-panel").Click();
+        component.Find("#new-contact-organization").Input("Acme");
+
+        component.Find(".combo-item").Click();
+
+        component.Find("#new-contact-organization").GetAttribute("value").Should().Be("Acme Corp");
+        component.Markup.Should().NotContain("Nueva organización");
+
+        component.Find(".contact-panel-close").Click();
+
+        component.Markup.Should().NotContain("contact-panel-body");
+
+        component.Find("#open-create-contact-panel").Click();
+
+        component.Find("#new-contact-organization").GetAttribute("value").Should().BeNullOrEmpty();
     }
 
     [Fact]
@@ -268,6 +310,53 @@ public sealed class WebLocalizationComponentTests : BunitContext
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
+            if (request.Method == HttpMethod.Get)
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("[]", Encoding.UTF8, "application/json")
+                });
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}", Encoding.UTF8, "application/json")
+            });
+        }
+    }
+
+    private sealed class SingleOrganizationJsonHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            if (request.Method == HttpMethod.Get && request.RequestUri is not null &&
+                request.RequestUri.AbsolutePath.Contains("organizations", StringComparison.OrdinalIgnoreCase))
+            {
+                const string organizationsJson = """
+                    [
+                        {
+                            "id": "9c3f7e2a-4b7d-4e63-9a2f-5f6f1c8d3a10",
+                            "name": "Acme Corp",
+                            "type": null,
+                            "website": null,
+                            "city": null,
+                            "province": null,
+                            "country": null,
+                            "notes": null,
+                            "createdAt": "2026-01-01T00:00:00Z",
+                            "updatedAt": "2026-01-01T00:00:00Z"
+                        }
+                    ]
+                    """;
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(organizationsJson, Encoding.UTF8, "application/json")
+                });
+            }
+
             if (request.Method == HttpMethod.Get)
             {
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)

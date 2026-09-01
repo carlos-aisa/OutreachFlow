@@ -117,14 +117,18 @@
   <data name="Contacts.Filters.OnlyDoNotContact" xml:space="preserve"><value>Only do not contact</value></data>
   <data name="Contacts.Filters.ExcludeDoNotContact" xml:space="preserve"><value>Exclude do not contact</value></data>
   <data name="Contacts.Form.CreateTitle" xml:space="preserve"><value>Create contact</value></data>
-  <data name="Contacts.Form.NoOrganization" xml:space="preserve"><value>No organization</value></data>
   <data name="Contacts.Form.CreateAction" xml:space="preserve"><value>Create contact</value></data>
+  <data name="Contacts.Panel.NewContact" xml:space="preserve"><value>New contact</value></data>
   <data name="Contacts.Intake.Description" xml:space="preserve"><value>Start with the person. Link an existing organization, add one here, or continue without one.</value></data>
-  <data name="Contacts.Intake.CreateOrganization" xml:space="preserve"><value>Add a new organization with this contact</value></data>
   <data name="Contacts.Intake.OrganizationDetails" xml:space="preserve"><value>New organization details</value></data>
   <data name="Contacts.Intake.Success" xml:space="preserve"><value>{0} was added successfully.</value></data>
   <data name="Contacts.Intake.ViewContact" xml:space="preserve"><value>View contact</value></data>
   <data name="Contacts.Intake.CreateDraft" xml:space="preserve"><value>Create email draft</value></data>
+  <data name="Contacts.Organization.SearchPlaceholder" xml:space="preserve"><value>Search an organization or type a new name</value></data>
+  <data name="Contacts.Organization.CreateOption" xml:space="preserve"><value>Create organization "{0}"</value></data>
+  <data name="Contacts.Organization.NewBadge" xml:space="preserve"><value>New organization</value></data>
+  <data name="Contacts.Organization.AddDetails" xml:space="preserve"><value>Add organization details</value></data>
+  <data name="Contacts.Organization.HideDetails" xml:space="preserve"><value>Hide organization details</value></data>
   <data name="Contacts.List.Title" xml:space="preserve"><value>Contact list</value></data>
   <data name="Contacts.List.Count" xml:space="preserve"><value>{0} contacts</value></data>
   <data name="Contacts.List.LastContacted" xml:space="preserve"><value>Last contacted</value></data>
@@ -370,6 +374,7 @@
   <data name="ContactGroups.CriteriaCount" xml:space="preserve"><value>{0} criteria</value></data>
   <data name="Common.Save" xml:space="preserve"><value>Save</value></data>
   <data name="Common.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Common.Close" xml:space="preserve"><value>Close</value></data>
   <data name="Common.Edit" xml:space="preserve"><value>Edit</value></data>
   <data name="Common.Delete" xml:space="preserve"><value>Delete</value></data>
   <data name="ContactGroups.EditTitle" xml:space="preserve"><value>Edit group</value></data>
