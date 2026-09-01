@@ -11,62 +11,21 @@
 <PageTitle>@Localizer["Organizations.PageTitle"]</PageTitle>
 
 <div class="page-shell">
-<div class="page-intro">
-    <p class="page-kicker">@Localizer["Organizations.PageTitle"]</p>
-    <h1 class="page-title">@Localizer["Organizations.PageTitle"]</h1>
-    <p class="page-description">@Localizer["Organizations.Description"]</p>
+<div class="page-intro page-intro--split">
+    <div>
+        <p class="page-kicker">@Localizer["Organizations.PageTitle"]</p>
+        <h1 class="page-title">@Localizer["Organizations.PageTitle"]</h1>
+        <p class="page-description">@Localizer["Organizations.Description"]</p>
+    </div>
+    <div class="page-actions">
+        <button id="open-create-organization-panel" type="button" class="btn btn-primary" @onclick="OpenCreatePanel">@Localizer["Organizations.Panel.New"]</button>
+    </div>
 </div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
     <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
 }
-
-<section class="card mb-4">
-    <div class="card-header">
-        <h2 class="workspace-card-title mb-0">@Localizer["Organizations.Form.CreateTitle"]</h2>
-    </div>
-    <div class="card-body">
-        <EditForm Model="newOrganization" OnValidSubmit="CreateOrganizationAsync">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label" for="organization-name">@Localizer["Common.Name"]</label>
-                    <InputText id="organization-name" class="form-control" @bind-Value="newOrganization.Name" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="organization-type">@Localizer["Common.Type"]</label>
-                    <InputText id="organization-type" class="form-control" @bind-Value="newOrganization.Type" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="organization-website">@Localizer["Common.Website"]</label>
-                    <InputText id="organization-website" class="form-control" @bind-Value="newOrganization.Website" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="organization-city">@Localizer["Common.City"]</label>
-                    <InputText id="organization-city" class="form-control" @bind-Value="newOrganization.City" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="organization-province">@Localizer["Common.Province"]</label>
-                    <InputText id="organization-province" class="form-control" @bind-Value="newOrganization.Province" />
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label" for="organization-country">@Localizer["Common.Country"]</label>
-                    <InputText id="organization-country" class="form-control" @bind-Value="newOrganization.Country" />
-                </div>
-                <div class="col-12">
-                    <label class="form-label" for="organization-notes">@Localizer["Common.Notes"]</label>
-                    <InputTextArea id="organization-notes" class="form-control" @bind-Value="newOrganization.Notes" />
-                </div>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Organizations.Form.CreateAction"]</button>
-                </div>
-            </div>
-        </EditForm>
-    </div>
-</section>
 
 <section class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -114,11 +73,63 @@
         </table>
     </div>
 </section>
+
+@if (isCreatePanelOpen)
+{
+    <div class="side-panel-scrim" @onclick="CloseCreatePanel"></div>
+    <aside class="side-panel">
+        <EditForm Model="newOrganization" OnValidSubmit="CreateOrganizationAsync">
+            <DataAnnotationsValidator />
+            <div class="side-panel-header">
+                <h2 class="workspace-card-title mb-0">@Localizer["Organizations.Form.CreateTitle"]</h2>
+                <button type="button" class="side-panel-close" @onclick="CloseCreatePanel" aria-label="@Localizer["Common.Close"]">&times;</button>
+            </div>
+            <div class="side-panel-body">
+                <ValidationSummary />
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="organization-name">@Localizer["Common.Name"]</label>
+                        <InputText id="organization-name" class="form-control" @bind-Value="newOrganization.Name" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="organization-type">@Localizer["Common.Type"]</label>
+                        <InputText id="organization-type" class="form-control" @bind-Value="newOrganization.Type" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="organization-website">@Localizer["Common.Website"]</label>
+                        <InputText id="organization-website" class="form-control" @bind-Value="newOrganization.Website" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="organization-city">@Localizer["Common.City"]</label>
+                        <InputText id="organization-city" class="form-control" @bind-Value="newOrganization.City" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="organization-province">@Localizer["Common.Province"]</label>
+                        <InputText id="organization-province" class="form-control" @bind-Value="newOrganization.Province" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="organization-country">@Localizer["Common.Country"]</label>
+                        <InputText id="organization-country" class="form-control" @bind-Value="newOrganization.Country" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="organization-notes">@Localizer["Common.Notes"]</label>
+                        <InputTextArea id="organization-notes" class="form-control" @bind-Value="newOrganization.Notes" />
+                    </div>
+                </div>
+            </div>
+            <div class="side-panel-footer">
+                <button type="button" class="btn btn-outline-secondary" @onclick="CloseCreatePanel" disabled="@isSaving">@Localizer["Common.Cancel"]</button>
+                <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Organizations.Form.CreateAction"]</button>
+            </div>
+        </EditForm>
+    </aside>
+}
 </div>
 
 @code {
     private IReadOnlyList<OrganizationDto> organizations = [];
     private OrganizationFormModel newOrganization = new();
+    private bool isCreatePanelOpen;
     private string? errorMessage;
     private bool isLoading;
     private bool isSaving;
@@ -167,6 +178,7 @@
                 newOrganization.Country,
                 newOrganization.Notes));
 
+            isCreatePanelOpen = false;
             newOrganization = new OrganizationFormModel();
             await LoadOrganizationsAsync();
         }
@@ -182,6 +194,17 @@
         {
             isSaving = false;
         }
+    }
+
+    private void OpenCreatePanel()
+    {
+        isCreatePanelOpen = true;
+    }
+
+    private void CloseCreatePanel()
+    {
+        isCreatePanelOpen = false;
+        newOrganization = new OrganizationFormModel();
     }
 
     private sealed class OrganizationFormModel

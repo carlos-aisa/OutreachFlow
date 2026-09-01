@@ -8,9 +8,11 @@ using Microsoft.Extensions.DependencyInjection;
 using OutreachFlow.Web.Attachments;
 using OutreachFlow.Web.Components.Layout;
 using OutreachFlow.Web.Components.Pages;
+using OutreachFlow.Web.ContactGroups;
 using OutreachFlow.Web.ContactImports;
 using OutreachFlow.Web.Contacts;
 using OutreachFlow.Web.EmailDrafts;
+using OutreachFlow.Web.EmailTemplates;
 using OutreachFlow.Web.FollowUps;
 using OutreachFlow.Web.Organizations;
 using OutreachFlow.Web.SenderProfiles;
@@ -214,9 +216,9 @@ public sealed class WebLocalizationComponentTests : BunitContext
         component.Find("#new-contact-organization").GetAttribute("value").Should().Be("Acme Corp");
         component.Markup.Should().NotContain("Nueva organización");
 
-        component.Find(".contact-panel-close").Click();
+        component.Find(".side-panel-close").Click();
 
-        component.Markup.Should().NotContain("contact-panel-body");
+        component.Markup.Should().NotContain("side-panel-body");
 
         component.Find("#open-create-contact-panel").Click();
 
@@ -265,6 +267,7 @@ public sealed class WebLocalizationComponentTests : BunitContext
 
         var component = Render<SenderProfiles>();
 
+        component.Find("#open-create-sender-profile-panel").Click();
         component.Find("#sender-name").Change("Perfil de prueba");
         component.Find("#sender-email").Change("correo-invalido");
         component.Find("form").Submit();
@@ -285,6 +288,7 @@ public sealed class WebLocalizationComponentTests : BunitContext
 
         var component = Render<SenderProfiles>();
 
+        component.Find("#open-create-sender-profile-panel").Click();
         component.Find("#sender-name").Change("Test profile");
         component.Find("#sender-email").Change("invalid-email");
         component.Find("form").Submit();
@@ -294,6 +298,143 @@ public sealed class WebLocalizationComponentTests : BunitContext
             component.Markup.Should().Contain("Enter a valid email address.");
             component.Markup.Should().NotContain("The Email field is not a valid e-mail address.");
         });
+    }
+
+    [Fact]
+    public void ShouldOpenAndDiscardOrganizationsCreatePanel()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new OrganizationApiClient(CreateHttpClient()));
+
+        var component = Render<Organizations>();
+
+        component.FindAll("#organization-name").Should().BeEmpty();
+
+        component.Find("#open-create-organization-panel").Click();
+        component.Markup.Should().Contain("Crear organización");
+
+        component.Find("#organization-name").Change("Acme Corp");
+        component.Find(".side-panel-close").Click();
+
+        component.Markup.Should().NotContain("side-panel-body");
+
+        component.Find("#open-create-organization-panel").Click();
+        component.Find("#organization-name").GetAttribute("value").Should().BeNullOrEmpty();
+    }
+
+    [Fact]
+    public void ShouldOpenAndDiscardTagsCreatePanel()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new TagApiClient(CreateHttpClient()));
+
+        var component = Render<Tags>();
+
+        component.Find("#open-create-tag-panel").Click();
+        component.Markup.Should().Contain("Crear etiqueta");
+
+        component.Find("#tag-name").Change("VIP");
+        component.Find(".side-panel-close").Click();
+
+        component.Markup.Should().NotContain("side-panel-body");
+    }
+
+    [Fact]
+    public void ShouldOpenAndDiscardAttachmentsUploadPanel()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new AttachmentAssetApiClient(CreateHttpClient()));
+
+        var component = Render<Attachments>();
+
+        component.Find("#open-upload-attachment-panel").Click();
+        component.Markup.Should().Contain("Subir adjunto");
+
+        component.Find("#attachment-name").Change("Folleto");
+        component.Find(".side-panel-close").Click();
+
+        component.Markup.Should().NotContain("side-panel-body");
+    }
+
+    [Fact]
+    public void ShouldOpenAndDiscardFollowUpsCreatePanel()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new ContactApiClient(CreateHttpClient()));
+        Services.AddSingleton(new FollowUpTaskApiClient(CreateHttpClient()));
+
+        var component = Render<FollowUps>();
+
+        component.Markup.Should().Contain("Pendientes");
+
+        component.Find("#open-create-followup-panel").Click();
+        component.Markup.Should().Contain("Crear tarea de seguimiento");
+
+        component.Find(".side-panel-close").Click();
+        component.Markup.Should().NotContain("side-panel-body");
+    }
+
+    [Fact]
+    public void ShouldOpenAndDiscardContactGroupsCreatePanel()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new ContactGroupApiClient(CreateHttpClient()));
+        Services.AddSingleton(new ContactApiClient(CreateHttpClient()));
+        Services.AddSingleton(new TagApiClient(CreateHttpClient()));
+
+        var component = Render<ContactGroups>();
+
+        component.Find("#open-create-group-panel").Click();
+        component.Markup.Should().Contain("Crear grupo");
+
+        component.Find(".side-panel-close").Click();
+        component.Markup.Should().NotContain("side-panel-body");
+    }
+
+    [Fact]
+    public void ShouldDiscardSenderProfilePanelInputOnCancel()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new SenderProfileApiClient(CreateHttpClient()));
+
+        var component = Render<SenderProfiles>();
+
+        component.Find("#open-create-sender-profile-panel").Click();
+        component.Find("#sender-name").Change("Perfil de prueba");
+        component.Find(".side-panel-close").Click();
+
+        component.Markup.Should().NotContain("side-panel-body");
+
+        component.Find("#open-create-sender-profile-panel").Click();
+        component.Find("#sender-name").GetAttribute("value").Should().BeNullOrEmpty();
+    }
+
+    [Fact]
+    public void ShouldOpenAndDiscardTemplatesCreatePanel()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new EmailTemplateApiClient(CreateHttpClient()));
+        Services.AddSingleton(new AttachmentAssetApiClient(CreateHttpClient()));
+
+        var component = Render<Templates>();
+
+        component.Find("#open-create-template-panel").Click();
+        component.Markup.Should().Contain("Crear plantilla");
+
+        component.Find("#template-name").Change("Seguimiento inicial");
+        component.Find(".side-panel-close").Click();
+
+        component.Markup.Should().NotContain("side-panel-body");
+
+        component.Find("#open-create-template-panel").Click();
+        component.Find("#template-name").GetAttribute("value").Should().BeNullOrEmpty();
     }
 
     private static HttpClient CreateHttpClient()

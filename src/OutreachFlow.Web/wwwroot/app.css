@@ -541,14 +541,14 @@ h1:focus {
     min-height: 16rem;
 }
 
-.contact-panel-scrim {
+.side-panel-scrim {
     position: fixed;
     inset: 0;
     background: rgba(16, 24, 39, 0.45);
     z-index: 1040;
 }
 
-.contact-panel {
+.side-panel {
     position: fixed;
     top: 0;
     right: 0;
@@ -563,13 +563,13 @@ h1:focus {
     flex-direction: column;
 }
 
-.contact-panel form {
+.side-panel form {
     display: flex;
     flex-direction: column;
     height: 100%;
 }
 
-.contact-panel-header {
+.side-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -578,7 +578,7 @@ h1:focus {
     border-bottom: 1px solid var(--workspace-border);
 }
 
-.contact-panel-close {
+.side-panel-close {
     background: none;
     border: none;
     font-size: 1.6rem;
@@ -588,17 +588,17 @@ h1:focus {
     padding: 0.25rem;
 }
 
-.contact-panel-close:hover {
+.side-panel-close:hover {
     color: var(--workspace-heading);
 }
 
-.contact-panel-body {
+.side-panel-body {
     flex: 1;
     overflow-y: auto;
     padding: 1.5rem;
 }
 
-.contact-panel-footer {
+.side-panel-footer {
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
@@ -686,7 +686,7 @@ h1:focus {
 }
 
 @media (max-width: 767.98px) {
-    .contact-panel {
+    .side-panel {
         width: 100%;
         max-width: 100%;
     }
