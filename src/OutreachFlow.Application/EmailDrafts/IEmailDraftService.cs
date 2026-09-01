@@ -6,6 +6,10 @@ public interface IEmailDraftService
         GenerateEmailDraftsRequest request,
         CancellationToken cancellationToken = default);
 
+    Task<GenerateEmailDraftsResult> GenerateForContactsAsync(
+        GenerateEmailDraftsForContactsRequest request,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<EmailDraftDto>> ListAsync(
         EmailDraftFilterRequest filter,
         CancellationToken cancellationToken = default);

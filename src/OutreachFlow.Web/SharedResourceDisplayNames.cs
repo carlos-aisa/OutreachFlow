@@ -16,6 +16,9 @@ public static class SharedResourceDisplayNames
     public static string CampaignStatus(IStringLocalizer<SharedResource> localizer, CampaignStatus status)
         => localizer[$"CampaignStatus.{status}"];
 
+    public static string CampaignRecipientStatus(IStringLocalizer<SharedResource> localizer, CampaignRecipientStatus status)
+        => localizer[$"CampaignRecipientStatus.{status}"];
+
     public static string EmailDraftStatus(IStringLocalizer<SharedResource> localizer, EmailDraftStatus status)
         => localizer[$"EmailDraftStatus.{status}"];
 

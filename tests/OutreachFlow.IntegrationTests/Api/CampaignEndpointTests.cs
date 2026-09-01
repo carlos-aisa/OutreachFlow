@@ -7,6 +7,7 @@ using OutreachFlow.Application.Campaigns;
 using OutreachFlow.Application.ContactGroups;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Domain.Campaigns;
+using OutreachFlow.Domain.FollowUps;
 
 namespace OutreachFlow.IntegrationTests.Api;
 
@@ -36,7 +37,7 @@ public sealed class CampaignEndpointTests
         var campaign = await PostAsync<CampaignDto>(
             client,
             "/api/v1/campaigns",
-            new CreateCampaignRequest("Autumn outreach", "Reach new prospects", template.Id, [group.Id]));
+            CreateRequest("Autumn outreach", "Reach new prospects", template.Id, [group.Id]));
 
         campaign.Status.Should().Be(CampaignStatus.Open);
         campaign.AudienceGroupIds.Should().ContainSingle().Which.Should().Be(group.Id);
@@ -47,7 +48,7 @@ public sealed class CampaignEndpointTests
         var updated = await PutAsync<CampaignDto>(
             client,
             $"/api/v1/campaigns/{campaign.Id}",
-            new UpdateCampaignRequest("Winter outreach", "Updated purpose", otherTemplate.Id));
+            UpdateRequest("Winter outreach", "Updated purpose", otherTemplate.Id));
         updated.Name.Should().Be("Winter outreach");
         updated.EmailTemplateId.Should().Be(otherTemplate.Id);
     }
@@ -73,7 +74,7 @@ public sealed class CampaignEndpointTests
         var campaign = await PostAsync<CampaignDto>(
             client,
             "/api/v1/campaigns",
-            new CreateCampaignRequest("Autumn outreach", null, template.Id, [firstGroup.Id]));
+            CreateRequest("Autumn outreach", null, template.Id, [firstGroup.Id]));
 
         var withSecondGroup = await PostAsync<CampaignDto>(
             client,
@@ -118,11 +119,53 @@ public sealed class CampaignEndpointTests
 
         using var response = await client.PostAsJsonAsync(
             "/api/v1/campaigns",
-            new CreateCampaignRequest("Autumn outreach", null, Guid.NewGuid(), [group.Id]),
+            CreateRequest("Autumn outreach", null, Guid.NewGuid(), [group.Id]),
             JsonOptions);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task ShouldPersistFollowUpSettings()
+    {
+        using var factory = new OutreachFlowApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var client = factory.CreateClient();
+        var template = await PostAsync<EmailTemplateDto>(
+            client,
+            "/api/v1/templates",
+            new CreateEmailTemplateRequest("Intro", null, "Hello", "Body"));
+        var group = await PostAsync<ContactGroupDto>(
+            client,
+            "/api/v1/contact-groups",
+            new CreateContactGroupRequest("Prospects", []));
+
+        var campaign = await PostAsync<CampaignDto>(
+            client,
+            "/api/v1/campaigns",
+            new CreateCampaignRequest("Autumn outreach", null, template.Id, [group.Id], true, 5, FollowUpTaskType.Call));
+
+        campaign.FollowUpEnabled.Should().BeTrue();
+        campaign.FollowUpDueDays.Should().Be(5);
+        campaign.FollowUpType.Should().Be(FollowUpTaskType.Call);
+
+        var updated = await PutAsync<CampaignDto>(
+            client,
+            $"/api/v1/campaigns/{campaign.Id}",
+            new UpdateCampaignRequest("Autumn outreach", null, template.Id, false, 7, FollowUpTaskType.Email));
+
+        updated.FollowUpEnabled.Should().BeFalse();
+    }
+
+    private static CreateCampaignRequest CreateRequest(
+        string name,
+        string? description,
+        Guid templateId,
+        IReadOnlyList<Guid> audienceGroupIds) =>
+        new(name, description, templateId, audienceGroupIds, false, 7, FollowUpTaskType.Email);
+
+    private static UpdateCampaignRequest UpdateRequest(string name, string? description, Guid templateId) =>
+        new(name, description, templateId, false, 7, FollowUpTaskType.Email);
 
     private static async Task<T> GetAsync<T>(HttpClient client, string uri)
     {

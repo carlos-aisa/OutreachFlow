@@ -496,8 +496,10 @@ public sealed class WebLocalizationComponentTests : BunitContext
         };
 
         Services.AddSingleton(new CampaignApiClient(httpClient));
+        Services.AddSingleton(new CampaignRecipientApiClient(httpClient));
         Services.AddSingleton(new ContactGroupApiClient(httpClient));
         Services.AddSingleton(new EmailTemplateApiClient(httpClient));
+        Services.AddSingleton(new SenderProfileApiClient(httpClient));
 
         var component = Render<CampaignDetail>(parameters =>
             parameters.Add(p => p.Id, SingleCampaignJsonHandler.CampaignId));
@@ -514,6 +516,35 @@ public sealed class WebLocalizationComponentTests : BunitContext
         component.FindAll("button").First(button => button.TextContent.Trim() == "Editar").Click();
         component.Find("#campaign-edit-name").GetAttribute("value").Should().Be("Campaña de otoño");
         component.Find("#campaign-edit-audience option[selected]").TextContent.Should().Be("Prospectos");
+    }
+
+    [Fact]
+    public void ShouldIncorporateCandidateIntoCampaign()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        var handler = new SingleCampaignJsonHandler();
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("http://localhost")
+        };
+
+        Services.AddSingleton(new CampaignApiClient(httpClient));
+        Services.AddSingleton(new CampaignRecipientApiClient(httpClient));
+        Services.AddSingleton(new ContactGroupApiClient(httpClient));
+        Services.AddSingleton(new EmailTemplateApiClient(httpClient));
+        Services.AddSingleton(new SenderProfileApiClient(httpClient));
+
+        var component = Render<CampaignDetail>(parameters =>
+            parameters.Add(p => p.Id, SingleCampaignJsonHandler.CampaignId));
+
+        component.Markup.Should().Contain("Jamie Smith");
+
+        component.FindAll("button").First(button => button.TextContent.Trim() == "Incorporar").Click();
+
+        component.Markup.Should().Contain("Ahora mismo no hay contactos nuevos");
+        component.Markup.Should().Contain("Incorporado");
     }
 
     private static HttpClient CreateHttpClient()
@@ -597,6 +628,9 @@ public sealed class WebLocalizationComponentTests : BunitContext
         public static readonly Guid CampaignId = Guid.Parse("5c9c4a2e-8b1e-4b8a-9a2f-1a2b3c4d5e6f");
         private static readonly Guid TemplateId = Guid.Parse("2b3c4d5e-6f70-4a1b-8c2d-3e4f5a6b7c8d");
         private static readonly Guid GroupId = Guid.Parse("7d8e9f0a-1b2c-4d3e-9f0a-1b2c3d4e5f6a");
+        private static readonly Guid CandidateContactId = Guid.Parse("9e0f1a2b-3c4d-4e5f-8a9b-0c1d2e3f4a5b");
+
+        private bool _incorporated;
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -628,6 +662,31 @@ public sealed class WebLocalizationComponentTests : BunitContext
                     """));
             }
 
+            if (request.Method == HttpMethod.Get && path.Contains("/sender-profiles", StringComparison.Ordinal))
+            {
+                return Task.FromResult(CreateJsonResponse("[]"));
+            }
+
+            if (request.Method == HttpMethod.Post && path.EndsWith($"/recipients/{CandidateContactId}", StringComparison.Ordinal))
+            {
+                _incorporated = true;
+                return Task.FromResult(CreateJsonResponse(RecipientJson()));
+            }
+
+            if (request.Method == HttpMethod.Get && path.Contains("/candidates", StringComparison.Ordinal))
+            {
+                return Task.FromResult(CreateJsonResponse(_incorporated
+                    ? "[]"
+                    : $$"""
+                        [{"contactId":"{{CandidateContactId}}","displayName":"Jamie Smith","email":"jamie@example.com"}]
+                        """));
+            }
+
+            if (request.Method == HttpMethod.Get && path.Contains("/recipients", StringComparison.Ordinal))
+            {
+                return Task.FromResult(CreateJsonResponse(_incorporated ? $"[{RecipientJson()}]" : "[]"));
+            }
+
             if (request.Method == HttpMethod.Get && path.Contains("/campaigns", StringComparison.Ordinal))
             {
                 return Task.FromResult(CreateJsonResponse(CampaignJson("Open")));
@@ -638,6 +697,10 @@ public sealed class WebLocalizationComponentTests : BunitContext
 
         private static string CampaignJson(string status) => $$"""
             {"id":"{{CampaignId}}","name":"Campaña de otoño","description":"Alcanzar nuevos prospectos","emailTemplateId":"{{TemplateId}}","status":"{{status}}","audienceGroupIds":["{{GroupId}}"],"createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z"}
+            """;
+
+        private static string RecipientJson() => $$"""
+            {"id":"1f2e3d4c-5b6a-4978-9a0b-1c2d3e4f5a6b","campaignId":"{{CampaignId}}","contactId":"{{CandidateContactId}}","contactDisplayName":"Jamie Smith","contactEmail":"jamie@example.com","messageTemplateId":"{{TemplateId}}","status":"Incorporated","emailDraftId":null,"exclusionReason":null,"incorporatedAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z"}
             """;
 
         private static HttpResponseMessage CreateJsonResponse(string json) =>

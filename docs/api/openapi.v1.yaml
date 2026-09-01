@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: OutreachFlow API
-  version: 0.17.0
+  version: 0.18.0
   description: API contract for OutreachFlow v1.
 servers:
   - url: http://localhost:5131
@@ -1336,6 +1336,91 @@ paths:
           $ref: "#/components/responses/ValidationError"
         "404":
           $ref: "#/components/responses/NotFoundError"
+  /api/v1/campaigns/{campaignId}/candidates:
+    get:
+      operationId: discoverCampaignRecipientCandidates
+      summary: Lists eligible contacts not yet incorporated into the campaign
+      tags:
+        - Campaign recipients
+      parameters:
+        - $ref: "#/components/parameters/CampaignIdInRecipientPath"
+      responses:
+        "200":
+          description: Candidates returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CampaignRecipientCandidate"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/campaigns/{campaignId}/recipients:
+    get:
+      operationId: listCampaignRecipients
+      summary: Lists a campaign's recipients
+      tags:
+        - Campaign recipients
+      parameters:
+        - $ref: "#/components/parameters/CampaignIdInRecipientPath"
+      responses:
+        "200":
+          description: Recipients returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CampaignRecipient"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/campaigns/{campaignId}/recipients/{contactId}:
+    post:
+      operationId: incorporateCampaignRecipient
+      summary: Explicitly incorporates a contact into an open campaign
+      tags:
+        - Campaign recipients
+      parameters:
+        - $ref: "#/components/parameters/CampaignIdInRecipientPath"
+        - $ref: "#/components/parameters/ContactIdInCampaignPath"
+      responses:
+        "201":
+          description: Recipient incorporated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignRecipient"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+        "409":
+          $ref: "#/components/responses/ConflictError"
+  /api/v1/campaigns/{campaignId}/recipients/generate-drafts:
+    post:
+      operationId: generateCampaignRecipientDrafts
+      summary: Generates drafts for the campaign's incorporated recipients
+      tags:
+        - Campaign recipients
+      parameters:
+        - $ref: "#/components/parameters/CampaignIdInRecipientPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateCampaignDraftsRequest"
+      responses:
+        "200":
+          description: Drafts generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateCampaignDraftsResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 components:
   parameters:
     ContactId:
@@ -1422,6 +1507,20 @@ components:
       schema:
         type: string
         format: uuid
+    CampaignIdInRecipientPath:
+      name: campaignId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ContactIdInCampaignPath:
+      name: contactId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
   responses:
     ValidationError:
       description: Request validation failed
@@ -1477,6 +1576,9 @@ components:
         - emailTemplateId
         - status
         - audienceGroupIds
+        - followUpEnabled
+        - followUpDueDays
+        - followUpType
         - createdAt
         - updatedAt
       properties:
@@ -1500,6 +1602,15 @@ components:
           items:
             type: string
             format: uuid
+        followUpEnabled:
+          type: boolean
+          example: false
+        followUpDueDays:
+          type: integer
+          format: int32
+          example: 7
+        followUpType:
+          $ref: "#/components/schemas/FollowUpTaskType"
         createdAt:
           type: string
           format: date-time
@@ -1512,6 +1623,9 @@ components:
         - name
         - emailTemplateId
         - audienceGroupIds
+        - followUpEnabled
+        - followUpDueDays
+        - followUpType
       properties:
         name:
           type: string
@@ -1527,11 +1641,23 @@ components:
           items:
             type: string
             format: uuid
+        followUpEnabled:
+          type: boolean
+          example: false
+        followUpDueDays:
+          type: integer
+          format: int32
+          example: 7
+        followUpType:
+          $ref: "#/components/schemas/FollowUpTaskType"
     UpdateCampaignRequest:
       type: object
       required:
         - name
         - emailTemplateId
+        - followUpEnabled
+        - followUpDueDays
+        - followUpType
       properties:
         name:
           type: string
@@ -1542,6 +1668,115 @@ components:
         emailTemplateId:
           type: string
           format: uuid
+        followUpEnabled:
+          type: boolean
+          example: false
+        followUpDueDays:
+          type: integer
+          format: int32
+          example: 7
+        followUpType:
+          $ref: "#/components/schemas/FollowUpTaskType"
+    CampaignRecipientStatus:
+      type: string
+      enum: [incorporated, drafted, sent, failed, excluded]
+    CampaignRecipient:
+      type: object
+      required:
+        - id
+        - campaignId
+        - contactId
+        - contactDisplayName
+        - contactEmail
+        - messageTemplateId
+        - status
+        - incorporatedAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        campaignId:
+          type: string
+          format: uuid
+        contactId:
+          type: string
+          format: uuid
+        contactDisplayName:
+          type: string
+          example: Alex Morgan
+        contactEmail:
+          type: string
+          example: alex@example.com
+        messageTemplateId:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/CampaignRecipientStatus"
+        emailDraftId:
+          type: string
+          format: uuid
+          nullable: true
+        exclusionReason:
+          type: string
+          nullable: true
+        incorporatedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CampaignRecipientCandidate:
+      type: object
+      required:
+        - contactId
+        - displayName
+        - email
+      properties:
+        contactId:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+          example: Alex Morgan
+        email:
+          type: string
+          example: alex@example.com
+    GenerateCampaignDraftsRequest:
+      type: object
+      required:
+        - senderProfileId
+      properties:
+        senderProfileId:
+          type: string
+          format: uuid
+        attachmentAssetIds:
+          type: array
+          nullable: true
+          items:
+            type: string
+            format: uuid
+    GenerateCampaignDraftsResult:
+      type: object
+      required:
+        - requestedRecipients
+        - generatedDrafts
+        - excludedRecipients
+        - recipients
+      properties:
+        requestedRecipients:
+          type: integer
+          format: int32
+        generatedDrafts:
+          type: integer
+          format: int32
+        excludedRecipients:
+          type: integer
+          format: int32
+        recipients:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignRecipient"
     ApiError:
       type: object
       required:

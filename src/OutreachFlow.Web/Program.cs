@@ -68,6 +68,8 @@ builder.Services.AddHttpClient<ContactImportApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<CampaignApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<CampaignRecipientApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();
 

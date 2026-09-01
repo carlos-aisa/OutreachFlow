@@ -5,6 +5,7 @@ using OutreachFlow.Application.Tests.Support;
 using OutreachFlow.Domain.Campaigns;
 using OutreachFlow.Domain.ContactGroups;
 using OutreachFlow.Domain.EmailTemplates;
+using OutreachFlow.Domain.FollowUps;
 
 namespace OutreachFlow.Application.Tests.Campaigns;
 
@@ -17,7 +18,7 @@ public sealed class CampaignServiceTests
         var template = await AddTemplateAsync(templateRepository);
         var group = await AddGroupAsync(groupRepository);
 
-        var campaign = await service.CreateAsync(new CreateCampaignRequest(
+        var campaign = await service.CreateAsync(CreateRequest(
             "Autumn outreach",
             "Reach new prospects",
             template.Id,
@@ -34,7 +35,7 @@ public sealed class CampaignServiceTests
         var (service, _, _, groupRepository) = CreateService();
         var group = await AddGroupAsync(groupRepository);
 
-        var act = () => service.CreateAsync(new CreateCampaignRequest(
+        var act = () => service.CreateAsync(CreateRequest(
             "Autumn outreach",
             null,
             Guid.NewGuid(),
@@ -50,7 +51,7 @@ public sealed class CampaignServiceTests
         var (service, _, templateRepository, _) = CreateService();
         var template = await AddTemplateAsync(templateRepository);
 
-        var act = () => service.CreateAsync(new CreateCampaignRequest(
+        var act = () => service.CreateAsync(CreateRequest(
             "Autumn outreach",
             null,
             template.Id,
@@ -66,7 +67,7 @@ public sealed class CampaignServiceTests
         var (service, _, templateRepository, _) = CreateService();
         var template = await AddTemplateAsync(templateRepository);
 
-        var act = () => service.CreateAsync(new CreateCampaignRequest("Autumn outreach", null, template.Id, []));
+        var act = () => service.CreateAsync(CreateRequest("Autumn outreach", null, template.Id, []));
 
         await act.Should().ThrowAsync<ApplicationValidationException>()
             .WithMessage("Campaign requires at least one audience group.");
@@ -79,7 +80,7 @@ public sealed class CampaignServiceTests
         var template = await AddTemplateAsync(templateRepository);
         var group = await AddGroupAsync(groupRepository);
 
-        var act = () => service.CreateAsync(new CreateCampaignRequest(" ", null, template.Id, [group.Id]));
+        var act = () => service.CreateAsync(CreateRequest(" ", null, template.Id, [group.Id]));
 
         await act.Should().ThrowAsync<ApplicationValidationException>()
             .WithMessage("Campaign name is required.");
@@ -92,9 +93,9 @@ public sealed class CampaignServiceTests
         var template = await AddTemplateAsync(templateRepository);
         var otherTemplate = await AddTemplateAsync(templateRepository);
         var group = await AddGroupAsync(groupRepository);
-        var campaign = await service.CreateAsync(new CreateCampaignRequest("Autumn outreach", null, template.Id, [group.Id]));
+        var campaign = await service.CreateAsync(CreateRequest("Autumn outreach", null, template.Id, [group.Id]));
 
-        var updated = await service.UpdateAsync(campaign.Id, new UpdateCampaignRequest("Winter outreach", "Updated", otherTemplate.Id));
+        var updated = await service.UpdateAsync(campaign.Id, UpdateRequest("Winter outreach", "Updated", otherTemplate.Id));
 
         updated.Name.Should().Be("Winter outreach");
         updated.EmailTemplateId.Should().Be(otherTemplate.Id);
@@ -107,7 +108,7 @@ public sealed class CampaignServiceTests
         var (service, _, templateRepository, _) = CreateService();
         var template = await AddTemplateAsync(templateRepository);
 
-        var act = () => service.UpdateAsync(Guid.NewGuid(), new UpdateCampaignRequest("Name", null, template.Id));
+        var act = () => service.UpdateAsync(Guid.NewGuid(), UpdateRequest("Name", null, template.Id));
 
         await act.Should().ThrowAsync<ApplicationNotFoundException>()
             .WithMessage("Campaign was not found.");
@@ -120,7 +121,7 @@ public sealed class CampaignServiceTests
         var template = await AddTemplateAsync(templateRepository);
         var firstGroup = await AddGroupAsync(groupRepository);
         var secondGroup = await AddGroupAsync(groupRepository);
-        var campaign = await service.CreateAsync(new CreateCampaignRequest("Autumn outreach", null, template.Id, [firstGroup.Id]));
+        var campaign = await service.CreateAsync(CreateRequest("Autumn outreach", null, template.Id, [firstGroup.Id]));
 
         var withSecondGroup = await service.AddAudienceGroupAsync(campaign.Id, secondGroup.Id);
         var withFirstGroupOnly = await service.RemoveAudienceGroupAsync(campaign.Id, secondGroup.Id);
@@ -135,7 +136,7 @@ public sealed class CampaignServiceTests
         var (service, _, templateRepository, groupRepository) = CreateService();
         var template = await AddTemplateAsync(templateRepository);
         var group = await AddGroupAsync(groupRepository);
-        var campaign = await service.CreateAsync(new CreateCampaignRequest("Autumn outreach", null, template.Id, [group.Id]));
+        var campaign = await service.CreateAsync(CreateRequest("Autumn outreach", null, template.Id, [group.Id]));
 
         var act = () => service.RemoveAudienceGroupAsync(campaign.Id, group.Id);
 
@@ -149,7 +150,7 @@ public sealed class CampaignServiceTests
         var (service, _, templateRepository, groupRepository) = CreateService();
         var template = await AddTemplateAsync(templateRepository);
         var group = await AddGroupAsync(groupRepository);
-        var campaign = await service.CreateAsync(new CreateCampaignRequest("Autumn outreach", null, template.Id, [group.Id]));
+        var campaign = await service.CreateAsync(CreateRequest("Autumn outreach", null, template.Id, [group.Id]));
 
         var closed = await service.CloseAsync(campaign.Id);
         var reopened = await service.ReopenAsync(campaign.Id);
@@ -164,8 +165,8 @@ public sealed class CampaignServiceTests
         var (service, _, templateRepository, groupRepository) = CreateService();
         var template = await AddTemplateAsync(templateRepository);
         var group = await AddGroupAsync(groupRepository);
-        await service.CreateAsync(new CreateCampaignRequest("Autumn outreach", null, template.Id, [group.Id]));
-        await service.CreateAsync(new CreateCampaignRequest("Winter outreach", null, template.Id, [group.Id]));
+        await service.CreateAsync(CreateRequest("Autumn outreach", null, template.Id, [group.Id]));
+        await service.CreateAsync(CreateRequest("Winter outreach", null, template.Id, [group.Id]));
 
         var campaigns = await service.ListAsync();
 
@@ -198,6 +199,16 @@ public sealed class CampaignServiceTests
         await repository.AddAsync(group);
         return group;
     }
+
+    private static CreateCampaignRequest CreateRequest(
+        string name,
+        string? description,
+        Guid templateId,
+        IReadOnlyList<Guid> audienceGroupIds) =>
+        new(name, description, templateId, audienceGroupIds, false, 7, FollowUpTaskType.Email);
+
+    private static UpdateCampaignRequest UpdateRequest(string name, string? description, Guid templateId) =>
+        new(name, description, templateId, false, 7, FollowUpTaskType.Email);
 
     private sealed class FakeCampaignRepository : ICampaignRepository
     {

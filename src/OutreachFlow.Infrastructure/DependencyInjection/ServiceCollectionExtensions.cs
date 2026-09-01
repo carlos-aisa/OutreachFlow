@@ -120,6 +120,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IContactRepository, ContactRepository>();
         services.AddScoped<IContactGroupRepository, ContactGroupRepository>();
         services.AddScoped<ICampaignRepository, CampaignRepository>();
+        services.AddScoped<ICampaignRecipientRepository, CampaignRecipientRepository>();
         services.AddScoped<IImportJobRepository, ImportJobRepository>();
         services.AddScoped<IContactActivityRepository, ContactActivityRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();

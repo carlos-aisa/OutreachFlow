@@ -1,6 +1,7 @@
 using FluentAssertions;
 using OutreachFlow.Domain.Campaigns;
 using OutreachFlow.Domain.Common;
+using OutreachFlow.Domain.FollowUps;
 
 namespace OutreachFlow.Domain.Tests.Campaigns;
 
@@ -196,5 +197,38 @@ public sealed class CampaignTests
 
         act.Should().Throw<DomainException>()
             .WithMessage("Campaign is already open.");
+    }
+
+    [Fact]
+    public void ShouldDefaultFollowUpToDisabled()
+    {
+        var campaign = new Campaign("Autumn outreach", null, Guid.NewGuid(), [Guid.NewGuid()]);
+
+        campaign.FollowUpEnabled.Should().BeFalse();
+        campaign.FollowUpDueDays.Should().Be(7);
+        campaign.FollowUpType.Should().Be(FollowUpTaskType.Email);
+    }
+
+    [Fact]
+    public void ShouldConfigureFollowUp()
+    {
+        var campaign = new Campaign("Autumn outreach", null, Guid.NewGuid(), [Guid.NewGuid()]);
+
+        campaign.ConfigureFollowUp(true, 5, FollowUpTaskType.Call);
+
+        campaign.FollowUpEnabled.Should().BeTrue();
+        campaign.FollowUpDueDays.Should().Be(5);
+        campaign.FollowUpType.Should().Be(FollowUpTaskType.Call);
+    }
+
+    [Fact]
+    public void ShouldRejectEnablingFollowUpWithNonPositiveDueDays()
+    {
+        var campaign = new Campaign("Autumn outreach", null, Guid.NewGuid(), [Guid.NewGuid()]);
+
+        var act = () => campaign.ConfigureFollowUp(true, 0, FollowUpTaskType.Email);
+
+        act.Should().Throw<DomainException>()
+            .WithMessage("Follow-up due days must be greater than zero when follow-up is enabled.");
     }
 }

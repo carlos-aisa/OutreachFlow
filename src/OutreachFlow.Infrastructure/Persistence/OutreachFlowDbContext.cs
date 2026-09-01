@@ -56,6 +56,8 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
     public DbSet<CampaignAudienceGroup> CampaignAudienceGroups => Set<CampaignAudienceGroup>();
 
+    public DbSet<CampaignRecipient> CampaignRecipients => Set<CampaignRecipient>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureOrganizations(modelBuilder);
@@ -74,6 +76,7 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
         ConfigureImportJobs(modelBuilder);
         ConfigureContactGroups(modelBuilder);
         ConfigureCampaigns(modelBuilder);
+        ConfigureCampaignRecipients(modelBuilder);
     }
 
     private static void ConfigureOrganizations(ModelBuilder modelBuilder)
@@ -486,6 +489,7 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
             builder.HasIndex(task => task.OrganizationId);
             builder.HasIndex(task => task.DueAt);
             builder.HasIndex(task => task.IsCompleted);
+            builder.HasIndex(task => task.CampaignRecipientId);
             builder.HasIndex(task => new { task.ContactId, task.DueAt, task.IsCompleted });
 
             builder.HasOne<Contact>()
@@ -496,6 +500,11 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
             builder.HasOne<Organization>()
                 .WithMany()
                 .HasForeignKey(task => task.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasOne<CampaignRecipient>()
+                .WithMany()
+                .HasForeignKey(task => task.CampaignRecipientId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
     }
@@ -591,6 +600,43 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
                 .WithMany()
                 .HasForeignKey(audienceGroup => audienceGroup.ContactGroupId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    private static void ConfigureCampaignRecipients(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<CampaignRecipient>(builder =>
+        {
+            builder.ToTable("CampaignRecipients");
+            builder.HasKey(recipient => recipient.Id);
+
+            builder.Property(recipient => recipient.ExclusionReason).HasMaxLength(500);
+
+            builder.HasIndex(recipient => new { recipient.CampaignId, recipient.ContactId, recipient.MessageTemplateId })
+                .IsUnique();
+            builder.HasIndex(recipient => recipient.ContactId);
+            builder.HasIndex(recipient => recipient.Status);
+            builder.HasIndex(recipient => recipient.EmailDraftId);
+
+            builder.HasOne<Campaign>()
+                .WithMany()
+                .HasForeignKey(recipient => recipient.CampaignId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne<Contact>()
+                .WithMany()
+                .HasForeignKey(recipient => recipient.ContactId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<EmailTemplate>()
+                .WithMany()
+                .HasForeignKey(recipient => recipient.MessageTemplateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<EmailDraft>()
+                .WithMany()
+                .HasForeignKey(recipient => recipient.EmailDraftId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }

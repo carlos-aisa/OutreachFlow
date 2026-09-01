@@ -23,6 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IContactImportService, ContactImportService>();
         services.AddScoped<IContactGroupService, ContactGroupService>();
         services.AddScoped<ICampaignService, CampaignService>();
+        services.AddScoped<ICampaignRecipientService, CampaignRecipientService>();
         services.AddScoped<IOrganizationService, OrganizationService>();
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<IContactActivityService, ContactActivityService>();

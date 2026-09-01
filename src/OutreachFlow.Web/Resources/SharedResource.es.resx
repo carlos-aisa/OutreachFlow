@@ -399,6 +399,8 @@
   <data name="Campaigns.Form.SelectMessage" xml:space="preserve"><value>Selecciona una plantilla</value></data>
   <data name="Campaigns.Form.Audience" xml:space="preserve"><value>Público</value></data>
   <data name="Campaigns.Form.AudienceHelp" xml:space="preserve"><value>Mantén pulsado Ctrl (Cmd en Mac) para elegir más de un grupo. Se requiere al menos uno.</value></data>
+  <data name="Campaigns.Form.FollowUpEnabled" xml:space="preserve"><value>Crear un seguimiento automáticamente después de cada envío</value></data>
+  <data name="Campaigns.Form.FollowUpDueDays" xml:space="preserve"><value>Días hasta el seguimiento</value></data>
   <data name="Campaigns.List.Title" xml:space="preserve"><value>Listado de campañas</value></data>
   <data name="Campaigns.List.Count" xml:space="preserve"><value>{0} campañas</value></data>
   <data name="Campaigns.List.Loading" xml:space="preserve"><value>Cargando campañas...</value></data>
@@ -409,4 +411,19 @@
   <data name="Campaigns.Detail.ReopenAction" xml:space="preserve"><value>Reabrir campaña</value></data>
   <data name="CampaignStatus.Open" xml:space="preserve"><value>Abierta</value></data>
   <data name="CampaignStatus.Closed" xml:space="preserve"><value>Cerrada</value></data>
+  <data name="Common.Refresh" xml:space="preserve"><value>Actualizar</value></data>
+  <data name="Campaigns.Recipients.Title" xml:space="preserve"><value>Destinatarios</value></data>
+  <data name="Campaigns.Recipients.Count" xml:space="preserve"><value>{0} destinatarios</value></data>
+  <data name="Campaigns.Recipients.Empty" xml:space="preserve"><value>Todavía no se ha incorporado ningún contacto a esta campaña.</value></data>
+  <data name="Campaigns.Recipients.ExclusionReason" xml:space="preserve"><value>Motivo de exclusión</value></data>
+  <data name="Campaigns.Recipients.GenerateDrafts" xml:space="preserve"><value>Generar borradores</value></data>
+  <data name="Campaigns.Recipients.GenerateSummary" xml:space="preserve"><value>{0} borradores generados, {1} destinatarios excluidos.</value></data>
+  <data name="Campaigns.Recipients.Candidates" xml:space="preserve"><value>Contactos elegibles</value></data>
+  <data name="Campaigns.Recipients.CandidatesEmpty" xml:space="preserve"><value>Ahora mismo no hay contactos nuevos que coincidan con el público de esta campaña.</value></data>
+  <data name="Campaigns.Recipients.Incorporate" xml:space="preserve"><value>Incorporar</value></data>
+  <data name="CampaignRecipientStatus.Incorporated" xml:space="preserve"><value>Incorporado</value></data>
+  <data name="CampaignRecipientStatus.Drafted" xml:space="preserve"><value>Con borrador</value></data>
+  <data name="CampaignRecipientStatus.Sent" xml:space="preserve"><value>Enviado</value></data>
+  <data name="CampaignRecipientStatus.Failed" xml:space="preserve"><value>Fallido</value></data>
+  <data name="CampaignRecipientStatus.Excluded" xml:space="preserve"><value>Excluido</value></data>
 </root>

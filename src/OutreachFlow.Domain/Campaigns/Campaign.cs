@@ -1,4 +1,5 @@
 using OutreachFlow.Domain.Common;
+using OutreachFlow.Domain.FollowUps;
 
 namespace OutreachFlow.Domain.Campaigns;
 
@@ -16,6 +17,9 @@ public sealed class Campaign
         string? description,
         Guid emailTemplateId,
         IReadOnlyCollection<Guid> audienceGroupIds,
+        bool followUpEnabled = false,
+        int followUpDueDays = 7,
+        FollowUpTaskType followUpType = FollowUpTaskType.Email,
         DateTimeOffset? createdAt = null)
     {
         Id = Guid.NewGuid();
@@ -37,6 +41,8 @@ public sealed class Campaign
         {
             _audienceGroups.Add(new CampaignAudienceGroup(Id, groupId));
         }
+
+        SetFollowUpSettings(followUpEnabled, followUpDueDays, followUpType);
     }
 
     public Guid Id { get; private set; }
@@ -53,7 +59,19 @@ public sealed class Campaign
 
     public DateTimeOffset UpdatedAt { get; private set; }
 
+    public bool FollowUpEnabled { get; private set; }
+
+    public int FollowUpDueDays { get; private set; }
+
+    public FollowUpTaskType FollowUpType { get; private set; }
+
     public IReadOnlyCollection<CampaignAudienceGroup> AudienceGroups => _audienceGroups.AsReadOnly();
+
+    public void ConfigureFollowUp(bool enabled, int dueDays, FollowUpTaskType type, DateTimeOffset? updatedAt = null)
+    {
+        SetFollowUpSettings(enabled, dueDays, type);
+        UpdatedAt = updatedAt ?? DateTimeOffset.UtcNow;
+    }
 
     public void Rename(string name, string? description, DateTimeOffset? updatedAt = null)
     {
@@ -124,6 +142,18 @@ public sealed class Campaign
 
         Status = CampaignStatus.Open;
         UpdatedAt = updatedAt ?? DateTimeOffset.UtcNow;
+    }
+
+    private void SetFollowUpSettings(bool enabled, int dueDays, FollowUpTaskType type)
+    {
+        if (enabled && dueDays <= 0)
+        {
+            throw new DomainException("Follow-up due days must be greater than zero when follow-up is enabled.");
+        }
+
+        FollowUpEnabled = enabled;
+        FollowUpDueDays = dueDays;
+        FollowUpType = type;
     }
 
     private void EnsureOpen()

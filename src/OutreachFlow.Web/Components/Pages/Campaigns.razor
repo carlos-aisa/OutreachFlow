@@ -5,6 +5,7 @@
 @using OutreachFlow.Application.Campaigns
 @using OutreachFlow.Application.ContactGroups
 @using OutreachFlow.Application.EmailTemplates
+@using OutreachFlow.Domain.FollowUps
 @using OutreachFlow.Web
 @using OutreachFlow.Web.Campaigns
 @using OutreachFlow.Web.ContactGroups
@@ -113,6 +114,28 @@
                             </select>
                             <div class="form-text">@Localizer["Campaigns.Form.AudienceHelp"]</div>
                         </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <InputCheckbox id="campaign-followup-enabled" class="form-check-input" @bind-Value="form.FollowUpEnabled" />
+                                <label class="form-check-label" for="campaign-followup-enabled">@Localizer["Campaigns.Form.FollowUpEnabled"]</label>
+                            </div>
+                        </div>
+                        @if (form.FollowUpEnabled)
+                        {
+                            <div class="col-md-6">
+                                <label class="form-label" for="campaign-followup-due-days">@Localizer["Campaigns.Form.FollowUpDueDays"]</label>
+                                <InputNumber id="campaign-followup-due-days" class="form-control" @bind-Value="form.FollowUpDueDays" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="campaign-followup-type">@Localizer["Common.Type"]</label>
+                                <InputSelect id="campaign-followup-type" class="form-select" @bind-Value="form.FollowUpType">
+                                    @foreach (var type in FollowUpTypes)
+                                    {
+                                        <option value="@type">@SharedResourceDisplayNames.FollowUpTaskType(Localizer, type)</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        }
                     </div>
                 </div>
                 <div class="side-panel-footer">
@@ -125,6 +148,8 @@
 </div>
 
 @code {
+    private static readonly FollowUpTaskType[] FollowUpTypes = Enum.GetValues<FollowUpTaskType>();
+
     private IReadOnlyList<CampaignDto> campaigns = [];
     private IReadOnlyList<ContactGroupDto> contactGroups = [];
     private IReadOnlyList<EmailTemplateDto> templates = [];
@@ -181,6 +206,9 @@
         form.Name = string.Empty;
         form.Description = null;
         form.EmailTemplateId = string.Empty;
+        form.FollowUpEnabled = false;
+        form.FollowUpDueDays = 7;
+        form.FollowUpType = FollowUpTaskType.Email;
         selectedAudienceGroupIds.Clear();
     }
 
@@ -220,7 +248,10 @@
                 form.Name,
                 form.Description,
                 templateId,
-                selectedAudienceGroupIds.ToArray()));
+                selectedAudienceGroupIds.ToArray(),
+                form.FollowUpEnabled,
+                form.FollowUpDueDays,
+                form.FollowUpType));
 
             CloseCreatePanel();
             Navigation.NavigateTo($"/campaigns/{campaign.Id}");
@@ -256,5 +287,11 @@
         public string? Description { get; set; }
 
         public string EmailTemplateId { get; set; } = string.Empty;
+
+        public bool FollowUpEnabled { get; set; }
+
+        public int FollowUpDueDays { get; set; } = 7;
+
+        public FollowUpTaskType FollowUpType { get; set; } = FollowUpTaskType.Email;
     }
 }

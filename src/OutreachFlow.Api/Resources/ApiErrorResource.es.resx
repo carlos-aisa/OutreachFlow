@@ -42,6 +42,9 @@
   <data name="ApiError.CampaignNotFound" xml:space="preserve">
     <value>No se encontró la campaña.</value>
   </data>
+  <data name="ApiError.CampaignRecipientAlreadyIncorporated" xml:space="preserve">
+    <value>Este contacto ya está incorporado a la campaña para su mensaje actual.</value>
+  </data>
   <data name="ApiError.ContactEmailAlreadyExists" xml:space="preserve">
     <value>Ya existe un contacto con ese correo electrónico.</value>
   </data>

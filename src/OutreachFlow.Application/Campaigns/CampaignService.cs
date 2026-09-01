@@ -22,7 +22,14 @@ public sealed class CampaignService(
 
         try
         {
-            campaign = new Campaign(request.Name, request.Description, request.EmailTemplateId, request.AudienceGroupIds);
+            campaign = new Campaign(
+                request.Name,
+                request.Description,
+                request.EmailTemplateId,
+                request.AudienceGroupIds,
+                request.FollowUpEnabled,
+                request.FollowUpDueDays,
+                request.FollowUpType);
         }
         catch (DomainException exception)
         {
@@ -52,6 +59,7 @@ public sealed class CampaignService(
         {
             campaign.Rename(request.Name, request.Description);
             campaign.ChangeMessage(request.EmailTemplateId);
+            campaign.ConfigureFollowUp(request.FollowUpEnabled, request.FollowUpDueDays, request.FollowUpType);
         }
         catch (DomainException exception)
         {
@@ -170,6 +178,9 @@ public sealed class CampaignService(
                 .Select(audienceGroup => audienceGroup.ContactGroupId)
                 .OrderBy(id => id)
                 .ToArray(),
+            campaign.FollowUpEnabled,
+            campaign.FollowUpDueDays,
+            campaign.FollowUpType,
             campaign.CreatedAt,
             campaign.UpdatedAt);
 }

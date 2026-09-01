@@ -5,14 +5,19 @@
 @using OutreachFlow.Application.Campaigns
 @using OutreachFlow.Application.ContactGroups
 @using OutreachFlow.Application.EmailTemplates
+@using OutreachFlow.Application.SenderProfiles
 @using OutreachFlow.Domain.Campaigns
+@using OutreachFlow.Domain.FollowUps
 @using OutreachFlow.Web
 @using OutreachFlow.Web.Campaigns
 @using OutreachFlow.Web.ContactGroups
 @using OutreachFlow.Web.EmailTemplates
+@using OutreachFlow.Web.SenderProfiles
 @inject CampaignApiClient CampaignClient
+@inject CampaignRecipientApiClient RecipientClient
 @inject ContactGroupApiClient ContactGroupClient
 @inject EmailTemplateApiClient TemplateClient
+@inject SenderProfileApiClient SenderProfileClient
 @inject IStringLocalizer<SharedResource> Localizer
 
 <PageTitle>@(campaign?.Name ?? Localizer["Campaigns.PageTitle"])</PageTitle>
@@ -66,6 +71,101 @@
                 </div>
             </div>
         </section>
+
+        <section class="card mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h2 class="workspace-card-title mb-0">@Localizer["Campaigns.Recipients.Title"]</h2>
+                <span class="badge text-bg-secondary">@Localizer["Campaigns.Recipients.Count", recipients.Count]</span>
+            </div>
+            <div class="card-body">
+                @if (campaign.Status == CampaignStatus.Open)
+                {
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="campaign-generate-sender">@Localizer["Nav.SenderProfiles"]</label>
+                            <select id="campaign-generate-sender" class="form-select" @bind="selectedSenderProfileId">
+                                <option value="">@Localizer["DraftGeneration.SelectSender"]</option>
+                                @foreach (var senderProfile in senderProfiles)
+                                {
+                                    <option value="@senderProfile.Id">@senderProfile.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button
+                                type="button"
+                                class="btn btn-primary w-100"
+                                @onclick="GenerateDraftsAsync"
+                                disabled="@(isGeneratingDrafts || incorporatedCount == 0)">
+                                @Localizer["Campaigns.Recipients.GenerateDrafts"]
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(generateSummary))
+                {
+                    <div class="alert alert-info">@generateSummary</div>
+                }
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">@Localizer["Common.Contact"]</th>
+                                <th scope="col">@Localizer["Common.Status"]</th>
+                                <th scope="col">@Localizer["Campaigns.Recipients.ExclusionReason"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (recipients.Count == 0)
+                            {
+                                <tr><td colspan="3">@Localizer["Campaigns.Recipients.Empty"]</td></tr>
+                            }
+                            else
+                            {
+                                @foreach (var recipient in recipients)
+                                {
+                                    <tr>
+                                        <td>@recipient.ContactDisplayName (@recipient.ContactEmail)</td>
+                                        <td>@SharedResourceDisplayNames.CampaignRecipientStatus(Localizer, recipient.Status)</td>
+                                        <td>@recipient.ExclusionReason</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        @if (campaign.Status == CampaignStatus.Open)
+        {
+            <section class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 class="workspace-card-title mb-0">@Localizer["Campaigns.Recipients.Candidates"]</h2>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="LoadCandidatesAsync">@Localizer["Common.Refresh"]</button>
+                </div>
+                <div class="card-body">
+                    @if (candidates.Count == 0)
+                    {
+                        <p class="text-muted mb-0">@Localizer["Campaigns.Recipients.CandidatesEmpty"]</p>
+                    }
+                    else
+                    {
+                        <ul class="list-group">
+                            @foreach (var candidate in candidates)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>@candidate.DisplayName (@candidate.Email)</span>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => IncorporateAsync(candidate.ContactId)">@Localizer["Campaigns.Recipients.Incorporate"]</button>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </section>
+        }
     }
 
     @if (isEditPanelOpen && campaign is not null)
@@ -108,6 +208,28 @@
                             </select>
                             <div class="form-text">@Localizer["Campaigns.Form.AudienceHelp"]</div>
                         </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <InputCheckbox id="campaign-edit-followup-enabled" class="form-check-input" @bind-Value="form.FollowUpEnabled" />
+                                <label class="form-check-label" for="campaign-edit-followup-enabled">@Localizer["Campaigns.Form.FollowUpEnabled"]</label>
+                            </div>
+                        </div>
+                        @if (form.FollowUpEnabled)
+                        {
+                            <div class="col-md-6">
+                                <label class="form-label" for="campaign-edit-followup-due-days">@Localizer["Campaigns.Form.FollowUpDueDays"]</label>
+                                <InputNumber id="campaign-edit-followup-due-days" class="form-control" @bind-Value="form.FollowUpDueDays" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="campaign-edit-followup-type">@Localizer["Common.Type"]</label>
+                                <InputSelect id="campaign-edit-followup-type" class="form-select" @bind-Value="form.FollowUpType">
+                                    @foreach (var type in FollowUpTypes)
+                                    {
+                                        <option value="@type">@SharedResourceDisplayNames.FollowUpTaskType(Localizer, type)</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        }
                     </div>
                 </div>
                 <div class="side-panel-footer">
@@ -120,20 +242,31 @@
 </div>
 
 @code {
+    private static readonly FollowUpTaskType[] FollowUpTypes = Enum.GetValues<FollowUpTaskType>();
+
     [Parameter]
     public Guid Id { get; set; }
 
     private CampaignDto? campaign;
     private IReadOnlyList<ContactGroupDto> contactGroups = [];
     private IReadOnlyList<EmailTemplateDto> templates = [];
+    private IReadOnlyList<SenderProfileDto> senderProfiles = [];
+    private IReadOnlyList<CampaignRecipientDto> recipients = [];
+    private IReadOnlyList<CampaignRecipientCandidateDto> candidates = [];
     private readonly CampaignFormModel form = new();
     private readonly HashSet<Guid> editedAudienceGroupIds = [];
     private bool isEditPanelOpen;
     private string? errorMessage;
     private bool isLoading;
     private bool isSaving;
+    private bool isGeneratingDrafts;
+    private string? selectedSenderProfileId;
+    private string? generateSummary;
 
     private bool isBusy => isSaving;
+
+    private int incorporatedCount =>
+        recipients.Count(recipient => recipient.Status == CampaignRecipientStatus.Incorporated);
 
     private string AudienceNames =>
         campaign is null
@@ -162,6 +295,13 @@
             campaign = await CampaignClient.GetAsync(Id);
             contactGroups = await ContactGroupClient.ListAsync();
             templates = await TemplateClient.ListAsync(activeOnly: true);
+            senderProfiles = await SenderProfileClient.ListAsync(activeOnly: true);
+            recipients = await RecipientClient.ListAsync(Id);
+
+            if (campaign.Status == CampaignStatus.Open)
+            {
+                candidates = await RecipientClient.DiscoverCandidatesAsync(Id);
+            }
         }
         catch (InvalidOperationException exception)
         {
@@ -177,6 +317,76 @@
         }
     }
 
+    private async Task LoadCandidatesAsync()
+    {
+        errorMessage = null;
+
+        try
+        {
+            candidates = await RecipientClient.DiscoverCandidatesAsync(Id);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+    }
+
+    private async Task IncorporateAsync(Guid contactId)
+    {
+        errorMessage = null;
+
+        try
+        {
+            var recipient = await RecipientClient.IncorporateAsync(Id, contactId);
+            recipients = [.. recipients, recipient];
+            candidates = candidates.Where(candidate => candidate.ContactId != contactId).ToArray();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+    }
+
+    private async Task GenerateDraftsAsync()
+    {
+        if (!Guid.TryParse(selectedSenderProfileId, out var senderProfileId))
+        {
+            errorMessage = Localizer["DraftGeneration.SelectSender"];
+            return;
+        }
+
+        isGeneratingDrafts = true;
+        errorMessage = null;
+        generateSummary = null;
+
+        try
+        {
+            var result = await RecipientClient.GenerateDraftsAsync(Id, new GenerateCampaignDraftsRequest(senderProfileId, []));
+            recipients = result.Recipients;
+            generateSummary = Localizer["Campaigns.Recipients.GenerateSummary", result.GeneratedDrafts, result.ExcludedRecipients];
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isGeneratingDrafts = false;
+        }
+    }
+
     private void OpenEditPanel()
     {
         if (campaign is null)
@@ -187,6 +397,9 @@
         form.Name = campaign.Name;
         form.Description = campaign.Description;
         form.EmailTemplateId = campaign.EmailTemplateId.ToString();
+        form.FollowUpEnabled = campaign.FollowUpEnabled;
+        form.FollowUpDueDays = campaign.FollowUpDueDays;
+        form.FollowUpType = campaign.FollowUpType;
         editedAudienceGroupIds.Clear();
 
         foreach (var groupId in campaign.AudienceGroupIds)
@@ -227,7 +440,13 @@
 
         try
         {
-            campaign = await CampaignClient.UpdateAsync(campaign.Id, new UpdateCampaignRequest(form.Name, form.Description, templateId));
+            campaign = await CampaignClient.UpdateAsync(campaign.Id, new UpdateCampaignRequest(
+                form.Name,
+                form.Description,
+                templateId,
+                form.FollowUpEnabled,
+                form.FollowUpDueDays,
+                form.FollowUpType));
 
             var currentGroupIds = campaign.AudienceGroupIds.ToHashSet();
 
@@ -321,5 +540,11 @@
         public string? Description { get; set; }
 
         public string EmailTemplateId { get; set; } = string.Empty;
+
+        public bool FollowUpEnabled { get; set; }
+
+        public int FollowUpDueDays { get; set; } = 7;
+
+        public FollowUpTaskType FollowUpType { get; set; } = FollowUpTaskType.Email;
     }
 }

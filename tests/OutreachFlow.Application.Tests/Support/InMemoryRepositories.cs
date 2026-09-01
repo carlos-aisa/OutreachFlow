@@ -1,5 +1,6 @@
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Attachments;
+using OutreachFlow.Application.Campaigns;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.ContactGroups;
@@ -12,6 +13,7 @@ using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Tags;
 using OutreachFlow.Domain.Attachments;
+using OutreachFlow.Domain.Campaigns;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.ContactGroups;
@@ -447,6 +449,87 @@ internal sealed class InMemoryContactGroupRepository : IContactGroupRepository
     public void Remove(ContactGroup contactGroup)
     {
         _contactGroups.Remove(contactGroup);
+    }
+}
+
+internal sealed class InMemoryCampaignRepository : ICampaignRepository
+{
+    private readonly List<Campaign> _campaigns = [];
+
+    public IReadOnlyList<Campaign> Campaigns => _campaigns;
+
+    public Task AddAsync(Campaign campaign, CancellationToken cancellationToken = default)
+    {
+        _campaigns.Add(campaign);
+        return Task.CompletedTask;
+    }
+
+    public Task<Campaign?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_campaigns.FirstOrDefault(campaign => campaign.Id == id));
+    }
+
+    public Task<IReadOnlyList<Campaign>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<Campaign>>(_campaigns.OrderBy(campaign => campaign.Name).ToArray());
+    }
+}
+
+internal sealed class InMemoryCampaignRecipientRepository : ICampaignRecipientRepository
+{
+    private readonly List<CampaignRecipient> _recipients = [];
+
+    public IReadOnlyList<CampaignRecipient> Recipients => _recipients;
+
+    public Task AddAsync(CampaignRecipient recipient, CancellationToken cancellationToken = default)
+    {
+        _recipients.Add(recipient);
+        return Task.CompletedTask;
+    }
+
+    public Task<CampaignRecipient?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_recipients.FirstOrDefault(recipient => recipient.Id == id));
+    }
+
+    public Task<CampaignRecipient?> GetByCampaignAndContactAsync(
+        Guid campaignId,
+        Guid contactId,
+        Guid messageTemplateId,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_recipients.FirstOrDefault(recipient =>
+            recipient.CampaignId == campaignId &&
+            recipient.ContactId == contactId &&
+            recipient.MessageTemplateId == messageTemplateId));
+    }
+
+    public Task<CampaignRecipient?> GetByEmailDraftIdAsync(Guid emailDraftId, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_recipients.FirstOrDefault(recipient => recipient.EmailDraftId == emailDraftId));
+    }
+
+    public Task<IReadOnlyList<CampaignRecipient>> ListByCampaignAsync(Guid campaignId, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<CampaignRecipient>>(
+            _recipients.Where(recipient => recipient.CampaignId == campaignId).OrderBy(recipient => recipient.IncorporatedAt).ToArray());
+    }
+
+    public Task<IReadOnlyList<CampaignRecipient>> ListIncorporatedByCampaignAsync(
+        Guid campaignId,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<CampaignRecipient>>(
+            _recipients
+                .Where(recipient => recipient.CampaignId == campaignId && recipient.Status == CampaignRecipientStatus.Incorporated)
+                .OrderBy(recipient => recipient.IncorporatedAt)
+                .ToArray());
+    }
+
+    public Task<IReadOnlyList<Guid>> ListContactIdsByCampaignAsync(Guid campaignId, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<Guid>>(
+            _recipients.Where(recipient => recipient.CampaignId == campaignId).Select(recipient => recipient.ContactId).Distinct().ToArray());
     }
 }
 
