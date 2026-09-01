@@ -81,7 +81,7 @@ public sealed class WebLocalizationComponentTests : BunitContext
 
         var component = Render<NavMenu>();
 
-        component.Find(".sidebar-brand-panel").TextContent.Should().Contain("OutreachFlow");
+        component.Find(".navbar-brand").TextContent.Should().Contain("OutreachFlow");
         component.Find("a[href='settings']").TextContent.Should().Contain("Settings");
         component.FindAll("#sidebar-language-select").Should().BeEmpty();
     }
@@ -242,7 +242,7 @@ public sealed class WebLocalizationComponentTests : BunitContext
         Services.AddSingleton(new AttachmentAssetApiClient(httpClient));
         Services.AddSingleton(new ContactImportApiClient(httpClient));
 
-        Render<Home>().Markup.Should().Contain("Resumen");
+        Render<Home>().Markup.Should().Contain("Panel");
 
         var draftsMarkup = Render<Drafts>().Markup;
         draftsMarkup.Should().Contain("Borradores");
@@ -379,6 +379,27 @@ public sealed class WebLocalizationComponentTests : BunitContext
     }
 
     [Fact]
+    public void ShouldSelectContactViaSearchSelectInFollowUpsPanel()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new ContactApiClient(new HttpClient(new SingleContactJsonHandler())
+        {
+            BaseAddress = new Uri("http://localhost")
+        }));
+        Services.AddSingleton(new FollowUpTaskApiClient(CreateHttpClient()));
+
+        var component = Render<FollowUps>();
+
+        component.Find("#open-create-followup-panel").Click();
+        component.Find("#followup-contact").Input("Marta");
+
+        component.Find(".combo-item").Click();
+
+        component.Find("#followup-contact").GetAttribute("value").Should().Be("Marta Silván (marta@example.com)");
+    }
+
+    [Fact]
     public void ShouldOpenAndDiscardContactGroupsCreatePanel()
     {
         using var cultureScope = CultureTestScope.Use("es-ES");
@@ -391,6 +412,8 @@ public sealed class WebLocalizationComponentTests : BunitContext
 
         component.Find("#open-create-group-panel").Click();
         component.Markup.Should().Contain("Crear grupo");
+        component.Find("button[type='submit']").TextContent.Trim().Should().Be("Crear");
+        component.Markup.Should().NotContain("Common.Create");
 
         component.Find(".side-panel-close").Click();
         component.Markup.Should().NotContain("side-panel-body");
@@ -503,6 +526,48 @@ public sealed class WebLocalizationComponentTests : BunitContext
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                 {
                     Content = new StringContent("[]", Encoding.UTF8, "application/json")
+                });
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}", Encoding.UTF8, "application/json")
+            });
+        }
+    }
+
+    private sealed class SingleContactJsonHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            if (request.Method == HttpMethod.Get)
+            {
+                const string contactsJson = """
+                    [
+                        {
+                            "id": "3a1f7c2e-6b4d-4e63-9a2f-5f6f1c8d3a11",
+                            "organizationId": null,
+                            "organizationName": null,
+                            "displayName": "Marta Silván",
+                            "email": "marta@example.com",
+                            "phone": null,
+                            "role": null,
+                            "source": null,
+                            "status": "New",
+                            "doNotContact": false,
+                            "lastContactedAt": null,
+                            "createdAt": "2026-01-01T00:00:00Z",
+                            "updatedAt": "2026-01-01T00:00:00Z",
+                            "tags": []
+                        }
+                    ]
+                    """;
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(contactsJson, Encoding.UTF8, "application/json")
                 });
             }
 

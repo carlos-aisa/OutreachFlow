@@ -17,7 +17,7 @@
 <PageTitle>@Localizer["ContactGroups.PageTitle"]</PageTitle>
 
 <div class="page-shell">
-    <div class="page-intro page-intro--split"><div><p class="page-kicker">@Localizer["ContactGroups.PageTitle"]</p><h1 class="page-title">@Localizer["ContactGroups.PageTitle"]</h1><p class="page-description">@Localizer["ContactGroups.Description"]</p></div><div class="page-actions"><button id="open-create-group-panel" type="button" class="btn btn-primary" @onclick="OpenCreatePanel">@Localizer["ContactGroups.Panel.New"]</button></div></div>
+    <div class="page-intro page-intro--split"><div><h1 class="page-title">@Localizer["ContactGroups.PageTitle"]</h1><p class="page-description">@Localizer["ContactGroups.Description"]</p></div><div class="page-actions"><button id="open-create-group-panel" type="button" class="btn btn-primary" @onclick="OpenCreatePanel">@Localizer["ContactGroups.Panel.New"]</button></div></div>
     @if (!string.IsNullOrWhiteSpace(errorMessage)) { <div class="alert alert-danger" role="alert">@errorMessage</div> }
     <section class="card"><div class="card-header"><h2 class="workspace-card-title mb-0">@Localizer["ContactGroups.ListTitle"]</h2></div><div class="list-group list-group-flush">
         @foreach (var group in groups) { <div class="list-group-item d-flex justify-content-between align-items-center"><div><strong>@group.Name</strong><div class="small text-muted">@FormatCriteria(group.Criteria)</div></div><div class="btn-group"><button class="btn btn-sm btn-outline-primary" @onclick="() => SelectGroup(group)">@Localizer["Common.Edit"]</button><button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(group)">@Localizer["Common.Delete"]</button></div></div> }

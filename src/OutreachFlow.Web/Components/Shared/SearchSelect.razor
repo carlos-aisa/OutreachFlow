@@ -1,0 +1,136 @@
+@typeparam TItem
+
+<div class="combo-wrap">
+    <input id="@Id" class="form-control" type="text" autocomplete="off"
+           placeholder="@Placeholder"
+           value="@query"
+           @oninput="OnQueryChanged"
+           @onfocus="OnFocus"
+           @onblur="OnBlur" />
+    @if (SelectedId is not null)
+    {
+        <button type="button" class="combo-clear" @onmousedown:preventDefault="true" @onclick="Clear" aria-label="@ClearLabel">&times;</button>
+    }
+    @if (dropdownOpen)
+    {
+        <div class="combo-dropdown">
+            @if (Matches.Count == 0)
+            {
+                <div class="combo-item combo-item--empty">@EmptyLabel</div>
+            }
+            else
+            {
+                @foreach (var item in Matches.Take(MaxResults))
+                {
+                    <div class="combo-item" @onmousedown:preventDefault="true" @onclick="() => Select(item)">@DisplayText(item)</div>
+                }
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string query = string.Empty;
+    private bool dropdownOpen;
+    private Guid? lastSyncedSelectedId;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TItem> Items { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public Func<TItem, string> DisplayText { get; set; } = _ => string.Empty;
+
+    [Parameter, EditorRequired]
+    public Func<TItem, Guid> GetId { get; set; } = _ => Guid.Empty;
+
+    [Parameter]
+    public Guid? SelectedId { get; set; }
+
+    [Parameter]
+    public EventCallback<Guid?> SelectedIdChanged { get; set; }
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public string EmptyLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ClearLabel { get; set; } = "Clear";
+
+    [Parameter]
+    public int MaxResults { get; set; } = 8;
+
+    private IReadOnlyList<TItem> Matches =>
+        string.IsNullOrWhiteSpace(query)
+            ? Items
+            : Items.Where(item => DisplayText(item).Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    protected override void OnParametersSet()
+    {
+        if (SelectedId == lastSyncedSelectedId)
+        {
+            return;
+        }
+
+        lastSyncedSelectedId = SelectedId;
+        dropdownOpen = false;
+
+        if (SelectedId is Guid id)
+        {
+            var match = Items.FirstOrDefault(item => GetId(item) == id);
+            query = match is null ? string.Empty : DisplayText(match);
+        }
+        else
+        {
+            query = string.Empty;
+        }
+    }
+
+    private async Task OnQueryChanged(ChangeEventArgs e)
+    {
+        query = e.Value?.ToString() ?? string.Empty;
+        dropdownOpen = true;
+
+        if (SelectedId is not null)
+        {
+            lastSyncedSelectedId = null;
+            SelectedId = null;
+            await SelectedIdChanged.InvokeAsync(null);
+        }
+    }
+
+    private void OnFocus()
+    {
+        dropdownOpen = true;
+    }
+
+    private async Task OnBlur()
+    {
+        await Task.Delay(150);
+        dropdownOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task Select(TItem item)
+    {
+        var id = GetId(item);
+        query = DisplayText(item);
+        dropdownOpen = false;
+        lastSyncedSelectedId = id;
+        SelectedId = id;
+        await SelectedIdChanged.InvokeAsync(id);
+    }
+
+    private async Task Clear()
+    {
+        query = string.Empty;
+        dropdownOpen = false;
+        lastSyncedSelectedId = null;
+        SelectedId = null;
+        await SelectedIdChanged.InvokeAsync(null);
+    }
+}

@@ -65,7 +65,7 @@
   <data name="Common.SignatureFormatPlaceholder" xml:space="preserve"><value>No signature format</value></data>
   <data name="Common.ApiUnavailablePrefix" xml:space="preserve"><value>Could not reach the OutreachFlow API</value></data>
   <data name="Organizations.PageTitle" xml:space="preserve"><value>Organizations</value></data>
-  <data name="Organizations.Description" xml:space="preserve"><value>Create and review generic organizations that can be associated with contacts.</value></data>
+  <data name="Organizations.Description" xml:space="preserve"><value>Manage the organizations your contacts belong to.</value></data>
   <data name="Organizations.Panel.New" xml:space="preserve"><value>New organization</value></data>
   <data name="Organizations.Form.CreateTitle" xml:space="preserve"><value>Create organization</value></data>
   <data name="Organizations.Form.CreateAction" xml:space="preserve"><value>Create organization</value></data>
@@ -74,7 +74,7 @@
   <data name="Organizations.List.Loading" xml:space="preserve"><value>Loading organizations...</value></data>
   <data name="Organizations.List.Empty" xml:space="preserve"><value>No organizations have been created yet.</value></data>
   <data name="Tags.PageTitle" xml:space="preserve"><value>Tags</value></data>
-  <data name="Tags.Description" xml:space="preserve"><value>Create flexible tags for segmenting contacts without hardcoded categories.</value></data>
+  <data name="Tags.Description" xml:space="preserve"><value>Create tags to group and segment your contacts.</value></data>
   <data name="Tags.Panel.New" xml:space="preserve"><value>New tag</value></data>
   <data name="Tags.Form.CreateTitle" xml:space="preserve"><value>Create tag</value></data>
   <data name="Tags.Form.CreateAction" xml:space="preserve"><value>Create tag</value></data>
@@ -83,7 +83,7 @@
   <data name="Tags.List.Loading" xml:space="preserve"><value>Loading tags...</value></data>
   <data name="Tags.List.Empty" xml:space="preserve"><value>No tags have been created yet.</value></data>
   <data name="Templates.PageTitle" xml:space="preserve"><value>Email Templates</value></data>
-  <data name="Templates.Description" xml:space="preserve"><value>Store reusable subject and body templates as configurable data, including default attachment selection.</value></data>
+  <data name="Templates.Description" xml:space="preserve"><value>Write reusable email templates and set their default attachments.</value></data>
   <data name="Templates.Panel.New" xml:space="preserve"><value>New template</value></data>
   <data name="Templates.Form.CreateTitle" xml:space="preserve"><value>Create template</value></data>
   <data name="Templates.Form.EditTitle" xml:space="preserve"><value>Edit template</value></data>
@@ -102,7 +102,7 @@
   <data name="Templates.Variables.Help" xml:space="preserve"><value>These variables are centralized in Application and reused by the API and UI.</value></data>
   <data name="Templates.Variables.Empty" xml:space="preserve"><value>No variables are available.</value></data>
   <data name="SenderProfiles.PageTitle" xml:space="preserve"><value>Sender Profiles</value></data>
-  <data name="SenderProfiles.Description" xml:space="preserve"><value>Configure reusable sender identities without hardcoded business details.</value></data>
+  <data name="SenderProfiles.Description" xml:space="preserve"><value>Manage the sender identities your emails go out from.</value></data>
   <data name="SenderProfiles.Panel.New" xml:space="preserve"><value>New sender profile</value></data>
   <data name="SenderProfiles.Form.CreateTitle" xml:space="preserve"><value>Create sender profile</value></data>
   <data name="SenderProfiles.Form.EditTitle" xml:space="preserve"><value>Edit sender profile</value></data>
@@ -112,7 +112,7 @@
   <data name="SenderProfiles.List.Loading" xml:space="preserve"><value>Loading sender profiles...</value></data>
   <data name="SenderProfiles.List.Empty" xml:space="preserve"><value>No sender profiles have been created yet.</value></data>
   <data name="Contacts.PageTitle" xml:space="preserve"><value>Contacts</value></data>
-  <data name="Contacts.Description" xml:space="preserve"><value>Manage contacts, apply lightweight filters, and create new records without business-specific assumptions.</value></data>
+  <data name="Contacts.Description" xml:space="preserve"><value>Browse, filter, and add contacts to your outreach list.</value></data>
   <data name="Contacts.Filters.Title" xml:space="preserve"><value>Filters</value></data>
   <data name="Contacts.Filters.SearchPlaceholder" xml:space="preserve"><value>Name, email, or role</value></data>
   <data name="Contacts.Filters.AnyStatus" xml:space="preserve"><value>Any status</value></data>
@@ -141,14 +141,10 @@
   <data name="Contacts.List.Subtitle" xml:space="preserve"><value>Browse the current contact set and jump straight into detail when a record needs action.</value></data>
   <data name="Layout.Workspace" xml:space="preserve"><value>Workspace</value></data>
   <data name="Layout.Language" xml:space="preserve"><value>Language</value></data>
-  <data name="Layout.SidebarDescription" xml:space="preserve"><value>Contacts, templates, drafts, and follow-ups in one focused workspace.</value></data>
-  <data name="Layout.TopRowTitle" xml:space="preserve"><value>Outreach Workspace</value></data>
-  <data name="Layout.TopRowCaption" xml:space="preserve"><value>Controlled contact operations, drafts, templates, and follow-ups</value></data>
   <data name="Layout.ErrorUnhandled" xml:space="preserve"><value>An unhandled error has occurred.</value></data>
   <data name="Layout.ErrorReload" xml:space="preserve"><value>Reload</value></data>
-  <data name="Settings.Kicker" xml:space="preserve"><value>Preferences</value></data>
   <data name="Settings.PageTitle" xml:space="preserve"><value>Settings</value></data>
-  <data name="Settings.Description" xml:space="preserve"><value>Manage workspace preferences for language and theme from one shared configuration page.</value></data>
+  <data name="Settings.Description" xml:space="preserve"><value>Set your language and theme preferences.</value></data>
   <data name="Settings.General.Title" xml:space="preserve"><value>General preferences</value></data>
   <data name="Settings.General.Subtitle" xml:space="preserve"><value>Choose how OutreachFlow looks and which language it uses during your current and future visits.</value></data>
   <data name="Settings.Language.Label" xml:space="preserve"><value>Language</value></data>
@@ -162,8 +158,7 @@
   <data name="Settings.Apply.Title" xml:space="preserve"><value>Changes apply right away</value></data>
   <data name="Settings.Apply.Description" xml:space="preserve"><value>Theme updates immediately, and language changes reload the current page so localized content stays consistent.</value></data>
   <data name="Settings.Apply.Note" xml:space="preserve"><value>Your selected language and theme are remembered for later visits to this workspace.</value></data>
-  <data name="Home.Overview" xml:space="preserve"><value>Overview</value></data>
-  <data name="Home.Description" xml:space="preserve"><value>Track the current health of contacts, drafts, and follow-ups from one clear operational view.</value></data>
+  <data name="Home.Description" xml:space="preserve"><value>See the current state of your contacts, drafts, and follow-ups at a glance.</value></data>
   <data name="Home.NewContacts" xml:space="preserve"><value>New contacts</value></data>
   <data name="Home.NeedsReviewDrafts" xml:space="preserve"><value>Needs review drafts</value></data>
   <data name="Home.ApprovedDrafts" xml:space="preserve"><value>Approved drafts</value></data>
@@ -173,8 +168,7 @@
   <data name="Home.PendingFollowUps.Action" xml:space="preserve"><value>Open follow-ups</value></data>
   <data name="Home.PendingFollowUps.Empty" xml:space="preserve"><value>No pending follow-up tasks.</value></data>
   <data name="ContactDetail.PageTitle" xml:space="preserve"><value>Contact detail</value></data>
-  <data name="ContactDetail.Kicker" xml:space="preserve"><value>Contact workspace</value></data>
-  <data name="ContactDetail.Description" xml:space="preserve"><value>Review the current contact profile, assigned tags, recent activity, and follow-up workload from one focused record view.</value></data>
+  <data name="ContactDetail.Description" xml:space="preserve"><value>See this contact's full profile: tags, activity, and pending follow-ups.</value></data>
   <data name="ContactDetail.BackAction" xml:space="preserve"><value>Back to contacts</value></data>
   <data name="ContactDetail.Loading" xml:space="preserve"><value>Loading contact detail...</value></data>
   <data name="ContactDetail.NotFound" xml:space="preserve"><value>Contact not found.</value></data>
@@ -197,15 +191,14 @@
   <data name="ContactDetail.ManageFollowUps" xml:space="preserve"><value>Manage follow-ups</value></data>
   <data name="ContactDetail.NoFollowUps" xml:space="preserve"><value>No follow-up tasks for this contact.</value></data>
   <data name="Drafts.PageTitle" xml:space="preserve"><value>Drafts</value></data>
-  <data name="Drafts.Description" xml:space="preserve"><value>Review generated drafts, confirm quality, and move approved messages toward delivery.</value></data>
+  <data name="Drafts.Description" xml:space="preserve"><value>Review generated drafts and approve the ones ready to send.</value></data>
   <data name="Drafts.FiltersTitle" xml:space="preserve"><value>Filters</value></data>
   <data name="Drafts.ListTitle" xml:space="preserve"><value>Draft list</value></data>
   <data name="Drafts.Loading" xml:space="preserve"><value>Loading drafts...</value></data>
   <data name="Drafts.Empty" xml:space="preserve"><value>No drafts found for the selected filters.</value></data>
   <data name="Drafts.ReviewAction" xml:space="preserve"><value>Review</value></data>
   <data name="DraftDetail.PageTitle" xml:space="preserve"><value>Draft review</value></data>
-  <data name="DraftDetail.Kicker" xml:space="preserve"><value>Draft review</value></data>
-  <data name="DraftDetail.Description" xml:space="preserve"><value>Inspect generated content, fix issues, and move a draft from review toward approval and sending.</value></data>
+  <data name="DraftDetail.Description" xml:space="preserve"><value>Review this draft's content, fix any issues, and approve it to send.</value></data>
   <data name="DraftDetail.Loading" xml:space="preserve"><value>Loading draft...</value></data>
   <data name="DraftDetail.NotFound" xml:space="preserve"><value>Draft not found.</value></data>
   <data name="DraftDetail.SummaryTitle" xml:space="preserve"><value>Summary</value></data>
@@ -227,8 +220,7 @@
   <data name="DraftDetail.SentSuccess" xml:space="preserve"><value>Draft sent.</value></data>
   <data name="DraftDetail.SendFailedStatus" xml:space="preserve"><value>Draft send attempt recorded with failure status.</value></data>
   <data name="DraftGeneration.PageTitle" xml:space="preserve"><value>Draft generation</value></data>
-  <data name="DraftGeneration.Kicker" xml:space="preserve"><value>Draft generation</value></data>
-  <data name="DraftGeneration.Description" xml:space="preserve"><value>Generate personalized drafts from selected contacts with template rendering diagnostics and controlled attachment selection.</value></data>
+  <data name="DraftGeneration.Description" xml:space="preserve"><value>Generate personalized email drafts for a set of contacts.</value></data>
   <data name="DraftGeneration.StepTitle" xml:space="preserve"><value>Step {0} of 5</value></data>
   <data name="DraftGeneration.RecipientsFilters" xml:space="preserve"><value>Recipients filters</value></data>
   <data name="DraftGeneration.TemplateSender" xml:space="preserve"><value>Template and sender profile</value></data>
@@ -253,7 +245,7 @@
   <data name="DraftGeneration.SelectTemplate" xml:space="preserve"><value>Select template</value></data>
   <data name="DraftGeneration.SelectSender" xml:space="preserve"><value>Select sender</value></data>
   <data name="FollowUps.PageTitle" xml:space="preserve"><value>Follow-ups</value></data>
-  <data name="FollowUps.Description" xml:space="preserve"><value>Create time-based outreach tasks, monitor pending work, and close the loop on contact follow-up.</value></data>
+  <data name="FollowUps.Description" xml:space="preserve"><value>Schedule follow-up tasks for contacts and track what's pending.</value></data>
   <data name="FollowUps.Panel.New" xml:space="preserve"><value>New follow-up</value></data>
   <data name="FollowUps.CreateTitle" xml:space="preserve"><value>Create follow-up task</value></data>
   <data name="FollowUps.ListTitle" xml:space="preserve"><value>Task list</value></data>
@@ -269,7 +261,7 @@
   <data name="FollowUps.CreatedSuccess" xml:space="preserve"><value>Follow-up task created.</value></data>
   <data name="FollowUps.CompletedSuccess" xml:space="preserve"><value>Follow-up task completed.</value></data>
   <data name="Imports.PageTitle" xml:space="preserve"><value>Imports</value></data>
-  <data name="Imports.Description" xml:space="preserve"><value>Validate CSV data before commit, enrich imported contacts with tags, and review recent import job outcomes.</value></data>
+  <data name="Imports.Description" xml:space="preserve"><value>Import contacts from a CSV file and tag them as they come in.</value></data>
   <data name="Imports.CsvTitle" xml:space="preserve"><value>CSV import</value></data>
   <data name="Imports.FileLabel" xml:space="preserve"><value>CSV file</value></data>
   <data name="Imports.SelectedFile" xml:space="preserve"><value>Selected file: {0}</value></data>
@@ -291,7 +283,7 @@
   <data name="Imports.SelectFileBeforeCommit" xml:space="preserve"><value>Select a CSV file before committing the import.</value></data>
   <data name="Imports.SuccessMessage" xml:space="preserve"><value>Import completed. Created {0} contact(s), {1} duplicate row(s), {2} invalid row(s).</value></data>
   <data name="Attachments.PageTitle" xml:space="preserve"><value>Attachments</value></data>
-  <data name="Attachments.Description" xml:space="preserve"><value>Manage reusable files that can be attached to templates and reused in controlled outreach workflows.</value></data>
+  <data name="Attachments.Description" xml:space="preserve"><value>Upload files you can attach to email templates.</value></data>
   <data name="Attachments.Panel.New" xml:space="preserve"><value>New attachment</value></data>
   <data name="Attachments.UploadTitle" xml:space="preserve"><value>Upload attachment</value></data>
   <data name="Attachments.ListTitle" xml:space="preserve"><value>Attachment list</value></data>
@@ -302,7 +294,6 @@
   <data name="Attachments.SelectedFile" xml:space="preserve"><value>Selected: {0} ({1})</value></data>
   <data name="Attachments.UploadAction" xml:space="preserve"><value>Upload</value></data>
   <data name="Attachments.SelectFileError" xml:space="preserve"><value>Please select a file to upload.</value></data>
-  <data name="Error.Kicker" xml:space="preserve"><value>System</value></data>
   <data name="Error.PageTitle" xml:space="preserve"><value>Error</value></data>
   <data name="Error.Description" xml:space="preserve"><value>The request could not be completed. Review the details below and retry once the issue is resolved.</value></data>
   <data name="Error.RequestDetails" xml:space="preserve"><value>Request details</value></data>
@@ -374,14 +365,16 @@
   <data name="Validation.Required" xml:space="preserve"><value>This field is required.</value></data>
   <data name="Nav.ContactGroups" xml:space="preserve"><value>Contact groups</value></data>
   <data name="ContactGroups.PageTitle" xml:space="preserve"><value>Contact groups</value></data>
-  <data name="ContactGroups.Description" xml:space="preserve"><value>Create reusable audiences from criteria and manual selections.</value></data>
+  <data name="ContactGroups.Description" xml:space="preserve"><value>Build reusable contact audiences from criteria or manual picks.</value></data>
   <data name="ContactGroups.Panel.New" xml:space="preserve"><value>New group</value></data>
   <data name="ContactGroups.CreateTitle" xml:space="preserve"><value>Create group</value></data>
   <data name="ContactGroups.ListTitle" xml:space="preserve"><value>Groups</value></data>
   <data name="ContactGroups.CriteriaCount" xml:space="preserve"><value>{0} criteria</value></data>
+  <data name="Common.Create" xml:space="preserve"><value>Create</value></data>
   <data name="Common.Save" xml:space="preserve"><value>Save</value></data>
   <data name="Common.Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Common.Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Common.NoResults" xml:space="preserve"><value>No matches</value></data>
   <data name="Common.Edit" xml:space="preserve"><value>Edit</value></data>
   <data name="Common.Delete" xml:space="preserve"><value>Delete</value></data>
   <data name="ContactGroups.EditTitle" xml:space="preserve"><value>Edit group</value></data>

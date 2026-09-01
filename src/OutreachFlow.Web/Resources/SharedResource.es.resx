@@ -65,7 +65,7 @@
   <data name="Common.SignatureFormatPlaceholder" xml:space="preserve"><value>Sin formato de firma</value></data>
   <data name="Common.ApiUnavailablePrefix" xml:space="preserve"><value>No se pudo conectar con la API de OutreachFlow</value></data>
   <data name="Organizations.PageTitle" xml:space="preserve"><value>Organizaciones</value></data>
-  <data name="Organizations.Description" xml:space="preserve"><value>Crea y revisa organizaciones genéricas que pueden asociarse a contactos.</value></data>
+  <data name="Organizations.Description" xml:space="preserve"><value>Gestiona las organizaciones a las que pertenecen tus contactos.</value></data>
   <data name="Organizations.Panel.New" xml:space="preserve"><value>Nueva organización</value></data>
   <data name="Organizations.Form.CreateTitle" xml:space="preserve"><value>Crear organización</value></data>
   <data name="Organizations.Form.CreateAction" xml:space="preserve"><value>Crear organización</value></data>
@@ -74,7 +74,7 @@
   <data name="Organizations.List.Loading" xml:space="preserve"><value>Cargando organizaciones...</value></data>
   <data name="Organizations.List.Empty" xml:space="preserve"><value>Todavía no se han creado organizaciones.</value></data>
   <data name="Tags.PageTitle" xml:space="preserve"><value>Etiquetas</value></data>
-  <data name="Tags.Description" xml:space="preserve"><value>Crea etiquetas flexibles para segmentar contactos sin categorías fijas.</value></data>
+  <data name="Tags.Description" xml:space="preserve"><value>Crea etiquetas para agrupar y segmentar tus contactos.</value></data>
   <data name="Tags.Panel.New" xml:space="preserve"><value>Nueva etiqueta</value></data>
   <data name="Tags.Form.CreateTitle" xml:space="preserve"><value>Crear etiqueta</value></data>
   <data name="Tags.Form.CreateAction" xml:space="preserve"><value>Crear etiqueta</value></data>
@@ -83,7 +83,7 @@
   <data name="Tags.List.Loading" xml:space="preserve"><value>Cargando etiquetas...</value></data>
   <data name="Tags.List.Empty" xml:space="preserve"><value>Todavía no se han creado etiquetas.</value></data>
   <data name="Templates.PageTitle" xml:space="preserve"><value>Plantillas de correo</value></data>
-  <data name="Templates.Description" xml:space="preserve"><value>Guarda plantillas reutilizables de asunto y cuerpo como datos configurables, incluyendo adjuntos predeterminados.</value></data>
+  <data name="Templates.Description" xml:space="preserve"><value>Redacta plantillas de correo reutilizables y define sus adjuntos por defecto.</value></data>
   <data name="Templates.Panel.New" xml:space="preserve"><value>Nueva plantilla</value></data>
   <data name="Templates.Form.CreateTitle" xml:space="preserve"><value>Crear plantilla</value></data>
   <data name="Templates.Form.EditTitle" xml:space="preserve"><value>Editar plantilla</value></data>
@@ -102,7 +102,7 @@
   <data name="Templates.Variables.Help" xml:space="preserve"><value>Estas variables están centralizadas en Application y se reutilizan desde API y UI.</value></data>
   <data name="Templates.Variables.Empty" xml:space="preserve"><value>No hay variables disponibles.</value></data>
   <data name="SenderProfiles.PageTitle" xml:space="preserve"><value>Perfiles de remitente</value></data>
-  <data name="SenderProfiles.Description" xml:space="preserve"><value>Configura identidades reutilizables de remitente sin detalles de negocio fijos.</value></data>
+  <data name="SenderProfiles.Description" xml:space="preserve"><value>Gestiona las identidades de remitente desde las que se envían tus correos.</value></data>
   <data name="SenderProfiles.Panel.New" xml:space="preserve"><value>Nuevo perfil de remitente</value></data>
   <data name="SenderProfiles.Form.CreateTitle" xml:space="preserve"><value>Crear perfil de remitente</value></data>
   <data name="SenderProfiles.Form.EditTitle" xml:space="preserve"><value>Editar perfil de remitente</value></data>
@@ -112,7 +112,7 @@
   <data name="SenderProfiles.List.Loading" xml:space="preserve"><value>Cargando perfiles de remitente...</value></data>
   <data name="SenderProfiles.List.Empty" xml:space="preserve"><value>Todavía no se han creado perfiles de remitente.</value></data>
   <data name="Contacts.PageTitle" xml:space="preserve"><value>Contactos</value></data>
-  <data name="Contacts.Description" xml:space="preserve"><value>Gestiona contactos, aplica filtros ligeros y crea nuevos registros sin suposiciones específicas de negocio.</value></data>
+  <data name="Contacts.Description" xml:space="preserve"><value>Consulta, filtra y añade contactos a tu lista de prospección.</value></data>
   <data name="Contacts.Filters.Title" xml:space="preserve"><value>Filtros</value></data>
   <data name="Contacts.Filters.SearchPlaceholder" xml:space="preserve"><value>Nombre, correo o rol</value></data>
   <data name="Contacts.Filters.AnyStatus" xml:space="preserve"><value>Cualquier estado</value></data>
@@ -141,14 +141,10 @@
   <data name="Contacts.List.Subtitle" xml:space="preserve"><value>Revisa el conjunto actual de contactos y entra en el detalle cuando un registro necesite acción.</value></data>
   <data name="Layout.Workspace" xml:space="preserve"><value>Espacio de trabajo</value></data>
   <data name="Layout.Language" xml:space="preserve"><value>Idioma</value></data>
-  <data name="Layout.SidebarDescription" xml:space="preserve"><value>Contactos, plantillas, borradores y seguimientos en un espacio de trabajo enfocado.</value></data>
-  <data name="Layout.TopRowTitle" xml:space="preserve"><value>Espacio de trabajo de Outreach</value></data>
-  <data name="Layout.TopRowCaption" xml:space="preserve"><value>Operativa controlada de contactos, borradores, plantillas y seguimientos</value></data>
   <data name="Layout.ErrorUnhandled" xml:space="preserve"><value>Se ha producido un error no controlado.</value></data>
   <data name="Layout.ErrorReload" xml:space="preserve"><value>Recargar</value></data>
-  <data name="Settings.Kicker" xml:space="preserve"><value>Preferencias</value></data>
   <data name="Settings.PageTitle" xml:space="preserve"><value>Configuraci&#243;n</value></data>
-  <data name="Settings.Description" xml:space="preserve"><value>Gestiona las preferencias del espacio de trabajo para idioma y tema desde una &#250;nica p&#225;gina de configuraci&#243;n.</value></data>
+  <data name="Settings.Description" xml:space="preserve"><value>Configura tu idioma y tema preferidos.</value></data>
   <data name="Settings.General.Title" xml:space="preserve"><value>Preferencias generales</value></data>
   <data name="Settings.General.Subtitle" xml:space="preserve"><value>Elige c&#243;mo se ve OutreachFlow y qu&#233; idioma usa durante la visita actual y las siguientes.</value></data>
   <data name="Settings.Language.Label" xml:space="preserve"><value>Idioma</value></data>
@@ -162,8 +158,7 @@
   <data name="Settings.Apply.Title" xml:space="preserve"><value>Los cambios se aplican al momento</value></data>
   <data name="Settings.Apply.Description" xml:space="preserve"><value>El tema se actualiza de inmediato y el idioma recarga la p&#225;gina actual para mantener el contenido localizado de forma coherente.</value></data>
   <data name="Settings.Apply.Note" xml:space="preserve"><value>El idioma y el tema seleccionados se recuerdan para futuras visitas a este espacio de trabajo.</value></data>
-  <data name="Home.Overview" xml:space="preserve"><value>Resumen</value></data>
-  <data name="Home.Description" xml:space="preserve"><value>Supervisa el estado actual de contactos, borradores y seguimientos desde una vista operativa clara.</value></data>
+  <data name="Home.Description" xml:space="preserve"><value>Consulta de un vistazo el estado de tus contactos, borradores y seguimientos.</value></data>
   <data name="Home.NewContacts" xml:space="preserve"><value>Contactos nuevos</value></data>
   <data name="Home.NeedsReviewDrafts" xml:space="preserve"><value>Borradores por revisar</value></data>
   <data name="Home.ApprovedDrafts" xml:space="preserve"><value>Borradores aprobados</value></data>
@@ -173,8 +168,7 @@
   <data name="Home.PendingFollowUps.Action" xml:space="preserve"><value>Abrir seguimientos</value></data>
   <data name="Home.PendingFollowUps.Empty" xml:space="preserve"><value>No hay tareas de seguimiento pendientes.</value></data>
   <data name="ContactDetail.PageTitle" xml:space="preserve"><value>Detalle del contacto</value></data>
-  <data name="ContactDetail.Kicker" xml:space="preserve"><value>Espacio del contacto</value></data>
-  <data name="ContactDetail.Description" xml:space="preserve"><value>Revisa el perfil actual del contacto, las etiquetas asignadas, la actividad reciente y la carga de seguimientos desde una vista centrada en el registro.</value></data>
+  <data name="ContactDetail.Description" xml:space="preserve"><value>Consulta la ficha completa de este contacto: etiquetas, actividad y seguimientos pendientes.</value></data>
   <data name="ContactDetail.BackAction" xml:space="preserve"><value>Volver a contactos</value></data>
   <data name="ContactDetail.Loading" xml:space="preserve"><value>Cargando detalle del contacto...</value></data>
   <data name="ContactDetail.NotFound" xml:space="preserve"><value>Contacto no encontrado.</value></data>
@@ -197,15 +191,14 @@
   <data name="ContactDetail.ManageFollowUps" xml:space="preserve"><value>Gestionar seguimientos</value></data>
   <data name="ContactDetail.NoFollowUps" xml:space="preserve"><value>No hay tareas de seguimiento para este contacto.</value></data>
   <data name="Drafts.PageTitle" xml:space="preserve"><value>Borradores</value></data>
-  <data name="Drafts.Description" xml:space="preserve"><value>Revisa los borradores generados, confirma su calidad y mueve los mensajes aprobados hacia el envío.</value></data>
+  <data name="Drafts.Description" xml:space="preserve"><value>Revisa los borradores generados y aprueba los que estén listos para enviar.</value></data>
   <data name="Drafts.FiltersTitle" xml:space="preserve"><value>Filtros</value></data>
   <data name="Drafts.ListTitle" xml:space="preserve"><value>Listado de borradores</value></data>
   <data name="Drafts.Loading" xml:space="preserve"><value>Cargando borradores...</value></data>
   <data name="Drafts.Empty" xml:space="preserve"><value>No se han encontrado borradores para los filtros seleccionados.</value></data>
   <data name="Drafts.ReviewAction" xml:space="preserve"><value>Revisar</value></data>
   <data name="DraftDetail.PageTitle" xml:space="preserve"><value>Revisión del borrador</value></data>
-  <data name="DraftDetail.Kicker" xml:space="preserve"><value>Revisión del borrador</value></data>
-  <data name="DraftDetail.Description" xml:space="preserve"><value>Inspecciona el contenido generado, corrige problemas y mueve un borrador desde revisión hacia la aprobación y el envío.</value></data>
+  <data name="DraftDetail.Description" xml:space="preserve"><value>Revisa el contenido de este borrador, corrige lo necesario y apruébalo para enviarlo.</value></data>
   <data name="DraftDetail.Loading" xml:space="preserve"><value>Cargando borrador...</value></data>
   <data name="DraftDetail.NotFound" xml:space="preserve"><value>Borrador no encontrado.</value></data>
   <data name="DraftDetail.SummaryTitle" xml:space="preserve"><value>Resumen</value></data>
@@ -227,8 +220,7 @@
   <data name="DraftDetail.SentSuccess" xml:space="preserve"><value>Borrador enviado.</value></data>
   <data name="DraftDetail.SendFailedStatus" xml:space="preserve"><value>El intento de envío del borrador se ha registrado con estado de fallo.</value></data>
   <data name="DraftGeneration.PageTitle" xml:space="preserve"><value>Generación de borradores</value></data>
-  <data name="DraftGeneration.Kicker" xml:space="preserve"><value>Generación de borradores</value></data>
-  <data name="DraftGeneration.Description" xml:space="preserve"><value>Genera borradores personalizados a partir de los contactos seleccionados con diagnósticos de renderizado de plantillas y selección controlada de adjuntos.</value></data>
+  <data name="DraftGeneration.Description" xml:space="preserve"><value>Genera borradores de correo personalizados para un conjunto de contactos.</value></data>
   <data name="DraftGeneration.StepTitle" xml:space="preserve"><value>Paso {0} de 5</value></data>
   <data name="DraftGeneration.RecipientsFilters" xml:space="preserve"><value>Filtros de destinatarios</value></data>
   <data name="DraftGeneration.TemplateSender" xml:space="preserve"><value>Plantilla y perfil de remitente</value></data>
@@ -253,7 +245,7 @@
   <data name="DraftGeneration.SelectTemplate" xml:space="preserve"><value>Selecciona una plantilla</value></data>
   <data name="DraftGeneration.SelectSender" xml:space="preserve"><value>Selecciona un remitente</value></data>
   <data name="FollowUps.PageTitle" xml:space="preserve"><value>Seguimientos</value></data>
-  <data name="FollowUps.Description" xml:space="preserve"><value>Crea tareas de outreach basadas en tiempo, supervisa el trabajo pendiente y cierra el ciclo del seguimiento de contactos.</value></data>
+  <data name="FollowUps.Description" xml:space="preserve"><value>Programa tareas de seguimiento para tus contactos y controla lo pendiente.</value></data>
   <data name="FollowUps.Panel.New" xml:space="preserve"><value>Nuevo seguimiento</value></data>
   <data name="FollowUps.CreateTitle" xml:space="preserve"><value>Crear tarea de seguimiento</value></data>
   <data name="FollowUps.ListTitle" xml:space="preserve"><value>Listado de tareas</value></data>
@@ -269,7 +261,7 @@
   <data name="FollowUps.CreatedSuccess" xml:space="preserve"><value>Tarea de seguimiento creada.</value></data>
   <data name="FollowUps.CompletedSuccess" xml:space="preserve"><value>Tarea de seguimiento completada.</value></data>
   <data name="Imports.PageTitle" xml:space="preserve"><value>Importaciones</value></data>
-  <data name="Imports.Description" xml:space="preserve"><value>Valida datos CSV antes de confirmar, enriquece los contactos importados con etiquetas y revisa los resultados de importaciones recientes.</value></data>
+  <data name="Imports.Description" xml:space="preserve"><value>Importa contactos desde un archivo CSV y etiquétalos al importarlos.</value></data>
   <data name="Imports.CsvTitle" xml:space="preserve"><value>Importación CSV</value></data>
   <data name="Imports.FileLabel" xml:space="preserve"><value>Archivo CSV</value></data>
   <data name="Imports.SelectedFile" xml:space="preserve"><value>Archivo seleccionado: {0}</value></data>
@@ -291,7 +283,7 @@
   <data name="Imports.SelectFileBeforeCommit" xml:space="preserve"><value>Selecciona un archivo CSV antes de confirmar la importación.</value></data>
   <data name="Imports.SuccessMessage" xml:space="preserve"><value>Importación completada. Se han creado {0} contacto(s), {1} fila(s) duplicada(s) y {2} fila(s) inválida(s).</value></data>
   <data name="Attachments.PageTitle" xml:space="preserve"><value>Adjuntos</value></data>
-  <data name="Attachments.Description" xml:space="preserve"><value>Gestiona archivos reutilizables que pueden adjuntarse a plantillas y reutilizarse en flujos de outreach controlados.</value></data>
+  <data name="Attachments.Description" xml:space="preserve"><value>Sube archivos que podrás adjuntar a tus plantillas de correo.</value></data>
   <data name="Attachments.Panel.New" xml:space="preserve"><value>Nuevo adjunto</value></data>
   <data name="Attachments.UploadTitle" xml:space="preserve"><value>Subir adjunto</value></data>
   <data name="Attachments.ListTitle" xml:space="preserve"><value>Listado de adjuntos</value></data>
@@ -302,7 +294,6 @@
   <data name="Attachments.SelectedFile" xml:space="preserve"><value>Seleccionado: {0} ({1})</value></data>
   <data name="Attachments.UploadAction" xml:space="preserve"><value>Subir</value></data>
   <data name="Attachments.SelectFileError" xml:space="preserve"><value>Selecciona un archivo para subirlo.</value></data>
-  <data name="Error.Kicker" xml:space="preserve"><value>Sistema</value></data>
   <data name="Error.PageTitle" xml:space="preserve"><value>Error</value></data>
   <data name="Error.Description" xml:space="preserve"><value>No se pudo completar la solicitud. Revisa los detalles siguientes y vuelve a intentarlo cuando el problema se haya resuelto.</value></data>
   <data name="Error.RequestDetails" xml:space="preserve"><value>Detalles de la solicitud</value></data>
@@ -374,14 +365,16 @@
   <data name="Validation.Required" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
   <data name="Nav.ContactGroups" xml:space="preserve"><value>Grupos de contactos</value></data>
   <data name="ContactGroups.PageTitle" xml:space="preserve"><value>Grupos de contactos</value></data>
-  <data name="ContactGroups.Description" xml:space="preserve"><value>Crea audiencias reutilizables a partir de criterios y selecciones manuales.</value></data>
+  <data name="ContactGroups.Description" xml:space="preserve"><value>Crea audiencias de contactos reutilizables por criterios o selección manual.</value></data>
   <data name="ContactGroups.Panel.New" xml:space="preserve"><value>Nuevo grupo</value></data>
   <data name="ContactGroups.CreateTitle" xml:space="preserve"><value>Crear grupo</value></data>
   <data name="ContactGroups.ListTitle" xml:space="preserve"><value>Grupos</value></data>
   <data name="ContactGroups.CriteriaCount" xml:space="preserve"><value>{0} criterios</value></data>
+  <data name="Common.Create" xml:space="preserve"><value>Crear</value></data>
   <data name="Common.Save" xml:space="preserve"><value>Guardar</value></data>
   <data name="Common.Cancel" xml:space="preserve"><value>Cancelar</value></data>
   <data name="Common.Close" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="Common.NoResults" xml:space="preserve"><value>Sin resultados</value></data>
   <data name="Common.Edit" xml:space="preserve"><value>Editar</value></data>
   <data name="Common.Delete" xml:space="preserve"><value>Eliminar</value></data>
   <data name="ContactGroups.EditTitle" xml:space="preserve"><value>Editar grupo</value></data>

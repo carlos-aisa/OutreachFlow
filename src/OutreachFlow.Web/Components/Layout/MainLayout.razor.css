@@ -17,49 +17,8 @@
     box-shadow: 12px 0 36px rgba(17, 24, 39, 0.14);
 }
 
-.top-row {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    padding: 1rem 1.5rem 0;
-    background: linear-gradient(180deg, var(--workspace-shell-overlay) 0%, var(--workspace-shell-overlay-strong) 100%);
-    backdrop-filter: blur(16px);
-}
-
-.top-row-shell {
-    width: min(100%, var(--workspace-page-max));
-    margin: 0 auto;
-    border: 1px solid var(--workspace-top-row-border);
-    border-radius: var(--workspace-radius-md);
-    background: var(--workspace-top-row-surface);
-    box-shadow: var(--workspace-shadow-soft);
-    padding: 0.9rem 1.2rem;
-}
-
-.top-row-copy {
-    display: grid;
-    gap: 0.2rem;
-}
-
-.top-row-kicker {
-    margin: 0;
-    font-size: 0.74rem;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--workspace-text-muted);
-}
-
-.top-row-caption {
-    margin: 0;
-    color: var(--workspace-heading);
-    font-size: 0.98rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-}
-
 .workspace-content {
-    padding-top: 1.4rem;
+    padding-top: 2rem;
     padding-bottom: 2rem;
 }
 
@@ -80,18 +39,6 @@
     position: absolute;
     right: 0.75rem;
     top: 0.5rem;
-}
-
-@media (max-width: 640.98px) {
-    .top-row {
-        padding-left: 1rem;
-        padding-right: 1rem;
-        padding-top: 0.85rem;
-    }
-
-    .top-row-shell {
-        padding: 0.8rem 0.95rem;
-    }
 }
 
 @media (min-width: 641px) {

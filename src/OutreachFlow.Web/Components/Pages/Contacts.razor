@@ -20,7 +20,6 @@
 <div class="page-shell">
     <div class="page-intro page-intro--split">
         <div>
-            <p class="page-kicker">@Localizer["Contacts.PageTitle"]</p>
             <h1 class="page-title">@Localizer["Contacts.PageTitle"]</h1>
             <p class="page-description">@Localizer["Contacts.Description"]</p>
         </div>
@@ -67,13 +66,14 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label" for="contact-organization-filter">@Localizer["Common.Organization"]</label>
-                    <select id="contact-organization-filter" class="form-select" @bind="selectedOrganizationId">
-                        <option value="">@Localizer["Contacts.Filters.AnyOrganization"]</option>
-                        @foreach (var organization in organizations)
-                        {
-                            <option value="@organization.Id">@organization.Name</option>
-                        }
-                    </select>
+                    <SearchSelect TItem="OrganizationDto"
+                                  Id="contact-organization-filter"
+                                  Items="organizations"
+                                  DisplayText="@(o => o.Name)"
+                                  GetId="@(o => o.Id)"
+                                  @bind-SelectedId="selectedOrganizationId"
+                                  Placeholder="@Localizer["Contacts.Filters.AnyOrganization"]"
+                                  EmptyLabel="@Localizer["Common.NoResults"]" />
                 </div>
                 <div class="col-md-2">
                     <label class="form-label" for="contact-tag-filter">@Localizer["Common.Tag"]</label>
@@ -293,7 +293,7 @@
     private bool showOrganizationExtra;
     private string? search;
     private string? selectedStatus;
-    private string? selectedOrganizationId;
+    private Guid? selectedOrganizationId;
     private string? selectedTagId;
     private string? selectedDoNotContact;
     private string? errorMessage;
@@ -335,7 +335,7 @@
                 ParseGuid(selectedTagId),
                 ParseStatus(selectedStatus),
                 ParseBoolean(selectedDoNotContact),
-                ParseGuid(selectedOrganizationId),
+                selectedOrganizationId,
                 null,
                 null));
         }

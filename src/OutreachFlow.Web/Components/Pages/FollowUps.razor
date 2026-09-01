@@ -17,7 +17,6 @@
 <div class="page-shell">
 <div class="page-intro page-intro--split">
     <div>
-        <p class="page-kicker">@Localizer["FollowUps.PageTitle"]</p>
         <h1 class="page-title">@Localizer["FollowUps.PageTitle"]</h1>
         <p class="page-description">@Localizer["FollowUps.Description"]</p>
     </div>
@@ -104,13 +103,14 @@
                 <div class="row g-3">
                     <div class="col-12">
                         <label class="form-label" for="followup-contact">@Localizer["Common.Contact"]</label>
-                        <InputSelect id="followup-contact" class="form-select" @bind-Value="newTask.ContactId">
-                            <option value="">@Localizer["FollowUps.SelectContact"]</option>
-                            @foreach (var contact in contacts)
-                            {
-                                <option value="@contact.Id">@contact.DisplayName (@contact.Email)</option>
-                            }
-                        </InputSelect>
+                        <SearchSelect TItem="ContactDto"
+                                      Id="followup-contact"
+                                      Items="contacts"
+                                      DisplayText="@(c => $"{c.DisplayName} ({c.Email})")"
+                                      GetId="@(c => c.Id)"
+                                      @bind-SelectedId="newTask.ContactId"
+                                      Placeholder="@Localizer["FollowUps.SelectContact"]"
+                                      EmptyLabel="@Localizer["Common.NoResults"]" />
                     </div>
                     <div class="col-md-6">
                         <label class="form-label" for="followup-due">@Localizer["FollowUps.DueAt"]</label>
@@ -218,7 +218,7 @@
 
         try
         {
-            if (!Guid.TryParse(newTask.ContactId, out var contactId))
+            if (newTask.ContactId is not Guid contactId)
             {
                 throw new InvalidOperationException(Localizer["FollowUps.ContactRequired"]);
             }
@@ -289,7 +289,7 @@
     private sealed class FollowUpTaskFormModel
     {
         [LocalizedRequired]
-        public string? ContactId { get; set; }
+        public Guid? ContactId { get; set; }
 
         [LocalizedRequired]
         public DateOnly DueDate { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddDays(2));
