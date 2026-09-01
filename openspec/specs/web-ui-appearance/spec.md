@@ -34,7 +34,7 @@ The web application SHALL render a persistent navigation shell that clearly sepa
 - **THEN** the selected item background, text, and icon MUST remain visually distinguishable from inactive items
 
 ### Requirement: Primary work pages support fast scanning
-The web application SHALL improve the visual hierarchy of dense operational pages so users can scan titles, filters, forms, tabular content, and contextual next actions with less effort.
+The web application SHALL improve the visual hierarchy of dense operational pages, including record-creation panels opened from them, so users can scan titles, filters, forms, tabular content, and contextual next actions with less effort.
 
 #### Scenario: Page headers establish clear structure
 - **WHEN** a user opens a primary work page
@@ -45,8 +45,8 @@ The web application SHALL improve the visual hierarchy of dense operational page
 - **THEN** spacing, typography, and surface treatment MUST preserve readable grouping between controls, records, and supporting metadata
 
 #### Scenario: Contact intake reveals optional work progressively
-- **WHEN** a user opens contact intake
-- **THEN** essential contact fields and optional organization details MUST be visually distinguishable without implying that organization association is required
+- **WHEN** a user opens the New contact panel and chooses to create a new organization from the combobox
+- **THEN** essential contact fields remain visible while the optional extra organization fields stay collapsed behind an explicit action, without implying that organization association is required
 
 ### Requirement: Layout remains usable across responsive breakpoints
 The web application SHALL preserve the refreshed appearance without reducing usability on narrow screens.
@@ -58,3 +58,15 @@ The web application SHALL preserve the refreshed appearance without reducing usa
 #### Scenario: Responsive forms and tables remain operable
 - **WHEN** a page containing forms or tables is viewed on a narrow screen
 - **THEN** controls MUST remain reachable, stacked content MUST preserve hierarchy, and tabular content MUST remain readable inside responsive containers
+
+### Requirement: Record creation uses a dismissible side panel on primary list pages
+The web application SHALL let a primary list page open record creation in a dismissible side panel triggered from a primary action in the page header, keeping the record list as the page's default, dominant content.
+
+#### Scenario: Primary action opens the creation panel
+- **WHEN** a user selects the primary "New" action in a primary list page's header
+- **THEN** the system opens a side panel containing the creation form without navigating away from the list
+
+#### Scenario: List remains the default view
+- **WHEN** a user opens a primary list page
+- **THEN** the record list is visible without first requiring the user to dismiss or scroll past a creation form
+
