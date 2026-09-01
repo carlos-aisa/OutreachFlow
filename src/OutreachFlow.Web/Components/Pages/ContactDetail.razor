@@ -4,16 +4,21 @@
 @using OutreachFlow.Application.Contacts
 @using OutreachFlow.Application.ContactGroups
 @using OutreachFlow.Application.FollowUps
+@using OutreachFlow.Application.Organizations
 @using OutreachFlow.Application.Tags
 @using Microsoft.Extensions.Localization
+@using OutreachFlow.Domain.Contacts
+@using OutreachFlow.Domain.ContactGroups
 @using OutreachFlow.Web
 @using OutreachFlow.Web.Contacts
 @using OutreachFlow.Web.ContactGroups
 @using OutreachFlow.Web.FollowUps
+@using OutreachFlow.Web.Organizations
 @using OutreachFlow.Web.Tags
 @inject ContactApiClient ContactClient
 @inject ContactGroupApiClient ContactGroupClient
 @inject FollowUpTaskApiClient FollowUpClient
+@inject OrganizationApiClient OrganizationClient
 @inject TagApiClient TagClient
 @inject IStringLocalizer<SharedResource> Localizer
 
@@ -26,7 +31,7 @@
             <p class="page-description">@Localizer["ContactDetail.Description"]</p>
         </div>
         <div class="page-actions">
-            <a class="btn btn-outline-primary" href="/contacts">@Localizer["ContactDetail.BackAction"]</a>
+            <a class="btn btn-outline-secondary" href="/contacts">@Localizer["ContactDetail.BackAction"]</a>
         </div>
     </div>
 
@@ -46,17 +51,9 @@
     else
     {
         <section class="card page-section">
-            <div class="card-header"><h2 class="workspace-card-title mb-0">@Localizer["ContactGroups.ContactMemberships"]</h2></div>
-            <div class="card-body">
-                @if (contactGroups.Count == 0) { <p class="mb-0 text-muted">@Localizer["ContactGroups.NoMemberships"]</p> }
-                else { @foreach (var group in contactGroups) { <span class="badge text-bg-secondary me-1">@group.Name</span> } }
-                <a class="btn btn-sm btn-outline-primary ms-2" href="/contact-groups">@Localizer["ContactGroups.Manage"]</a>
-            </div>
-        </section>
-
-        <section class="card page-section">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h2 class="workspace-card-title mb-0">@Localizer["ContactDetail.SummaryTitle"]</h2>
+                <button type="button" class="btn btn-sm btn-outline-primary" @onclick="OpenEditPanel">@Localizer["Common.Edit"]</button>
             </div>
             <div class="card-body">
                 <dl class="row detail-list">
@@ -86,86 +83,27 @@
 
                     <dt class="col-sm-3">@Localizer["Contacts.List.LastContacted"]</dt>
                     <dd class="col-sm-9">@FormatDate(contact.LastContactedAt)</dd>
+
+                    <dt class="col-sm-3">@Localizer["ContactGroups.ContactMemberships"]</dt>
+                    <dd class="col-sm-9">
+                        <ChipPicker TItem="ContactGroupDto"
+                                    ReadOnly="true"
+                                    Items="allGroups"
+                                    SelectedIds="memberGroupIds"
+                                    DisplayText="@(group => group.Name)"
+                                    GetId="@(group => group.Id)" />
+                    </dd>
+
+                    <dt class="col-sm-3">@Localizer["Common.Tags"]</dt>
+                    <dd class="col-sm-9">
+                        <ChipPicker TItem="TagDto"
+                                    ReadOnly="true"
+                                    Items="tags"
+                                    SelectedIds="contactTagIds"
+                                    DisplayText="@(tag => FormatTag(tag.Name, tag.Category))"
+                                    GetId="@(tag => tag.Id)" />
+                    </dd>
                 </dl>
-            </div>
-        </section>
-
-        <section class="card page-section">
-            <div class="card-header">
-                <h2 class="workspace-card-title mb-0">@Localizer["ContactDetail.TagsTitle"]</h2>
-            </div>
-            <div class="card-body">
-                <div class="workspace-panel">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-9">
-                            <label class="form-label" for="contact-tag-select">@Localizer["ContactDetail.AddTag"]</label>
-                            <select id="contact-tag-select"
-                                    class="form-select"
-                                    @bind="selectedTagId"
-                                    disabled="@isTagSaving">
-                                <option value="">@Localizer["ContactDetail.SelectTag"]</option>
-                                @foreach (var tag in assignableTags)
-                                {
-                                    <option value="@tag.Id">@FormatTag(tag.Name, tag.Category)</option>
-                                }
-                            </select>
-                            @if (assignableTags.Count == 0)
-                            {
-                                @if (tags.Count == 0)
-                                {
-                                    <div class="form-text">@Localizer["ContactDetail.NoTagsAvailable"]</div>
-                                }
-                                else
-                                {
-                                    <div class="form-text">@Localizer["ContactDetail.AllTagsAssigned"]</div>
-                                }
-                            }
-                        </div>
-                        <div class="col-md-3">
-                            <button type="button"
-                                    class="btn btn-primary w-100"
-                                    id="assign-contact-tag"
-                                    @onclick="AssignTagAsync"
-                                    disabled="@(!CanAssignTag)">
-                                @Localizer["ContactDetail.AddTag"]
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                @if (contact.Tags.Count == 0)
-                {
-                    <p class="text-muted mt-3 mb-0">@Localizer["ContactDetail.NoTagsAssigned"]</p>
-                }
-                else
-                {
-                    <div class="table-responsive mt-3">
-                        <table class="table table-sm align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th scope="col">@Localizer["Common.Tag"]</th>
-                                    <th scope="col" class="text-end">@Localizer["Common.Actions"]</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var tag in contact.Tags)
-                                {
-                                    <tr>
-                                        <td>@FormatTag(tag.Name, tag.Category)</td>
-                                        <td class="text-end">
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    @onclick="() => RemoveTagAsync(tag.Id)"
-                                                    disabled="@isTagSaving">
-                                                @Localizer["Common.Remove"]
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
             </div>
         </section>
 
@@ -255,9 +193,112 @@
             </div>
         </section>
     }
+
+    @if (isEditPanelOpen && contact is not null)
+    {
+        <div class="side-panel-scrim" @onclick="CloseEditPanel"></div>
+        <aside class="side-panel">
+            <EditForm Model="editForm" OnValidSubmit="SaveContactAsync">
+                <DataAnnotationsValidator />
+                <div class="side-panel-header">
+                    <h2 class="workspace-card-title mb-0">@Localizer["ContactDetail.EditTitle"]</h2>
+                    <button type="button" class="side-panel-close" @onclick="CloseEditPanel" aria-label="@Localizer["Common.Close"]">&times;</button>
+                </div>
+                <div class="side-panel-body">
+                    <ValidationSummary />
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="contact-edit-name">@Localizer["Common.DisplayName"]</label>
+                            <InputText id="contact-edit-name" class="form-control" @bind-Value="editForm.DisplayName" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="contact-edit-email">@Localizer["Common.Email"]</label>
+                            <InputText id="contact-edit-email" class="form-control" @bind-Value="editForm.Email" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="contact-edit-organization">@Localizer["Common.Organization"]</label>
+                            <SearchSelect TItem="OrganizationDto"
+                                          Id="contact-edit-organization"
+                                          Items="organizations"
+                                          DisplayText="@(organization => organization.Name)"
+                                          GetId="@(organization => organization.Id)"
+                                          @bind-SelectedId="editForm.OrganizationId"
+                                          Placeholder="@Localizer["Common.Any"]"
+                                          EmptyLabel="@Localizer["Common.NoResults"]" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="contact-edit-phone">@Localizer["Common.Phone"]</label>
+                            <InputText id="contact-edit-phone" class="form-control" @bind-Value="editForm.Phone" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="contact-edit-role">@Localizer["Common.Role"]</label>
+                            <InputText id="contact-edit-role" class="form-control" @bind-Value="editForm.Role" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="contact-edit-source">@Localizer["Common.Source"]</label>
+                            <InputText id="contact-edit-source" class="form-control" placeholder="@Localizer["Common.SourcePlaceholder"]" @bind-Value="editForm.Source" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="contact-edit-status">@Localizer["Common.Status"]</label>
+                            <InputSelect id="contact-edit-status" class="form-select" @bind-Value="editForm.Status">
+                                @foreach (var status in StatusValues)
+                                {
+                                    <option value="@status">@SharedResourceDisplayNames.ContactStatus(Localizer, status)</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <InputCheckbox id="contact-edit-dnc" class="form-check-input" @bind-Value="editForm.DoNotContact" />
+                                <label class="form-check-label" for="contact-edit-dnc">@Localizer["Common.DoNotContact"]</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">@Localizer["ContactGroups.ContactMemberships"]</label>
+                            <ChipPicker TItem="ContactGroupDto"
+                                        Id="contact-edit-add-group"
+                                        Items="allGroups"
+                                        SelectedIds="memberGroupIds"
+                                        DisplayText="@(group => group.Name)"
+                                        GetId="@(group => group.Id)"
+                                        OnAdd="AddGroupAsync"
+                                        OnRemove="RemoveGroupAsync"
+                                        AddLabel="@Localizer["ContactGroups.AddGroup"]"
+                                        RemoveLabel="@Localizer["Common.Remove"]"
+                                        SearchPlaceholder="@Localizer["ContactGroups.SearchGroups"]"
+                                        EmptyLabel="@Localizer["ContactGroups.NoMoreGroups"]"
+                                        Disabled="@isGroupSaving" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">@Localizer["Common.Tags"]</label>
+                            <ChipPicker TItem="TagDto"
+                                        Id="contact-edit-add-tag"
+                                        Items="tags"
+                                        SelectedIds="contactTagIds"
+                                        DisplayText="@(tag => FormatTag(tag.Name, tag.Category))"
+                                        GetId="@(tag => tag.Id)"
+                                        OnAdd="AddTagAsync"
+                                        OnRemove="RemoveTagAsync"
+                                        AddLabel="@Localizer["ContactDetail.AddTag"]"
+                                        RemoveLabel="@Localizer["Common.Remove"]"
+                                        SearchPlaceholder="@Localizer["ContactDetail.SearchTags"]"
+                                        EmptyLabel="@Localizer["ContactDetail.NoMoreTags"]"
+                                        Disabled="@isTagSaving" />
+                        </div>
+                    </div>
+                </div>
+                <div class="side-panel-footer">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseEditPanel" disabled="@isSaving">@Localizer["Common.Cancel"]</button>
+                    <button type="submit" class="btn btn-primary" disabled="@isSaving">@Localizer["Common.Save"]</button>
+                </div>
+            </EditForm>
+        </aside>
+    }
 </div>
 
 @code {
+    private static readonly ContactStatus[] StatusValues = Enum.GetValues<ContactStatus>();
+
     [Parameter]
     public Guid ContactId { get; set; }
 
@@ -265,12 +306,20 @@
     private IReadOnlyList<ContactActivityDto> activities = [];
     private IReadOnlyList<FollowUpTaskDto> followUps = [];
     private IReadOnlyList<TagDto> tags = [];
-    private IReadOnlyList<ContactGroupDto> contactGroups = [];
-    private IReadOnlyList<TagDto> assignableTags = [];
+    private IReadOnlyList<ContactGroupDto> allGroups = [];
+    private IReadOnlyList<ContactGroupDto> memberGroups = [];
+    private IReadOnlyList<OrganizationDto> organizations = [];
+    private readonly ContactEditFormModel editForm = new();
     private bool isLoading;
     private bool isTagSaving;
+    private bool isGroupSaving;
+    private bool isSaving;
+    private bool isEditPanelOpen;
     private string? errorMessage;
-    private string? selectedTagId;
+
+    private HashSet<Guid> contactTagIds => contact?.Tags.Select(tag => tag.Id).ToHashSet() ?? [];
+
+    private HashSet<Guid> memberGroupIds => memberGroups.Select(group => group.Id).ToHashSet();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -293,30 +342,19 @@
                 DueTo: null,
                 Limit: 20));
             tags = await TagClient.ListAsync();
-            contactGroups = await ContactGroupClient.ListForContactAsync(ContactId);
-            UpdateAssignableTagSelection(contact);
+            allGroups = await ContactGroupClient.ListAsync();
+            memberGroups = await ContactGroupClient.ListForContactAsync(ContactId);
+            organizations = await OrganizationClient.ListAsync();
         }
         catch (InvalidOperationException exception)
         {
             errorMessage = exception.Message;
-            contact = null;
-            activities = [];
-            followUps = [];
-            tags = [];
-            contactGroups = [];
-            assignableTags = [];
-            selectedTagId = null;
+            ResetOnError();
         }
         catch (HttpRequestException exception)
         {
             errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
-            contact = null;
-            activities = [];
-            followUps = [];
-            tags = [];
-            contactGroups = [];
-            assignableTags = [];
-            selectedTagId = null;
+            ResetOnError();
         }
         finally
         {
@@ -324,35 +362,87 @@
         }
     }
 
-    private async Task AssignTagAsync()
+    private void ResetOnError()
     {
-        if (contact is null || !Guid.TryParse(selectedTagId, out var tagId))
-        {
-            return;
-        }
-
-        await SaveTagChangeAsync(async () =>
-        {
-            await ContactClient.AssignTagAsync(ContactId, tagId);
-            await RefreshContactTagsAsync();
-        });
+        contact = null;
+        activities = [];
+        followUps = [];
+        tags = [];
+        allGroups = [];
+        memberGroups = [];
+        organizations = [];
     }
 
-    private async Task RemoveTagAsync(Guid tagId)
+    private void OpenEditPanel()
     {
         if (contact is null)
         {
             return;
         }
 
-        await SaveTagChangeAsync(async () =>
-        {
-            await ContactClient.RemoveTagAsync(ContactId, tagId);
-            await RefreshContactTagsAsync();
-        });
+        editForm.DisplayName = contact.DisplayName;
+        editForm.Email = contact.Email;
+        editForm.OrganizationId = contact.OrganizationId;
+        editForm.Phone = contact.Phone;
+        editForm.Role = contact.Role;
+        editForm.Source = contact.Source;
+        editForm.Status = contact.Status;
+        editForm.DoNotContact = contact.DoNotContact;
+        isEditPanelOpen = true;
     }
 
-    private async Task SaveTagChangeAsync(Func<Task> operation)
+    private void CloseEditPanel()
+    {
+        isEditPanelOpen = false;
+    }
+
+    private async Task SaveContactAsync()
+    {
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            contact = await ContactClient.UpdateAsync(ContactId, new UpdateContactRequest(
+                editForm.OrganizationId,
+                editForm.DisplayName,
+                editForm.Email,
+                editForm.Phone,
+                editForm.Role,
+                editForm.Source,
+                editForm.Status,
+                editForm.DoNotContact));
+            isEditPanelOpen = false;
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private Task AddTagAsync(TagDto tag) =>
+        RunTagChangeAsync(async () =>
+        {
+            await ContactClient.AssignTagAsync(ContactId, tag.Id);
+            contact = await ContactClient.GetByIdAsync(ContactId);
+        });
+
+    private Task RemoveTagAsync(TagDto tag) =>
+        RunTagChangeAsync(async () =>
+        {
+            await ContactClient.RemoveTagAsync(ContactId, tag.Id);
+            contact = await ContactClient.GetByIdAsync(ContactId);
+        });
+
+    private async Task RunTagChangeAsync(Func<Task> operation)
     {
         isTagSaving = true;
         errorMessage = null;
@@ -375,45 +465,34 @@
         }
     }
 
-    private async Task RefreshContactTagsAsync()
+    private Task AddGroupAsync(ContactGroupDto group) =>
+        RunGroupChangeAsync(() => ContactGroupClient.SetOverrideAsync(group.Id, ContactId, ContactGroupOverrideType.Include));
+
+    private Task RemoveGroupAsync(ContactGroupDto group) =>
+        RunGroupChangeAsync(() => ContactGroupClient.SetOverrideAsync(group.Id, ContactId, ContactGroupOverrideType.Exclude));
+
+    private async Task RunGroupChangeAsync(Func<Task> operation)
     {
-        contact = await ContactClient.GetByIdAsync(ContactId);
-        UpdateAssignableTagSelection(contact);
-    }
+        isGroupSaving = true;
+        errorMessage = null;
 
-    private void UpdateAssignableTagSelection(ContactDto? currentContact)
-    {
-        assignableTags = BuildAssignableTags(currentContact, tags);
-
-        if (assignableTags.Count == 0)
+        try
         {
-            selectedTagId = null;
-            return;
+            await operation();
+            memberGroups = await ContactGroupClient.ListForContactAsync(ContactId);
         }
-
-        if (!Guid.TryParse(selectedTagId, out var selectedGuid) ||
-            assignableTags.All(tag => tag.Id != selectedGuid))
+        catch (InvalidOperationException exception)
         {
-            selectedTagId = assignableTags[0].Id.ToString();
+            errorMessage = exception.Message;
         }
-    }
-
-    private static IReadOnlyList<TagDto> BuildAssignableTags(
-        ContactDto? currentContact,
-        IReadOnlyList<TagDto> availableTags)
-    {
-        if (currentContact is null || availableTags.Count == 0)
+        catch (HttpRequestException exception)
         {
-            return [];
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
-
-        var assignedTagIds = currentContact.Tags
-            .Select(tag => tag.Id)
-            .ToHashSet();
-
-        return availableTags
-            .Where(tag => !assignedTagIds.Contains(tag.Id))
-            .ToArray();
+        finally
+        {
+            isGroupSaving = false;
+        }
     }
 
     private static string FormatTag(string name, string? category)
@@ -421,12 +500,30 @@
         return string.IsNullOrWhiteSpace(category) ? name : $"{category}: {name}";
     }
 
-    private bool CanAssignTag => !isTagSaving &&
-                                 assignableTags.Count > 0 &&
-                                 Guid.TryParse(selectedTagId, out _);
-
     private static string FormatDate(DateTimeOffset? value)
     {
         return value is null ? "-" : value.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
+    }
+
+    private sealed class ContactEditFormModel
+    {
+        [LocalizedRequired]
+        public string DisplayName { get; set; } = string.Empty;
+
+        [LocalizedRequired]
+        [LocalizedEmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        public Guid? OrganizationId { get; set; }
+
+        public string? Phone { get; set; }
+
+        public string? Role { get; set; }
+
+        public string? Source { get; set; }
+
+        public ContactStatus Status { get; set; } = ContactStatus.New;
+
+        public bool DoNotContact { get; set; }
     }
 }

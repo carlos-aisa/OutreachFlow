@@ -66,6 +66,20 @@ public sealed class ContactApiClient(HttpClient httpClient)
         return await ApiClientJson.ReadRequiredAsync<ContactDto>(response, cancellationToken);
     }
 
+    public async Task<ContactDto> UpdateAsync(
+        Guid contactId,
+        UpdateContactRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PutAsJsonAsync(
+            $"api/v1/contacts/{contactId}",
+            request,
+            ApiClientJson.Options,
+            cancellationToken);
+
+        return await ApiClientJson.ReadRequiredAsync<ContactDto>(response, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<ContactActivityDto>> ListActivitiesAsync(
         Guid contactId,
         CancellationToken cancellationToken = default)
