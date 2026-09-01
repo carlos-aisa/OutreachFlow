@@ -44,8 +44,9 @@
   <data name="Common.OrganizationName" xml:space="preserve"><value>Nombre de organización</value></data>
   <data name="Common.Email" xml:space="preserve"><value>Correo electrónico</value></data>
   <data name="Common.Phone" xml:space="preserve"><value>Teléfono</value></data>
-  <data name="Common.Role" xml:space="preserve"><value>Rol</value></data>
+  <data name="Common.Role" xml:space="preserve"><value>Cargo</value></data>
   <data name="Common.Source" xml:space="preserve"><value>Origen</value></data>
+  <data name="Common.SourcePlaceholder" xml:space="preserve"><value>Ej: referido, web, feria</value></data>
   <data name="Common.Status" xml:space="preserve"><value>Estado</value></data>
   <data name="Common.Tag" xml:space="preserve"><value>Etiqueta</value></data>
   <data name="Common.Tags" xml:space="preserve"><value>Etiquetas</value></data>
@@ -172,13 +173,11 @@
   <data name="ContactDetail.BackAction" xml:space="preserve"><value>Volver a contactos</value></data>
   <data name="ContactDetail.Loading" xml:space="preserve"><value>Cargando detalle del contacto...</value></data>
   <data name="ContactDetail.NotFound" xml:space="preserve"><value>Contacto no encontrado.</value></data>
+  <data name="ContactDetail.EditTitle" xml:space="preserve"><value>Editar contacto</value></data>
   <data name="ContactDetail.SummaryTitle" xml:space="preserve"><value>Resumen del contacto</value></data>
-  <data name="ContactDetail.TagsTitle" xml:space="preserve"><value>Etiquetas del contacto</value></data>
   <data name="ContactDetail.AddTag" xml:space="preserve"><value>Añadir etiqueta</value></data>
-  <data name="ContactDetail.SelectTag" xml:space="preserve"><value>Selecciona una etiqueta</value></data>
-  <data name="ContactDetail.NoTagsAvailable" xml:space="preserve"><value>No hay etiquetas disponibles. Crea etiquetas primero.</value></data>
-  <data name="ContactDetail.AllTagsAssigned" xml:space="preserve"><value>Todas las etiquetas disponibles ya están asignadas a este contacto.</value></data>
-  <data name="ContactDetail.NoTagsAssigned" xml:space="preserve"><value>Aún no hay etiquetas asignadas.</value></data>
+  <data name="ContactDetail.SearchTags" xml:space="preserve"><value>Buscar etiquetas...</value></data>
+  <data name="ContactDetail.NoMoreTags" xml:space="preserve"><value>No hay más etiquetas para añadir.</value></data>
   <data name="ContactDetail.ActivityTitle" xml:space="preserve"><value>Línea de actividad</value></data>
   <data name="ContactDetail.ActivitySubtitle" xml:space="preserve"><value>Eventos recientes a nivel de contacto y su contexto de renderizado.</value></data>
   <data name="ContactDetail.EventsCount" xml:space="preserve"><value>{0} eventos</value></data>
@@ -389,8 +388,9 @@
   <data name="ContactGroups.Include" xml:space="preserve"><value>Incluir</value></data>
   <data name="ContactGroups.Exclude" xml:space="preserve"><value>Excluir</value></data>
   <data name="ContactGroups.ContactMemberships" xml:space="preserve"><value>Grupos</value></data>
-  <data name="ContactGroups.NoMemberships" xml:space="preserve"><value>Este contacto no pertenece actualmente a ningún grupo.</value></data>
-  <data name="ContactGroups.Manage" xml:space="preserve"><value>Gestionar grupos</value></data>
+  <data name="ContactGroups.AddGroup" xml:space="preserve"><value>Añadir grupo</value></data>
+  <data name="ContactGroups.SearchGroups" xml:space="preserve"><value>Buscar grupos...</value></data>
+  <data name="ContactGroups.NoMoreGroups" xml:space="preserve"><value>No hay más grupos para añadir.</value></data>
   <data name="Campaigns.PageTitle" xml:space="preserve"><value>Campañas</value></data>
   <data name="Campaigns.Description" xml:space="preserve"><value>Envía un mensaje a un grupo de contactos y sigue los resultados a lo largo del tiempo.</value></data>
   <data name="Campaigns.Panel.New" xml:space="preserve"><value>Nueva campaña</value></data>

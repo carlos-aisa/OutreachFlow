@@ -247,6 +247,16 @@ a:focus-visible,
     padding: 1rem 1.25rem;
 }
 
+.card > .card-header {
+    border-top-left-radius: calc(var(--workspace-radius-lg) - 1px);
+    border-top-right-radius: calc(var(--workspace-radius-lg) - 1px);
+}
+
+.card > .card-footer {
+    border-bottom-left-radius: calc(var(--workspace-radius-lg) - 1px);
+    border-bottom-right-radius: calc(var(--workspace-radius-lg) - 1px);
+}
+
 .card-body {
     padding: 1.3rem 1.35rem;
 }
@@ -687,6 +697,89 @@ h1:focus {
     font-weight: 700;
     letter-spacing: 0.02em;
     margin-top: 0.6rem;
+}
+
+.chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.4rem 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: var(--workspace-badge-secondary-bg);
+    border: 1px solid var(--workspace-badge-secondary-border);
+    color: var(--workspace-badge-secondary-text);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.chip--readonly {
+    padding: 0.4rem 0.9rem;
+}
+
+.chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.65;
+    transition: opacity var(--workspace-transition), background var(--workspace-transition);
+}
+
+.chip-remove:hover:not(:disabled) {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.chip-remove:disabled {
+    cursor: not-allowed;
+}
+
+.chip-picker-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.chip-add {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(139, 216, 90, 0.14);
+    border: 1px dashed rgba(111, 195, 58, 0.55);
+    color: var(--workspace-accent-ink);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background var(--workspace-transition);
+}
+
+.chip-add:hover:not(:disabled) {
+    background: rgba(139, 216, 90, 0.26);
+}
+
+.chip-add:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.chip-picker-dropdown {
+    width: max-content;
+    min-width: 220px;
 }
 
 .org-extra-toggle {

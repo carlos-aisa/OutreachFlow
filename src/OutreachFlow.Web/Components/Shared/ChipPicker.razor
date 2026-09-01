@@ -1,0 +1,144 @@
+@typeparam TItem
+
+@if (ReadOnly)
+{
+    <div class="chip-list">
+        @if (SelectedItems.Count == 0)
+        {
+            <span class="text-muted">-</span>
+        }
+        else
+        {
+            @foreach (var item in SelectedItems)
+            {
+                <span class="chip chip--readonly">@DisplayText(item)</span>
+            }
+        }
+    </div>
+}
+else
+{
+    <div class="chip-list">
+        @foreach (var item in SelectedItems)
+        {
+            <span class="chip">
+                @DisplayText(item)
+                <button type="button" class="chip-remove" @onclick="() => Remove(item)" disabled="@Disabled" aria-label="@RemoveLabel">&times;</button>
+            </span>
+        }
+        <div class="chip-picker-wrap">
+            <button type="button" id="@Id" class="chip-add" @onclick="ToggleOpen" disabled="@Disabled">+ @AddLabel</button>
+            @if (isOpen)
+            {
+                <div class="combo-dropdown chip-picker-dropdown">
+                    <input id="@SearchInputId" class="form-control" type="text" autocomplete="off"
+                           placeholder="@SearchPlaceholder"
+                           value="@query"
+                           @oninput="OnQueryChanged"
+                           @onblur="OnBlur" />
+                    @if (Matches.Count == 0)
+                    {
+                        <div class="combo-item combo-item--empty">@EmptyLabel</div>
+                    }
+                    else
+                    {
+                        @foreach (var item in Matches.Take(MaxResults))
+                        {
+                            <div class="combo-item" @onmousedown:preventDefault="true" @onclick="() => Add(item)">@DisplayText(item)</div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private bool isOpen;
+    private string query = string.Empty;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TItem> Items { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public IReadOnlyCollection<Guid> SelectedIds { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public Func<TItem, string> DisplayText { get; set; } = _ => string.Empty;
+
+    [Parameter, EditorRequired]
+    public Func<TItem, Guid> GetId { get; set; } = _ => Guid.Empty;
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
+    public EventCallback<TItem> OnAdd { get; set; }
+
+    [Parameter]
+    public EventCallback<TItem> OnRemove { get; set; }
+
+    [Parameter]
+    public string AddLabel { get; set; } = "Add";
+
+    [Parameter]
+    public string RemoveLabel { get; set; } = "Remove";
+
+    [Parameter]
+    public string? SearchPlaceholder { get; set; }
+
+    [Parameter]
+    public string EmptyLabel { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public int MaxResults { get; set; } = 8;
+
+    private string? SearchInputId => Id is null ? null : $"{Id}-search";
+
+    private IReadOnlyList<TItem> SelectedItems =>
+        Items.Where(item => SelectedIds.Contains(GetId(item))).ToArray();
+
+    private IReadOnlyList<TItem> AvailableItems =>
+        Items.Where(item => !SelectedIds.Contains(GetId(item))).ToArray();
+
+    private IReadOnlyList<TItem> Matches =>
+        string.IsNullOrWhiteSpace(query)
+            ? AvailableItems
+            : AvailableItems.Where(item => DisplayText(item).Contains(query, StringComparison.OrdinalIgnoreCase)).ToArray();
+
+    private void ToggleOpen()
+    {
+        isOpen = !isOpen;
+        query = string.Empty;
+    }
+
+    private void OnQueryChanged(ChangeEventArgs e)
+    {
+        query = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private async Task OnBlur()
+    {
+        await Task.Delay(150);
+        isOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task Add(TItem item)
+    {
+        isOpen = false;
+        query = string.Empty;
+        await OnAdd.InvokeAsync(item);
+    }
+
+    private async Task Remove(TItem item)
+    {
+        await OnRemove.InvokeAsync(item);
+    }
+}
