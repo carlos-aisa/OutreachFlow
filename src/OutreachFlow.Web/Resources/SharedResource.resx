@@ -13,8 +13,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Navigation.Menu" xml:space="preserve"><value>Navigation menu</value></data>
-  <data name="Nav.Dashboard" xml:space="preserve"><value>Dashboard</value></data>
-  <data name="Nav.Contacts" xml:space="preserve"><value>Contacts</value></data>
+  <data name="Nav.Dashboard" xml:space="preserve"><value>Home</value></data>
+  <data name="Nav.Contacts" xml:space="preserve"><value>Directory</value></data>
   <data name="Nav.Organizations" xml:space="preserve"><value>Organizations</value></data>
   <data name="Nav.Tags" xml:space="preserve"><value>Tags</value></data>
   <data name="Nav.SenderProfiles" xml:space="preserve"><value>Sender Profiles</value></data>
@@ -25,6 +25,10 @@
   <data name="Nav.FollowUps" xml:space="preserve"><value>Follow-Ups</value></data>
   <data name="Nav.Imports" xml:space="preserve"><value>Imports</value></data>
   <data name="Nav.Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="NavSection.Home" xml:space="preserve"><value>Home</value></data>
+  <data name="NavSection.Contacts" xml:space="preserve"><value>Contacts</value></data>
+  <data name="NavSection.Campaigns" xml:space="preserve"><value>Campaigns</value></data>
+  <data name="NavSection.Settings" xml:space="preserve"><value>Settings</value></data>
   <data name="Common.Name" xml:space="preserve"><value>Name</value></data>
   <data name="Common.DisplayName" xml:space="preserve"><value>Display name</value></data>
   <data name="Common.Type" xml:space="preserve"><value>Type</value></data>
@@ -112,7 +116,7 @@
   <data name="SenderProfiles.List.Count" xml:space="preserve"><value>{0} profiles</value></data>
   <data name="SenderProfiles.List.Loading" xml:space="preserve"><value>Loading sender profiles...</value></data>
   <data name="SenderProfiles.List.Empty" xml:space="preserve"><value>No sender profiles have been created yet.</value></data>
-  <data name="Contacts.PageTitle" xml:space="preserve"><value>Contacts</value></data>
+  <data name="Contacts.PageTitle" xml:space="preserve"><value>Directory</value></data>
   <data name="Contacts.Description" xml:space="preserve"><value>Browse, filter, and add contacts to your outreach list.</value></data>
   <data name="Contacts.Filters.Title" xml:space="preserve"><value>Filters</value></data>
   <data name="Contacts.Filters.SearchPlaceholder" xml:space="preserve"><value>Name, email, or role</value></data>
@@ -140,7 +144,6 @@
   <data name="Contacts.List.Loading" xml:space="preserve"><value>Loading contacts...</value></data>
   <data name="Contacts.List.Empty" xml:space="preserve"><value>No contacts match the current filters.</value></data>
   <data name="Contacts.List.Subtitle" xml:space="preserve"><value>Browse the current contact set and jump straight into detail when a record needs action.</value></data>
-  <data name="Layout.Workspace" xml:space="preserve"><value>Workspace</value></data>
   <data name="Layout.Language" xml:space="preserve"><value>Language</value></data>
   <data name="Layout.ErrorUnhandled" xml:space="preserve"><value>An unhandled error has occurred.</value></data>
   <data name="Layout.ErrorReload" xml:space="preserve"><value>Reload</value></data>
@@ -160,14 +163,27 @@
   <data name="Settings.Apply.Description" xml:space="preserve"><value>Theme updates immediately, and language changes reload the current page so localized content stays consistent.</value></data>
   <data name="Settings.Apply.Note" xml:space="preserve"><value>Your selected language and theme are remembered for later visits to this workspace.</value></data>
   <data name="Home.Description" xml:space="preserve"><value>See the current state of your contacts, drafts, and follow-ups at a glance.</value></data>
-  <data name="Home.NewContacts" xml:space="preserve"><value>New contacts</value></data>
-  <data name="Home.NeedsReviewDrafts" xml:space="preserve"><value>Needs review drafts</value></data>
-  <data name="Home.ApprovedDrafts" xml:space="preserve"><value>Approved drafts</value></data>
-  <data name="Home.FailedSends" xml:space="preserve"><value>Failed sends</value></data>
-  <data name="Home.PendingFollowUps.Title" xml:space="preserve"><value>Pending follow-ups</value></data>
-  <data name="Home.PendingFollowUps.Subtitle" xml:space="preserve"><value>What needs attention next across your outreach workflow.</value></data>
-  <data name="Home.PendingFollowUps.Action" xml:space="preserve"><value>Open follow-ups</value></data>
-  <data name="Home.PendingFollowUps.Empty" xml:space="preserve"><value>No pending follow-up tasks.</value></data>
+  <data name="Home.NewContactAction" xml:space="preserve"><value>+ New contact</value></data>
+  <data name="Home.Queue.Title" xml:space="preserve"><value>What to do now</value></data>
+  <data name="Home.Queue.Empty" xml:space="preserve"><value>Nothing needs your attention right now.</value></data>
+  <data name="Home.Queue.Drafts.Title" xml:space="preserve"><value>{0} drafts ready for review</value></data>
+  <data name="Home.Queue.Drafts.Subtitle" xml:space="preserve"><value>Review them before they go out.</value></data>
+  <data name="Home.Queue.Drafts.Action" xml:space="preserve"><value>Review</value></data>
+  <data name="Home.Queue.FollowUps.Title" xml:space="preserve"><value>{0} follow-ups need attention</value></data>
+  <data name="Home.Queue.FollowUps.Subtitle" xml:space="preserve"><value>{0} overdue, {1} due today</value></data>
+  <data name="Home.Queue.FollowUps.Action" xml:space="preserve"><value>View follow-ups</value></data>
+  <data name="Home.Queue.Candidates.Title" xml:space="preserve"><value>{0} new contacts match your active campaigns</value></data>
+  <data name="Home.Queue.Candidates.Subtitle" xml:space="preserve"><value>Not part of a campaign yet.</value></data>
+  <data name="Home.Queue.Candidates.SubtitleNamed" xml:space="preserve"><value>They fit &#8220;{0}&#8221;.</value></data>
+  <data name="Home.Queue.Candidates.Action" xml:space="preserve"><value>Review candidates</value></data>
+  <data name="Home.ActiveCampaigns.Title" xml:space="preserve"><value>Active campaigns</value></data>
+  <data name="Home.ActiveCampaigns.Subtitle" xml:space="preserve"><value>Still open: they can keep gaining recipients.</value></data>
+  <data name="Home.ActiveCampaigns.Audience" xml:space="preserve"><value>Audience: {0}</value></data>
+  <data name="Home.ActiveCampaigns.Sent" xml:space="preserve"><value>Sent</value></data>
+  <data name="Home.ActiveCampaigns.Pending" xml:space="preserve"><value>Pending</value></data>
+  <data name="Home.ActiveCampaigns.Candidates" xml:space="preserve"><value>Candidates</value></data>
+  <data name="Home.ActiveCampaigns.ViewAction" xml:space="preserve"><value>View campaign &#8594;</value></data>
+  <data name="Home.StatStrip" xml:space="preserve"><value>{0} contacts &#183; {1} organizations &#183; {2} groups</value></data>
   <data name="ContactDetail.PageTitle" xml:space="preserve"><value>Contact detail</value></data>
   <data name="ContactDetail.Description" xml:space="preserve"><value>See this contact's full profile: tags, activity, and pending follow-ups.</value></data>
   <data name="ContactDetail.BackAction" xml:space="preserve"><value>Back to contacts</value></data>

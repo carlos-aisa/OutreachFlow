@@ -14,91 +14,109 @@
     </div>
 
     <div class="nav-scrollable">
-        <nav class="nav-group">
-            <p class="nav-section-label">@Localizer["Layout.Workspace"]</p>
-
-            <div class="nav-item">
-                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Dashboard"]
-                </NavLink>
+        <nav>
+            <div class="nav-section">
+                <p class="nav-section-label">@Localizer["NavSection.Home"]</p>
+                <div class="nav-group">
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                            <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Dashboard"]
+                        </NavLink>
+                    </div>
+                </div>
             </div>
 
-            <div class="nav-item">
-                <NavLink class="nav-link" href="contacts">
-                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Contacts"]
-                </NavLink>
+            <div class="nav-section">
+                <p class="nav-section-label">@Localizer["NavSection.Contacts"]</p>
+                <div class="nav-group">
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="contacts">
+                            <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Contacts"]
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="organizations">
+                            <span class="bi bi-building-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Organizations"]
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="contact-groups">
+                            <span class="bi bi-collection-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.ContactGroups"]
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="follow-ups">
+                            <span class="bi bi-calendar-check-nav-menu" aria-hidden="true"></span> @Localizer["Nav.FollowUps"]
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="imports">
+                            <span class="bi bi-upload-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Imports"]
+                        </NavLink>
+                    </div>
+                </div>
             </div>
 
-            <div class="nav-item">
-                <NavLink class="nav-link" href="contact-groups">
-                    <span class="bi bi-collection-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.ContactGroups"]
-                </NavLink>
+            <div class="nav-section">
+                <p class="nav-section-label">@Localizer["NavSection.Campaigns"]</p>
+                <div class="nav-group">
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="campaigns">
+                            <span class="bi bi-send-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Campaigns"]
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="drafts/generate">
+                            <span class="bi bi-journal-check-nav-menu" aria-hidden="true"></span> @Localizer["Nav.DraftGeneration"]
+                        </NavLink>
+                    </div>
+
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="drafts">
+                            <span class="bi bi-card-text-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Drafts"]
+                        </NavLink>
+                    </div>
+                </div>
             </div>
 
-            <div class="nav-item">
-                <NavLink class="nav-link" href="campaigns">
-                    <span class="bi bi-send-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Campaigns"]
-                </NavLink>
-            </div>
+            <div class="nav-section">
+                <p class="nav-section-label">@Localizer["NavSection.Settings"]</p>
+                <div class="nav-group">
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="templates">
+                            <span class="bi bi-envelope-paper-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Templates"]
+                        </NavLink>
+                    </div>
 
-            <div class="nav-item">
-                <NavLink class="nav-link" href="organizations">
-                    <span class="bi bi-building-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Organizations"]
-                </NavLink>
-            </div>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="sender-profiles">
+                            <span class="bi bi-person-badge-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.SenderProfiles"]
+                        </NavLink>
+                    </div>
 
-            <div class="nav-item">
-                <NavLink class="nav-link" href="tags">
-                    <span class="bi bi-tag-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Tags"]
-                </NavLink>
-            </div>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="attachments">
+                            <span class="bi bi-paperclip-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Attachments"]
+                        </NavLink>
+                    </div>
 
-            <div class="nav-item">
-                <NavLink class="nav-link" href="sender-profiles">
-                    <span class="bi bi-person-badge-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.SenderProfiles"]
-                </NavLink>
-            </div>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="tags">
+                            <span class="bi bi-tag-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Tags"]
+                        </NavLink>
+                    </div>
 
-            <div class="nav-item">
-                <NavLink class="nav-link" href="templates">
-                    <span class="bi bi-envelope-paper-fill-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Templates"]
-                </NavLink>
-            </div>
-
-            <div class="nav-item">
-                <NavLink class="nav-link" href="attachments">
-                    <span class="bi bi-paperclip-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Attachments"]
-                </NavLink>
-            </div>
-
-            <div class="nav-item">
-                <NavLink class="nav-link" href="drafts">
-                    <span class="bi bi-card-text-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Drafts"]
-                </NavLink>
-            </div>
-
-            <div class="nav-item">
-                <NavLink class="nav-link" href="drafts/generate">
-                    <span class="bi bi-journal-check-nav-menu" aria-hidden="true"></span> @Localizer["Nav.DraftGeneration"]
-                </NavLink>
-            </div>
-
-            <div class="nav-item">
-                <NavLink class="nav-link" href="follow-ups">
-                    <span class="bi bi-calendar-check-nav-menu" aria-hidden="true"></span> @Localizer["Nav.FollowUps"]
-                </NavLink>
-            </div>
-
-            <div class="nav-item">
-                <NavLink class="nav-link" href="imports">
-                    <span class="bi bi-upload-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Imports"]
-                </NavLink>
-            </div>
-
-            <div class="nav-item nav-item--settings">
-                <NavLink class="nav-link" href="settings">
-                    <span class="bi bi-gear-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Settings"]
-                </NavLink>
+                    <div class="nav-item">
+                        <NavLink class="nav-link" href="settings">
+                            <span class="bi bi-gear-nav-menu" aria-hidden="true"></span> @Localizer["Nav.Settings"]
+                        </NavLink>
+                    </div>
+                </div>
             </div>
         </nav>
     </div>
