@@ -15,10 +15,15 @@
 <PageTitle>@Localizer["Templates.PageTitle"]</PageTitle>
 
 <div class="page-shell">
-    <div class="page-intro">
-        <p class="page-kicker">@Localizer["Templates.PageTitle"]</p>
-        <h1 class="page-title">@Localizer["Templates.PageTitle"]</h1>
-        <p class="page-description">@Localizer["Templates.Description"]</p>
+    <div class="page-intro page-intro--split">
+        <div>
+            <p class="page-kicker">@Localizer["Templates.PageTitle"]</p>
+            <h1 class="page-title">@Localizer["Templates.PageTitle"]</h1>
+            <p class="page-description">@Localizer["Templates.Description"]</p>
+        </div>
+        <div class="page-actions">
+            <button id="open-create-template-panel" type="button" class="btn btn-primary" @onclick="OpenCreatePanel">@Localizer["Templates.Panel.New"]</button>
+        </div>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -28,102 +33,6 @@
 
     <div class="row g-4">
         <div class="col-lg-8">
-        <section class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 class="workspace-card-title mb-0">@(editingId is null ? Localizer["Templates.Form.CreateTitle"] : Localizer["Templates.Form.EditTitle"])</h2>
-                @if (editingId is not null)
-                {
-                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="ResetForm">@Localizer["Common.CancelEdit"]</button>
-                }
-            </div>
-            <div class="card-body">
-                <EditForm Model="form" OnValidSubmit="SaveAsync">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label" for="template-name">@Localizer["Common.Name"]</label>
-                            <InputText id="template-name" class="form-control" @bind-Value="form.Name" />
-                        </div>
-                        <div class="col-md-6 d-flex align-items-end">
-                            <div class="form-check">
-                                <InputCheckbox id="template-active" class="form-check-input" @bind-Value="form.IsActive" />
-                                <label class="form-check-label" for="template-active">@Localizer["Common.Active"]</label>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label" for="template-description">@Localizer["Common.Description"]</label>
-                            <InputText id="template-description" class="form-control" @bind-Value="form.Description" />
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label" for="template-subject">@Localizer["Templates.Form.SubjectTemplate"]</label>
-                            <InputText id="template-subject" class="form-control" @bind-Value="form.SubjectTemplate" />
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label" for="template-body">@Localizer["Templates.Form.BodyTemplate"]</label>
-                            <InputTextArea id="template-body" class="form-control template-body" @bind-Value="form.BodyTemplate" />
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Templates.Form.SaveAction"]</button>
-                        </div>
-
-                        @if (editingId is not null)
-                        {
-                            <div class="col-12">
-                                <hr />
-                                <h3 class="h6">@Localizer["Templates.Attachments.DefaultTitle"]</h3>
-                                <p class="text-muted small mb-2">
-                                    @Localizer["Templates.Attachments.Help"]
-                                </p>
-
-                                @if (attachments.Count == 0)
-                                {
-                                    <p class="small mb-0">@Localizer["Templates.Attachments.Empty"]</p>
-                                }
-                                else
-                                {
-                                    <div class="list-group">
-                                        @foreach (var attachment in attachments)
-                                        {
-                                            var isAssigned = form.DefaultAttachmentIds.Contains(attachment.Id);
-
-                                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <strong>@attachment.Name</strong>
-                                                    <div class="small text-muted">@attachment.FileName</div>
-                                                </div>
-                                                @if (isAssigned)
-                                                {
-                                                    <button
-                                                        type="button"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        @onclick="() => RemoveDefaultAttachmentAsync(attachment.Id)"
-                                                        disabled="@isManagingAttachments">
-                                                        @Localizer["Common.Remove"]
-                                                    </button>
-                                                }
-                                                else
-                                                {
-                                                    <button
-                                                        type="button"
-                                                        class="btn btn-sm btn-outline-primary"
-                                                        @onclick="() => AssignDefaultAttachmentAsync(attachment.Id)"
-                                                        disabled="@isManagingAttachments">
-                                                        @Localizer["Common.Add"]
-                                                    </button>
-                                                }
-                                            </div>
-                                        }
-                                    </div>
-                                }
-                            </div>
-                        }
-                    </div>
-                </EditForm>
-            </div>
-        </section>
-
         <section class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h2 class="workspace-card-title mb-0">@Localizer["Templates.List.Title"]</h2>
@@ -200,6 +109,103 @@
         </section>
     </div>
 </div>
+
+@if (isPanelOpen)
+{
+    <div class="side-panel-scrim" @onclick="ClosePanel"></div>
+    <aside class="side-panel">
+        <EditForm Model="form" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <div class="side-panel-header">
+                <h2 class="workspace-card-title mb-0">@(editingId is null ? Localizer["Templates.Form.CreateTitle"] : Localizer["Templates.Form.EditTitle"])</h2>
+                <button type="button" class="side-panel-close" @onclick="ClosePanel" aria-label="@Localizer["Common.Close"]">&times;</button>
+            </div>
+            <div class="side-panel-body">
+                <ValidationSummary />
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="template-name">@Localizer["Common.Name"]</label>
+                        <InputText id="template-name" class="form-control" @bind-Value="form.Name" />
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <InputCheckbox id="template-active" class="form-check-input" @bind-Value="form.IsActive" />
+                            <label class="form-check-label" for="template-active">@Localizer["Common.Active"]</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="template-description">@Localizer["Common.Description"]</label>
+                        <InputText id="template-description" class="form-control" @bind-Value="form.Description" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="template-subject">@Localizer["Templates.Form.SubjectTemplate"]</label>
+                        <InputText id="template-subject" class="form-control" @bind-Value="form.SubjectTemplate" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="template-body">@Localizer["Templates.Form.BodyTemplate"]</label>
+                        <InputTextArea id="template-body" class="form-control template-body" @bind-Value="form.BodyTemplate" />
+                    </div>
+
+                    @if (editingId is not null)
+                    {
+                        <div class="col-12">
+                            <hr />
+                            <h3 class="h6">@Localizer["Templates.Attachments.DefaultTitle"]</h3>
+                            <p class="text-muted small mb-2">
+                                @Localizer["Templates.Attachments.Help"]
+                            </p>
+
+                            @if (attachments.Count == 0)
+                            {
+                                <p class="small mb-0">@Localizer["Templates.Attachments.Empty"]</p>
+                            }
+                            else
+                            {
+                                <div class="list-group">
+                                    @foreach (var attachment in attachments)
+                                    {
+                                        var isAssigned = form.DefaultAttachmentIds.Contains(attachment.Id);
+
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>@attachment.Name</strong>
+                                                <div class="small text-muted">@attachment.FileName</div>
+                                            </div>
+                                            @if (isAssigned)
+                                            {
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    @onclick="() => RemoveDefaultAttachmentAsync(attachment.Id)"
+                                                    disabled="@isManagingAttachments">
+                                                    @Localizer["Common.Remove"]
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-sm btn-outline-primary"
+                                                    @onclick="() => AssignDefaultAttachmentAsync(attachment.Id)"
+                                                    disabled="@isManagingAttachments">
+                                                    @Localizer["Common.Add"]
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="side-panel-footer">
+                <button type="button" class="btn btn-outline-secondary" @onclick="ClosePanel" disabled="@isSaving">@Localizer["Common.Cancel"]</button>
+                <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Templates.Form.SaveAction"]</button>
+            </div>
+        </EditForm>
+    </aside>
+}
 </div>
 
 @code {
@@ -208,6 +214,7 @@
     private IReadOnlyList<AttachmentAssetDto> attachments = [];
     private EmailTemplateFormModel form = new();
     private Guid? editingId;
+    private bool isPanelOpen;
     private string? errorMessage;
     private bool isLoading;
     private bool isSaving;
@@ -268,7 +275,7 @@
                     form.BodyTemplate));
             }
 
-            ResetForm();
+            ClosePanel();
             await LoadAsync();
         }
         catch (InvalidOperationException exception)
@@ -285,6 +292,13 @@
         }
     }
 
+    private void OpenCreatePanel()
+    {
+        editingId = null;
+        form = new EmailTemplateFormModel();
+        isPanelOpen = true;
+    }
+
     private void Edit(EmailTemplateDto template)
     {
         editingId = template.Id;
@@ -297,6 +311,7 @@
             IsActive = template.IsActive,
             DefaultAttachmentIds = template.DefaultAttachmentIds.ToHashSet()
         };
+        isPanelOpen = true;
     }
 
     private async Task DeactivateAsync(Guid id)
@@ -316,8 +331,9 @@
         }
     }
 
-    private void ResetForm()
+    private void ClosePanel()
     {
+        isPanelOpen = false;
         editingId = null;
         form = new EmailTemplateFormModel();
     }

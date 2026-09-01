@@ -159,18 +159,18 @@
 
     @if (isCreatePanelOpen)
     {
-        <div class="contact-panel-scrim" @onclick="CloseCreatePanel"></div>
-        <aside class="contact-panel">
+        <div class="side-panel-scrim" @onclick="CloseCreatePanel"></div>
+        <aside class="side-panel">
             <EditForm Model="newContact" OnValidSubmit="CreateContactAsync">
                 <DataAnnotationsValidator />
-                <div class="contact-panel-header">
+                <div class="side-panel-header">
                     <div>
                         <h2 class="workspace-card-title mb-0">@Localizer["Contacts.Form.CreateTitle"]</h2>
                         <p class="workspace-card-subtitle">@Localizer["Contacts.Intake.Description"]</p>
                     </div>
-                    <button type="button" class="contact-panel-close" @onclick="CloseCreatePanel" aria-label="@Localizer["Common.Close"]">&times;</button>
+                    <button type="button" class="side-panel-close" @onclick="CloseCreatePanel" aria-label="@Localizer["Common.Close"]">&times;</button>
                 </div>
-                <div class="contact-panel-body">
+                <div class="side-panel-body">
                     <ValidationSummary />
                     <div class="row g-3">
                         <div class="col-12">
@@ -267,7 +267,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="contact-panel-footer">
+                <div class="side-panel-footer">
                     <button type="button" class="btn btn-outline-secondary" @onclick="CloseCreatePanel" disabled="@isSaving">@Localizer["Common.Cancel"]</button>
                     <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Contacts.Form.CreateAction"]</button>
                 </div>

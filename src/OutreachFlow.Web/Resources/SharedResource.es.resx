@@ -66,6 +66,7 @@
   <data name="Common.ApiUnavailablePrefix" xml:space="preserve"><value>No se pudo conectar con la API de OutreachFlow</value></data>
   <data name="Organizations.PageTitle" xml:space="preserve"><value>Organizaciones</value></data>
   <data name="Organizations.Description" xml:space="preserve"><value>Crea y revisa organizaciones genéricas que pueden asociarse a contactos.</value></data>
+  <data name="Organizations.Panel.New" xml:space="preserve"><value>Nueva organización</value></data>
   <data name="Organizations.Form.CreateTitle" xml:space="preserve"><value>Crear organización</value></data>
   <data name="Organizations.Form.CreateAction" xml:space="preserve"><value>Crear organización</value></data>
   <data name="Organizations.List.Title" xml:space="preserve"><value>Listado de organizaciones</value></data>
@@ -74,6 +75,7 @@
   <data name="Organizations.List.Empty" xml:space="preserve"><value>Todavía no se han creado organizaciones.</value></data>
   <data name="Tags.PageTitle" xml:space="preserve"><value>Etiquetas</value></data>
   <data name="Tags.Description" xml:space="preserve"><value>Crea etiquetas flexibles para segmentar contactos sin categorías fijas.</value></data>
+  <data name="Tags.Panel.New" xml:space="preserve"><value>Nueva etiqueta</value></data>
   <data name="Tags.Form.CreateTitle" xml:space="preserve"><value>Crear etiqueta</value></data>
   <data name="Tags.Form.CreateAction" xml:space="preserve"><value>Crear etiqueta</value></data>
   <data name="Tags.List.Title" xml:space="preserve"><value>Listado de etiquetas</value></data>
@@ -82,6 +84,7 @@
   <data name="Tags.List.Empty" xml:space="preserve"><value>Todavía no se han creado etiquetas.</value></data>
   <data name="Templates.PageTitle" xml:space="preserve"><value>Plantillas de correo</value></data>
   <data name="Templates.Description" xml:space="preserve"><value>Guarda plantillas reutilizables de asunto y cuerpo como datos configurables, incluyendo adjuntos predeterminados.</value></data>
+  <data name="Templates.Panel.New" xml:space="preserve"><value>Nueva plantilla</value></data>
   <data name="Templates.Form.CreateTitle" xml:space="preserve"><value>Crear plantilla</value></data>
   <data name="Templates.Form.EditTitle" xml:space="preserve"><value>Editar plantilla</value></data>
   <data name="Templates.Form.SubjectTemplate" xml:space="preserve"><value>Plantilla de asunto</value></data>
@@ -100,6 +103,7 @@
   <data name="Templates.Variables.Empty" xml:space="preserve"><value>No hay variables disponibles.</value></data>
   <data name="SenderProfiles.PageTitle" xml:space="preserve"><value>Perfiles de remitente</value></data>
   <data name="SenderProfiles.Description" xml:space="preserve"><value>Configura identidades reutilizables de remitente sin detalles de negocio fijos.</value></data>
+  <data name="SenderProfiles.Panel.New" xml:space="preserve"><value>Nuevo perfil de remitente</value></data>
   <data name="SenderProfiles.Form.CreateTitle" xml:space="preserve"><value>Crear perfil de remitente</value></data>
   <data name="SenderProfiles.Form.EditTitle" xml:space="preserve"><value>Editar perfil de remitente</value></data>
   <data name="SenderProfiles.Form.SaveAction" xml:space="preserve"><value>Guardar perfil de remitente</value></data>
@@ -250,6 +254,7 @@
   <data name="DraftGeneration.SelectSender" xml:space="preserve"><value>Selecciona un remitente</value></data>
   <data name="FollowUps.PageTitle" xml:space="preserve"><value>Seguimientos</value></data>
   <data name="FollowUps.Description" xml:space="preserve"><value>Crea tareas de outreach basadas en tiempo, supervisa el trabajo pendiente y cierra el ciclo del seguimiento de contactos.</value></data>
+  <data name="FollowUps.Panel.New" xml:space="preserve"><value>Nuevo seguimiento</value></data>
   <data name="FollowUps.CreateTitle" xml:space="preserve"><value>Crear tarea de seguimiento</value></data>
   <data name="FollowUps.ListTitle" xml:space="preserve"><value>Listado de tareas</value></data>
   <data name="FollowUps.PendingAction" xml:space="preserve"><value>Pendientes</value></data>
@@ -287,6 +292,7 @@
   <data name="Imports.SuccessMessage" xml:space="preserve"><value>Importación completada. Se han creado {0} contacto(s), {1} fila(s) duplicada(s) y {2} fila(s) inválida(s).</value></data>
   <data name="Attachments.PageTitle" xml:space="preserve"><value>Adjuntos</value></data>
   <data name="Attachments.Description" xml:space="preserve"><value>Gestiona archivos reutilizables que pueden adjuntarse a plantillas y reutilizarse en flujos de outreach controlados.</value></data>
+  <data name="Attachments.Panel.New" xml:space="preserve"><value>Nuevo adjunto</value></data>
   <data name="Attachments.UploadTitle" xml:space="preserve"><value>Subir adjunto</value></data>
   <data name="Attachments.ListTitle" xml:space="preserve"><value>Listado de adjuntos</value></data>
   <data name="Attachments.Count" xml:space="preserve"><value>{0} archivos</value></data>
@@ -369,6 +375,7 @@
   <data name="Nav.ContactGroups" xml:space="preserve"><value>Grupos de contactos</value></data>
   <data name="ContactGroups.PageTitle" xml:space="preserve"><value>Grupos de contactos</value></data>
   <data name="ContactGroups.Description" xml:space="preserve"><value>Crea audiencias reutilizables a partir de criterios y selecciones manuales.</value></data>
+  <data name="ContactGroups.Panel.New" xml:space="preserve"><value>Nuevo grupo</value></data>
   <data name="ContactGroups.CreateTitle" xml:space="preserve"><value>Crear grupo</value></data>
   <data name="ContactGroups.ListTitle" xml:space="preserve"><value>Grupos</value></data>
   <data name="ContactGroups.CriteriaCount" xml:space="preserve"><value>{0} criterios</value></data>

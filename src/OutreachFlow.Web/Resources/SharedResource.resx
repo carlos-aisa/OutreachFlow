@@ -66,6 +66,7 @@
   <data name="Common.ApiUnavailablePrefix" xml:space="preserve"><value>Could not reach the OutreachFlow API</value></data>
   <data name="Organizations.PageTitle" xml:space="preserve"><value>Organizations</value></data>
   <data name="Organizations.Description" xml:space="preserve"><value>Create and review generic organizations that can be associated with contacts.</value></data>
+  <data name="Organizations.Panel.New" xml:space="preserve"><value>New organization</value></data>
   <data name="Organizations.Form.CreateTitle" xml:space="preserve"><value>Create organization</value></data>
   <data name="Organizations.Form.CreateAction" xml:space="preserve"><value>Create organization</value></data>
   <data name="Organizations.List.Title" xml:space="preserve"><value>Organization list</value></data>
@@ -74,6 +75,7 @@
   <data name="Organizations.List.Empty" xml:space="preserve"><value>No organizations have been created yet.</value></data>
   <data name="Tags.PageTitle" xml:space="preserve"><value>Tags</value></data>
   <data name="Tags.Description" xml:space="preserve"><value>Create flexible tags for segmenting contacts without hardcoded categories.</value></data>
+  <data name="Tags.Panel.New" xml:space="preserve"><value>New tag</value></data>
   <data name="Tags.Form.CreateTitle" xml:space="preserve"><value>Create tag</value></data>
   <data name="Tags.Form.CreateAction" xml:space="preserve"><value>Create tag</value></data>
   <data name="Tags.List.Title" xml:space="preserve"><value>Tag list</value></data>
@@ -82,6 +84,7 @@
   <data name="Tags.List.Empty" xml:space="preserve"><value>No tags have been created yet.</value></data>
   <data name="Templates.PageTitle" xml:space="preserve"><value>Email Templates</value></data>
   <data name="Templates.Description" xml:space="preserve"><value>Store reusable subject and body templates as configurable data, including default attachment selection.</value></data>
+  <data name="Templates.Panel.New" xml:space="preserve"><value>New template</value></data>
   <data name="Templates.Form.CreateTitle" xml:space="preserve"><value>Create template</value></data>
   <data name="Templates.Form.EditTitle" xml:space="preserve"><value>Edit template</value></data>
   <data name="Templates.Form.SubjectTemplate" xml:space="preserve"><value>Subject template</value></data>
@@ -100,6 +103,7 @@
   <data name="Templates.Variables.Empty" xml:space="preserve"><value>No variables are available.</value></data>
   <data name="SenderProfiles.PageTitle" xml:space="preserve"><value>Sender Profiles</value></data>
   <data name="SenderProfiles.Description" xml:space="preserve"><value>Configure reusable sender identities without hardcoded business details.</value></data>
+  <data name="SenderProfiles.Panel.New" xml:space="preserve"><value>New sender profile</value></data>
   <data name="SenderProfiles.Form.CreateTitle" xml:space="preserve"><value>Create sender profile</value></data>
   <data name="SenderProfiles.Form.EditTitle" xml:space="preserve"><value>Edit sender profile</value></data>
   <data name="SenderProfiles.Form.SaveAction" xml:space="preserve"><value>Save sender profile</value></data>
@@ -250,6 +254,7 @@
   <data name="DraftGeneration.SelectSender" xml:space="preserve"><value>Select sender</value></data>
   <data name="FollowUps.PageTitle" xml:space="preserve"><value>Follow-ups</value></data>
   <data name="FollowUps.Description" xml:space="preserve"><value>Create time-based outreach tasks, monitor pending work, and close the loop on contact follow-up.</value></data>
+  <data name="FollowUps.Panel.New" xml:space="preserve"><value>New follow-up</value></data>
   <data name="FollowUps.CreateTitle" xml:space="preserve"><value>Create follow-up task</value></data>
   <data name="FollowUps.ListTitle" xml:space="preserve"><value>Task list</value></data>
   <data name="FollowUps.PendingAction" xml:space="preserve"><value>Pending</value></data>
@@ -287,6 +292,7 @@
   <data name="Imports.SuccessMessage" xml:space="preserve"><value>Import completed. Created {0} contact(s), {1} duplicate row(s), {2} invalid row(s).</value></data>
   <data name="Attachments.PageTitle" xml:space="preserve"><value>Attachments</value></data>
   <data name="Attachments.Description" xml:space="preserve"><value>Manage reusable files that can be attached to templates and reused in controlled outreach workflows.</value></data>
+  <data name="Attachments.Panel.New" xml:space="preserve"><value>New attachment</value></data>
   <data name="Attachments.UploadTitle" xml:space="preserve"><value>Upload attachment</value></data>
   <data name="Attachments.ListTitle" xml:space="preserve"><value>Attachment list</value></data>
   <data name="Attachments.Count" xml:space="preserve"><value>{0} files</value></data>
@@ -369,6 +375,7 @@
   <data name="Nav.ContactGroups" xml:space="preserve"><value>Contact groups</value></data>
   <data name="ContactGroups.PageTitle" xml:space="preserve"><value>Contact groups</value></data>
   <data name="ContactGroups.Description" xml:space="preserve"><value>Create reusable audiences from criteria and manual selections.</value></data>
+  <data name="ContactGroups.Panel.New" xml:space="preserve"><value>New group</value></data>
   <data name="ContactGroups.CreateTitle" xml:space="preserve"><value>Create group</value></data>
   <data name="ContactGroups.ListTitle" xml:space="preserve"><value>Groups</value></data>
   <data name="ContactGroups.CriteriaCount" xml:space="preserve"><value>{0} criteria</value></data>
