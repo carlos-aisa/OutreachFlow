@@ -39,6 +39,9 @@
   <data name="ApiError.AttachmentAssetNotFound" xml:space="preserve">
     <value>No se encontró el adjunto reutilizable.</value>
   </data>
+  <data name="ApiError.CampaignNotFound" xml:space="preserve">
+    <value>No se encontró la campaña.</value>
+  </data>
   <data name="ApiError.ContactEmailAlreadyExists" xml:space="preserve">
     <value>Ya existe un contacto con ese correo electrónico.</value>
   </data>

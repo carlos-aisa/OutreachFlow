@@ -364,6 +364,7 @@
   <data name="Validation.EmailAddress" xml:space="preserve"><value>Introduce una dirección de correo válida.</value></data>
   <data name="Validation.Required" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
   <data name="Nav.ContactGroups" xml:space="preserve"><value>Grupos de contactos</value></data>
+  <data name="Nav.Campaigns" xml:space="preserve"><value>Campañas</value></data>
   <data name="ContactGroups.PageTitle" xml:space="preserve"><value>Grupos de contactos</value></data>
   <data name="ContactGroups.Description" xml:space="preserve"><value>Crea audiencias de contactos reutilizables por criterios o selección manual.</value></data>
   <data name="ContactGroups.Panel.New" xml:space="preserve"><value>Nuevo grupo</value></data>
@@ -390,4 +391,22 @@
   <data name="ContactGroups.ContactMemberships" xml:space="preserve"><value>Grupos</value></data>
   <data name="ContactGroups.NoMemberships" xml:space="preserve"><value>Este contacto no pertenece actualmente a ningún grupo.</value></data>
   <data name="ContactGroups.Manage" xml:space="preserve"><value>Gestionar grupos</value></data>
+  <data name="Campaigns.PageTitle" xml:space="preserve"><value>Campañas</value></data>
+  <data name="Campaigns.Description" xml:space="preserve"><value>Envía un mensaje a un grupo de contactos y sigue los resultados a lo largo del tiempo.</value></data>
+  <data name="Campaigns.Panel.New" xml:space="preserve"><value>Nueva campaña</value></data>
+  <data name="Campaigns.Form.CreateTitle" xml:space="preserve"><value>Crear campaña</value></data>
+  <data name="Campaigns.Form.EditTitle" xml:space="preserve"><value>Editar campaña</value></data>
+  <data name="Campaigns.Form.SelectMessage" xml:space="preserve"><value>Selecciona una plantilla</value></data>
+  <data name="Campaigns.Form.Audience" xml:space="preserve"><value>Público</value></data>
+  <data name="Campaigns.Form.AudienceHelp" xml:space="preserve"><value>Mantén pulsado Ctrl (Cmd en Mac) para elegir más de un grupo. Se requiere al menos uno.</value></data>
+  <data name="Campaigns.List.Title" xml:space="preserve"><value>Listado de campañas</value></data>
+  <data name="Campaigns.List.Count" xml:space="preserve"><value>{0} campañas</value></data>
+  <data name="Campaigns.List.Loading" xml:space="preserve"><value>Cargando campañas...</value></data>
+  <data name="Campaigns.List.Empty" xml:space="preserve"><value>Todavía no se han creado campañas.</value></data>
+  <data name="Campaigns.Detail.Loading" xml:space="preserve"><value>Cargando campaña...</value></data>
+  <data name="Campaigns.Detail.Audience" xml:space="preserve"><value>Público</value></data>
+  <data name="Campaigns.Detail.CloseAction" xml:space="preserve"><value>Cerrar campaña</value></data>
+  <data name="Campaigns.Detail.ReopenAction" xml:space="preserve"><value>Reabrir campaña</value></data>
+  <data name="CampaignStatus.Open" xml:space="preserve"><value>Abierta</value></data>
+  <data name="CampaignStatus.Closed" xml:space="preserve"><value>Cerrada</value></data>
 </root>

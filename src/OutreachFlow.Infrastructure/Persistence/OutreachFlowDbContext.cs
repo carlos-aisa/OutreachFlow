@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OutreachFlow.Domain.Attachments;
+using OutreachFlow.Domain.Campaigns;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.EmailDrafts;
@@ -51,6 +52,10 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
     public DbSet<ContactGroupMembershipOverride> ContactGroupMembershipOverrides => Set<ContactGroupMembershipOverride>();
 
+    public DbSet<Campaign> Campaigns => Set<Campaign>();
+
+    public DbSet<CampaignAudienceGroup> CampaignAudienceGroups => Set<CampaignAudienceGroup>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureOrganizations(modelBuilder);
@@ -68,6 +73,7 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
         ConfigureFollowUpTasks(modelBuilder);
         ConfigureImportJobs(modelBuilder);
         ConfigureContactGroups(modelBuilder);
+        ConfigureCampaigns(modelBuilder);
     }
 
     private static void ConfigureOrganizations(ModelBuilder modelBuilder)
@@ -540,6 +546,51 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
             builder.HasIndex(overrideItem => overrideItem.ContactId);
             builder.HasOne<ContactGroup>().WithMany().HasForeignKey(overrideItem => overrideItem.ContactGroupId).OnDelete(DeleteBehavior.Cascade);
             builder.HasOne<Contact>().WithMany().HasForeignKey(overrideItem => overrideItem.ContactId).OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureCampaigns(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Campaign>(builder =>
+        {
+            builder.ToTable("Campaigns");
+            builder.HasKey(campaign => campaign.Id);
+
+            builder.Property(campaign => campaign.Name)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            builder.Property(campaign => campaign.Description).HasMaxLength(4000);
+
+            builder.HasIndex(campaign => campaign.Name);
+            builder.HasIndex(campaign => campaign.Status);
+            builder.HasIndex(campaign => campaign.EmailTemplateId);
+
+            builder.HasOne<EmailTemplate>()
+                .WithMany()
+                .HasForeignKey(campaign => campaign.EmailTemplateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(campaign => campaign.AudienceGroups)
+                .WithOne()
+                .HasForeignKey(audienceGroup => audienceGroup.CampaignId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Navigation(campaign => campaign.AudienceGroups)
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        modelBuilder.Entity<CampaignAudienceGroup>(builder =>
+        {
+            builder.ToTable("CampaignAudienceGroups");
+            builder.HasKey(audienceGroup => new { audienceGroup.CampaignId, audienceGroup.ContactGroupId });
+
+            builder.HasIndex(audienceGroup => audienceGroup.ContactGroupId);
+
+            builder.HasOne<ContactGroup>()
+                .WithMany()
+                .HasForeignKey(audienceGroup => audienceGroup.ContactGroupId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

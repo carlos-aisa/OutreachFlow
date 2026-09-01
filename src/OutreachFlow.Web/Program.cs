@@ -11,6 +11,7 @@ using OutreachFlow.Web.Tags;
 using OutreachFlow.Web.FollowUps;
 using OutreachFlow.Web.ContactImports;
 using OutreachFlow.Web.ContactGroups;
+using OutreachFlow.Web.Campaigns;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWindowsService();
@@ -64,6 +65,8 @@ builder.Services.AddHttpClient<EmailDraftApiClient>(client =>
 builder.Services.AddHttpClient<FollowUpTaskApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<ContactImportApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<CampaignApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();

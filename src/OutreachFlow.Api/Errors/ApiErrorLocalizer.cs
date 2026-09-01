@@ -16,6 +16,7 @@ public sealed class ApiErrorLocalizer(IStringLocalizer<ApiErrorResource> localiz
         ["Email draft was not found."] = "ApiError.EmailDraftNotFound",
         ["Follow-up task was not found."] = "ApiError.FollowUpTaskNotFound",
         ["Attachment asset was not found."] = "ApiError.AttachmentAssetNotFound",
+        ["Campaign was not found."] = "ApiError.CampaignNotFound",
         ["A contact with this email already exists."] = "ApiError.ContactEmailAlreadyExists",
         ["Tag already exists in this category."] = "ApiError.TagAlreadyExists",
         ["Draft cannot be approved while render errors remain."] = "ApiError.DraftRenderErrors",

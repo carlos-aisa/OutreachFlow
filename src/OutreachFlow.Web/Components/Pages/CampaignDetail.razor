@@ -1,0 +1,325 @@
+@page "/campaigns/{Id:guid}"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.Extensions.Localization
+@using OutreachFlow.Application.Campaigns
+@using OutreachFlow.Application.ContactGroups
+@using OutreachFlow.Application.EmailTemplates
+@using OutreachFlow.Domain.Campaigns
+@using OutreachFlow.Web
+@using OutreachFlow.Web.Campaigns
+@using OutreachFlow.Web.ContactGroups
+@using OutreachFlow.Web.EmailTemplates
+@inject CampaignApiClient CampaignClient
+@inject ContactGroupApiClient ContactGroupClient
+@inject EmailTemplateApiClient TemplateClient
+@inject IStringLocalizer<SharedResource> Localizer
+
+<PageTitle>@(campaign?.Name ?? Localizer["Campaigns.PageTitle"])</PageTitle>
+
+<div class="page-shell">
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
+    }
+
+    @if (isLoading)
+    {
+        <p>@Localizer["Campaigns.Detail.Loading"]</p>
+    }
+    else if (campaign is not null)
+    {
+        <div class="page-intro page-intro--split">
+            <div>
+                <h1 class="page-title">@campaign.Name</h1>
+                <p class="page-description">@(campaign.Description ?? string.Empty)</p>
+            </div>
+            <div class="page-actions">
+                <span class="badge text-bg-secondary">@SharedResourceDisplayNames.CampaignStatus(Localizer, campaign.Status)</span>
+                <button type="button" class="btn btn-outline-secondary" @onclick="OpenEditPanel">@Localizer["Common.Edit"]</button>
+                @if (campaign.Status == CampaignStatus.Open)
+                {
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseAsync" disabled="@isBusy">@Localizer["Campaigns.Detail.CloseAction"]</button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-primary" @onclick="ReopenAsync" disabled="@isBusy">@Localizer["Campaigns.Detail.ReopenAction"]</button>
+                }
+            </div>
+        </div>
+
+        <section class="card">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <p class="workspace-card-subtitle mb-1">@Localizer["Campaigns.Detail.Audience"]</p>
+                        <p class="mb-0">@AudienceNames</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="workspace-card-subtitle mb-1">@Localizer["Common.Template"]</p>
+                        <p class="mb-0">@TemplateName</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="workspace-card-subtitle mb-1">@Localizer["Common.Created"]</p>
+                        <p class="mb-0">@campaign.CreatedAt.ToString("yyyy-MM-dd")</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+
+    @if (isEditPanelOpen && campaign is not null)
+    {
+        <div class="side-panel-scrim" @onclick="CloseEditPanel"></div>
+        <aside class="side-panel">
+            <EditForm Model="form" OnValidSubmit="SaveAsync">
+                <DataAnnotationsValidator />
+                <div class="side-panel-header">
+                    <h2 class="workspace-card-title mb-0">@Localizer["Campaigns.Form.EditTitle"]</h2>
+                    <button type="button" class="side-panel-close" @onclick="CloseEditPanel" aria-label="@Localizer["Common.Close"]">&times;</button>
+                </div>
+                <div class="side-panel-body">
+                    <ValidationSummary />
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="campaign-edit-name">@Localizer["Common.Name"]</label>
+                            <InputText id="campaign-edit-name" class="form-control" @bind-Value="form.Name" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="campaign-edit-description">@Localizer["Common.Description"]</label>
+                            <InputTextArea id="campaign-edit-description" class="form-control" @bind-Value="form.Description" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="campaign-edit-template">@Localizer["Common.Template"]</label>
+                            <InputSelect id="campaign-edit-template" class="form-select" @bind-Value="form.EmailTemplateId">
+                                @foreach (var template in templates)
+                                {
+                                    <option value="@template.Id">@template.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="campaign-edit-audience">@Localizer["Campaigns.Form.Audience"]</label>
+                            <select id="campaign-edit-audience" class="form-select" multiple size="6" @onchange="OnAudienceChanged">
+                                @foreach (var group in contactGroups)
+                                {
+                                    <option value="@group.Id" selected="@editedAudienceGroupIds.Contains(group.Id)">@group.Name</option>
+                                }
+                            </select>
+                            <div class="form-text">@Localizer["Campaigns.Form.AudienceHelp"]</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="side-panel-footer">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseEditPanel" disabled="@isBusy">@Localizer["Common.Cancel"]</button>
+                    <button type="submit" class="btn btn-primary" disabled="@isBusy">@Localizer["Common.Save"]</button>
+                </div>
+            </EditForm>
+        </aside>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private CampaignDto? campaign;
+    private IReadOnlyList<ContactGroupDto> contactGroups = [];
+    private IReadOnlyList<EmailTemplateDto> templates = [];
+    private readonly CampaignFormModel form = new();
+    private readonly HashSet<Guid> editedAudienceGroupIds = [];
+    private bool isEditPanelOpen;
+    private string? errorMessage;
+    private bool isLoading;
+    private bool isSaving;
+
+    private bool isBusy => isSaving;
+
+    private string AudienceNames =>
+        campaign is null
+            ? string.Empty
+            : string.Join(", ", campaign.AudienceGroupIds
+                .Select(id => contactGroups.FirstOrDefault(group => group.Id == id)?.Name)
+                .Where(name => name is not null));
+
+    private string TemplateName =>
+        campaign is null
+            ? string.Empty
+            : templates.FirstOrDefault(template => template.Id == campaign.EmailTemplateId)?.Name ?? "-";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            campaign = await CampaignClient.GetAsync(Id);
+            contactGroups = await ContactGroupClient.ListAsync();
+            templates = await TemplateClient.ListAsync(activeOnly: true);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenEditPanel()
+    {
+        if (campaign is null)
+        {
+            return;
+        }
+
+        form.Name = campaign.Name;
+        form.Description = campaign.Description;
+        form.EmailTemplateId = campaign.EmailTemplateId.ToString();
+        editedAudienceGroupIds.Clear();
+
+        foreach (var groupId in campaign.AudienceGroupIds)
+        {
+            editedAudienceGroupIds.Add(groupId);
+        }
+
+        isEditPanelOpen = true;
+    }
+
+    private void CloseEditPanel()
+    {
+        isEditPanelOpen = false;
+    }
+
+    private void OnAudienceChanged(ChangeEventArgs args)
+    {
+        editedAudienceGroupIds.Clear();
+
+        if (args.Value is string[] values)
+        {
+            foreach (var value in values.Where(value => Guid.TryParse(value, out _)))
+            {
+                editedAudienceGroupIds.Add(Guid.Parse(value));
+            }
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (campaign is null || !Guid.TryParse(form.EmailTemplateId, out var templateId))
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            campaign = await CampaignClient.UpdateAsync(campaign.Id, new UpdateCampaignRequest(form.Name, form.Description, templateId));
+
+            var currentGroupIds = campaign.AudienceGroupIds.ToHashSet();
+
+            foreach (var groupId in editedAudienceGroupIds.Except(currentGroupIds))
+            {
+                campaign = await CampaignClient.AddAudienceGroupAsync(campaign.Id, groupId);
+            }
+
+            foreach (var groupId in currentGroupIds.Except(editedAudienceGroupIds))
+            {
+                campaign = await CampaignClient.RemoveAudienceGroupAsync(campaign.Id, groupId);
+            }
+
+            CloseEditPanel();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task CloseAsync()
+    {
+        if (campaign is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            campaign = await CampaignClient.CloseAsync(campaign.Id);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task ReopenAsync()
+    {
+        if (campaign is null)
+        {
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            campaign = await CampaignClient.ReopenAsync(campaign.Id);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private sealed class CampaignFormModel
+    {
+        [LocalizedRequired]
+        public string Name { get; set; } = string.Empty;
+
+        public string? Description { get; set; }
+
+        public string EmailTemplateId { get; set; } = string.Empty;
+    }
+}

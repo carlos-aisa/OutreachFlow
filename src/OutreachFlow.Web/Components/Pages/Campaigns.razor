@@ -1,0 +1,260 @@
+@page "/campaigns"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.Extensions.Localization
+@using OutreachFlow.Application.Campaigns
+@using OutreachFlow.Application.ContactGroups
+@using OutreachFlow.Application.EmailTemplates
+@using OutreachFlow.Web
+@using OutreachFlow.Web.Campaigns
+@using OutreachFlow.Web.ContactGroups
+@using OutreachFlow.Web.EmailTemplates
+@inject CampaignApiClient CampaignClient
+@inject ContactGroupApiClient ContactGroupClient
+@inject EmailTemplateApiClient TemplateClient
+@inject NavigationManager Navigation
+@inject IStringLocalizer<SharedResource> Localizer
+
+<PageTitle>@Localizer["Campaigns.PageTitle"]</PageTitle>
+
+<div class="page-shell">
+    <div class="page-intro page-intro--split">
+        <div>
+            <h1 class="page-title">@Localizer["Campaigns.PageTitle"]</h1>
+            <p class="page-description">@Localizer["Campaigns.Description"]</p>
+        </div>
+        <div class="page-actions">
+            <button id="open-create-campaign-panel" type="button" class="btn btn-primary" @onclick="OpenCreatePanel">@Localizer["Campaigns.Panel.New"]</button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
+    }
+
+    <section class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="workspace-card-title mb-0">@Localizer["Campaigns.List.Title"]</h2>
+            <span class="badge text-bg-secondary">@Localizer["Campaigns.List.Count", campaigns.Count]</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">@Localizer["Common.Name"]</th>
+                        <th scope="col">@Localizer["Common.Status"]</th>
+                        <th scope="col">@Localizer["Campaigns.Form.Audience"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (isLoading)
+                    {
+                        <tr><td colspan="3">@Localizer["Campaigns.List.Loading"]</td></tr>
+                    }
+                    else if (campaigns.Count == 0)
+                    {
+                        <tr><td colspan="3">@Localizer["Campaigns.List.Empty"]</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var campaign in campaigns)
+                        {
+                            <tr>
+                                <td><a href="@($"/campaigns/{campaign.Id}")">@campaign.Name</a></td>
+                                <td>@SharedResourceDisplayNames.CampaignStatus(Localizer, campaign.Status)</td>
+                                <td>@FormatAudience(campaign)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @if (isCreatePanelOpen)
+    {
+        <div class="side-panel-scrim" @onclick="CloseCreatePanel"></div>
+        <aside class="side-panel">
+            <EditForm Model="form" OnValidSubmit="CreateAsync">
+                <DataAnnotationsValidator />
+                <div class="side-panel-header">
+                    <h2 class="workspace-card-title mb-0">@Localizer["Campaigns.Form.CreateTitle"]</h2>
+                    <button type="button" class="side-panel-close" @onclick="CloseCreatePanel" aria-label="@Localizer["Common.Close"]">&times;</button>
+                </div>
+                <div class="side-panel-body">
+                    <ValidationSummary />
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="campaign-name">@Localizer["Common.Name"]</label>
+                            <InputText id="campaign-name" class="form-control" @bind-Value="form.Name" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="campaign-description">@Localizer["Common.Description"]</label>
+                            <InputTextArea id="campaign-description" class="form-control" @bind-Value="form.Description" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="campaign-template">@Localizer["Common.Template"]</label>
+                            <InputSelect id="campaign-template" class="form-select" @bind-Value="form.EmailTemplateId">
+                                <option value="">@Localizer["Campaigns.Form.SelectMessage"]</option>
+                                @foreach (var template in templates)
+                                {
+                                    <option value="@template.Id">@template.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="campaign-audience">@Localizer["Campaigns.Form.Audience"]</label>
+                            <select id="campaign-audience" class="form-select" multiple size="6" @onchange="OnAudienceChanged">
+                                @foreach (var group in contactGroups)
+                                {
+                                    <option value="@group.Id" selected="@selectedAudienceGroupIds.Contains(group.Id)">@group.Name</option>
+                                }
+                            </select>
+                            <div class="form-text">@Localizer["Campaigns.Form.AudienceHelp"]</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="side-panel-footer">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseCreatePanel" disabled="@isSaving">@Localizer["Common.Cancel"]</button>
+                    <button type="submit" class="btn btn-primary" disabled="@isSaving">@Localizer["Campaigns.Form.CreateTitle"]</button>
+                </div>
+            </EditForm>
+        </aside>
+    }
+</div>
+
+@code {
+    private IReadOnlyList<CampaignDto> campaigns = [];
+    private IReadOnlyList<ContactGroupDto> contactGroups = [];
+    private IReadOnlyList<EmailTemplateDto> templates = [];
+    private readonly CampaignFormModel form = new();
+    private readonly HashSet<Guid> selectedAudienceGroupIds = [];
+    private bool isCreatePanelOpen;
+    private string? errorMessage;
+    private bool isLoading;
+    private bool isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            campaigns = await CampaignClient.ListAsync();
+            contactGroups = await ContactGroupClient.ListAsync();
+            templates = await TemplateClient.ListAsync(activeOnly: true);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenCreatePanel()
+    {
+        isCreatePanelOpen = true;
+    }
+
+    private void CloseCreatePanel()
+    {
+        isCreatePanelOpen = false;
+        ResetForm();
+    }
+
+    private void ResetForm()
+    {
+        form.Name = string.Empty;
+        form.Description = null;
+        form.EmailTemplateId = string.Empty;
+        selectedAudienceGroupIds.Clear();
+    }
+
+    private void OnAudienceChanged(ChangeEventArgs args)
+    {
+        selectedAudienceGroupIds.Clear();
+
+        if (args.Value is string[] values)
+        {
+            foreach (var value in values.Where(value => Guid.TryParse(value, out _)))
+            {
+                selectedAudienceGroupIds.Add(Guid.Parse(value));
+            }
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        if (!Guid.TryParse(form.EmailTemplateId, out var templateId))
+        {
+            errorMessage = Localizer["Campaigns.Form.SelectMessage"];
+            return;
+        }
+
+        if (selectedAudienceGroupIds.Count == 0)
+        {
+            errorMessage = Localizer["Campaigns.Form.AudienceHelp"];
+            return;
+        }
+
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            var campaign = await CampaignClient.CreateAsync(new CreateCampaignRequest(
+                form.Name,
+                form.Description,
+                templateId,
+                selectedAudienceGroupIds.ToArray()));
+
+            CloseCreatePanel();
+            Navigation.NavigateTo($"/campaigns/{campaign.Id}");
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private string FormatAudience(CampaignDto campaign)
+    {
+        var names = campaign.AudienceGroupIds
+            .Select(id => contactGroups.FirstOrDefault(group => group.Id == id)?.Name)
+            .Where(name => name is not null);
+
+        return string.Join(", ", names);
+    }
+
+    private sealed class CampaignFormModel
+    {
+        [LocalizedRequired]
+        public string Name { get; set; } = string.Empty;
+
+        public string? Description { get; set; }
+
+        public string EmailTemplateId { get; set; } = string.Empty;
+    }
+}

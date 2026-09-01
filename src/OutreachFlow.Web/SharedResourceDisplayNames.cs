@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Localization;
+using OutreachFlow.Domain.Campaigns;
 using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.ContactImports;
 using OutreachFlow.Domain.Contacts;
@@ -11,6 +12,9 @@ public static class SharedResourceDisplayNames
 {
     public static string ContactStatus(IStringLocalizer<SharedResource> localizer, ContactStatus status)
         => localizer[$"ContactStatus.{status}"];
+
+    public static string CampaignStatus(IStringLocalizer<SharedResource> localizer, CampaignStatus status)
+        => localizer[$"CampaignStatus.{status}"];
 
     public static string EmailDraftStatus(IStringLocalizer<SharedResource> localizer, EmailDraftStatus status)
         => localizer[$"EmailDraftStatus.{status}"];

@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: OutreachFlow API
-  version: 0.16.0
+  version: 0.17.0
   description: API contract for OutreachFlow v1.
 servers:
   - url: http://localhost:5131
@@ -1181,6 +1181,161 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ImportJob"
+  /api/v1/campaigns:
+    get:
+      operationId: listCampaigns
+      summary: Lists campaigns
+      tags:
+        - Campaigns
+      responses:
+        "200":
+          description: Campaigns returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Campaign"
+    post:
+      operationId: createCampaign
+      summary: Creates a campaign
+      tags:
+        - Campaigns
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCampaignRequest"
+      responses:
+        "201":
+          description: Campaign created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/campaigns/{id}:
+    get:
+      operationId: getCampaign
+      summary: Gets a campaign by id
+      tags:
+        - Campaigns
+      parameters:
+        - $ref: "#/components/parameters/CampaignId"
+      responses:
+        "200":
+          description: Campaign returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    put:
+      operationId: updateCampaign
+      summary: Updates a campaign's name, description, and message template
+      tags:
+        - Campaigns
+      parameters:
+        - $ref: "#/components/parameters/CampaignId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCampaignRequest"
+      responses:
+        "200":
+          description: Campaign updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/campaigns/{id}/audience-groups/{contactGroupId}:
+    post:
+      operationId: addCampaignAudienceGroup
+      summary: Adds a contact group to a campaign's audience
+      tags:
+        - Campaigns
+      parameters:
+        - $ref: "#/components/parameters/CampaignId"
+        - $ref: "#/components/parameters/ContactGroupIdInCampaign"
+      responses:
+        "200":
+          description: Audience group added successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+    delete:
+      operationId: removeCampaignAudienceGroup
+      summary: Removes a contact group from a campaign's audience
+      tags:
+        - Campaigns
+      parameters:
+        - $ref: "#/components/parameters/CampaignId"
+        - $ref: "#/components/parameters/ContactGroupIdInCampaign"
+      responses:
+        "200":
+          description: Audience group removed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/campaigns/{id}/close:
+    post:
+      operationId: closeCampaign
+      summary: Closes an open campaign
+      tags:
+        - Campaigns
+      parameters:
+        - $ref: "#/components/parameters/CampaignId"
+      responses:
+        "200":
+          description: Campaign closed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+  /api/v1/campaigns/{id}/reopen:
+    post:
+      operationId: reopenCampaign
+      summary: Reopens a closed campaign
+      tags:
+        - Campaigns
+      parameters:
+        - $ref: "#/components/parameters/CampaignId"
+      responses:
+        "200":
+          description: Campaign reopened successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
 components:
   parameters:
     ContactId:
@@ -1253,6 +1408,20 @@ components:
       schema:
         type: string
         format: uuid
+    CampaignId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ContactGroupIdInCampaign:
+      name: contactGroupId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
   responses:
     ValidationError:
       description: Request validation failed
@@ -1297,6 +1466,82 @@ components:
       properties:
         name: { type: string }
         criteria: { type: array, items: { $ref: "#/components/schemas/ContactGroupCriterionRequest" } }
+    CampaignStatus:
+      type: string
+      enum: [open, closed]
+    Campaign:
+      type: object
+      required:
+        - id
+        - name
+        - emailTemplateId
+        - status
+        - audienceGroupIds
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: Autumn outreach
+        description:
+          type: string
+          nullable: true
+          example: Reach new prospects in the education sector.
+        emailTemplateId:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/CampaignStatus"
+        audienceGroupIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateCampaignRequest:
+      type: object
+      required:
+        - name
+        - emailTemplateId
+        - audienceGroupIds
+      properties:
+        name:
+          type: string
+          example: Autumn outreach
+        description:
+          type: string
+          nullable: true
+        emailTemplateId:
+          type: string
+          format: uuid
+        audienceGroupIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    UpdateCampaignRequest:
+      type: object
+      required:
+        - name
+        - emailTemplateId
+      properties:
+        name:
+          type: string
+          example: Autumn outreach
+        description:
+          type: string
+          nullable: true
+        emailTemplateId:
+          type: string
+          format: uuid
     ApiError:
       type: object
       required:

@@ -2,6 +2,7 @@ using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Attachments;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.ContactActivities;
+using OutreachFlow.Application.ContactGroups;
 using OutreachFlow.Application.ContactImports;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailSending;
@@ -13,6 +14,7 @@ using OutreachFlow.Application.Tags;
 using OutreachFlow.Domain.Attachments;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.ContactActivities;
+using OutreachFlow.Domain.ContactGroups;
 using OutreachFlow.Domain.ContactImports;
 using OutreachFlow.Domain.EmailDrafts;
 using OutreachFlow.Domain.EmailMessages;
@@ -376,6 +378,75 @@ internal sealed class InMemoryEmailTemplateRepository : IEmailTemplateRepository
     public void Remove(EmailTemplate emailTemplate)
     {
         _emailTemplates.Remove(emailTemplate);
+    }
+}
+
+internal sealed class InMemoryContactGroupRepository : IContactGroupRepository
+{
+    private readonly List<ContactGroup> _contactGroups = [];
+
+    public IReadOnlyList<ContactGroup> ContactGroups => _contactGroups;
+
+    public Task AddAsync(ContactGroup contactGroup, CancellationToken cancellationToken = default)
+    {
+        _contactGroups.Add(contactGroup);
+        return Task.CompletedTask;
+    }
+
+    public Task<ContactGroup?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_contactGroups.FirstOrDefault(contactGroup => contactGroup.Id == id));
+    }
+
+    public Task<IReadOnlyList<ContactGroup>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<ContactGroup>>(
+            _contactGroups.OrderBy(contactGroup => contactGroup.Name).ToArray());
+    }
+
+    public Task<IReadOnlyList<ContactGroupCriterion>> ListCriteriaAsync(
+        Guid contactGroupId,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<ContactGroupCriterion>>([]);
+    }
+
+    public Task<IReadOnlyList<ContactGroupMembershipOverride>> ListOverridesAsync(
+        Guid contactGroupId,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<ContactGroupMembershipOverride>>([]);
+    }
+
+    public Task<IReadOnlyList<ContactGroupEvaluationContact>> ListEvaluationContactsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<ContactGroupEvaluationContact>>([]);
+    }
+
+    public Task AddCriterionAsync(ContactGroupCriterion criterion, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task ReplaceCriteriaAsync(
+        Guid contactGroupId,
+        IReadOnlyList<ContactGroupCriterion> criteria,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task UpsertOverrideAsync(
+        ContactGroupMembershipOverride membershipOverride,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    public void Remove(ContactGroup contactGroup)
+    {
+        _contactGroups.Remove(contactGroup);
     }
 }
 

@@ -6,6 +6,7 @@ using Bunit.TestDoubles;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using OutreachFlow.Web.Attachments;
+using OutreachFlow.Web.Campaigns;
 using OutreachFlow.Web.Components.Layout;
 using OutreachFlow.Web.Components.Pages;
 using OutreachFlow.Web.ContactGroups;
@@ -460,6 +461,61 @@ public sealed class WebLocalizationComponentTests : BunitContext
         component.Find("#template-name").GetAttribute("value").Should().BeNullOrEmpty();
     }
 
+    [Fact]
+    public void ShouldOpenAndDiscardCampaignsCreatePanel()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        Services.AddSingleton(new CampaignApiClient(CreateHttpClient()));
+        Services.AddSingleton(new ContactGroupApiClient(CreateHttpClient()));
+        Services.AddSingleton(new EmailTemplateApiClient(CreateHttpClient()));
+
+        var component = Render<Campaigns>();
+
+        component.Find("#open-create-campaign-panel").Click();
+        component.Markup.Should().Contain("Crear campaña");
+
+        component.Find("#campaign-name").Change("Campaña de otoño");
+        component.Find(".side-panel-close").Click();
+
+        component.Markup.Should().NotContain("side-panel-body");
+
+        component.Find("#open-create-campaign-panel").Click();
+        component.Find("#campaign-name").GetAttribute("value").Should().BeNullOrEmpty();
+    }
+
+    [Fact]
+    public void ShouldShowCampaignAudienceAndToggleStatus()
+    {
+        using var cultureScope = CultureTestScope.Use("es-ES");
+        Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+        var httpClient = new HttpClient(new SingleCampaignJsonHandler())
+        {
+            BaseAddress = new Uri("http://localhost")
+        };
+
+        Services.AddSingleton(new CampaignApiClient(httpClient));
+        Services.AddSingleton(new ContactGroupApiClient(httpClient));
+        Services.AddSingleton(new EmailTemplateApiClient(httpClient));
+
+        var component = Render<CampaignDetail>(parameters =>
+            parameters.Add(p => p.Id, SingleCampaignJsonHandler.CampaignId));
+
+        component.Markup.Should().Contain("Abierta");
+        component.Markup.Should().Contain("Prospectos");
+        component.Markup.Should().Contain("Intro");
+
+        component.FindAll("button").First(button => button.TextContent.Trim() == "Cerrar campaña").Click();
+
+        component.Markup.Should().Contain("Cerrada");
+        component.FindAll("button").Should().Contain(button => button.TextContent.Trim() == "Reabrir campaña");
+
+        component.FindAll("button").First(button => button.TextContent.Trim() == "Editar").Click();
+        component.Find("#campaign-edit-name").GetAttribute("value").Should().Be("Campaña de otoño");
+        component.Find("#campaign-edit-audience option[selected]").TextContent.Should().Be("Prospectos");
+    }
+
     private static HttpClient CreateHttpClient()
     {
         return new HttpClient(new EmptyArrayJsonHandler())
@@ -534,6 +590,61 @@ public sealed class WebLocalizationComponentTests : BunitContext
                 Content = new StringContent("{}", Encoding.UTF8, "application/json")
             });
         }
+    }
+
+    private sealed class SingleCampaignJsonHandler : HttpMessageHandler
+    {
+        public static readonly Guid CampaignId = Guid.Parse("5c9c4a2e-8b1e-4b8a-9a2f-1a2b3c4d5e6f");
+        private static readonly Guid TemplateId = Guid.Parse("2b3c4d5e-6f70-4a1b-8c2d-3e4f5a6b7c8d");
+        private static readonly Guid GroupId = Guid.Parse("7d8e9f0a-1b2c-4d3e-9f0a-1b2c3d4e5f6a");
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            var path = request.RequestUri?.AbsolutePath ?? string.Empty;
+
+            if (path.EndsWith("/close", StringComparison.Ordinal))
+            {
+                return Task.FromResult(CreateJsonResponse(CampaignJson("Closed")));
+            }
+
+            if (path.EndsWith("/reopen", StringComparison.Ordinal))
+            {
+                return Task.FromResult(CreateJsonResponse(CampaignJson("Open")));
+            }
+
+            if (request.Method == HttpMethod.Get && path.Contains("/contact-groups", StringComparison.Ordinal))
+            {
+                return Task.FromResult(CreateJsonResponse($$"""
+                    [{"id":"{{GroupId}}","name":"Prospectos","createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z","criteria":[]}]
+                    """));
+            }
+
+            if (request.Method == HttpMethod.Get && path.Contains("/templates", StringComparison.Ordinal))
+            {
+                return Task.FromResult(CreateJsonResponse($$"""
+                    [{"id":"{{TemplateId}}","name":"Intro","description":null,"subjectTemplate":"Hello","bodyTemplate":"Body","defaultAttachmentIds":[],"isActive":true,"createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z"}]
+                    """));
+            }
+
+            if (request.Method == HttpMethod.Get && path.Contains("/campaigns", StringComparison.Ordinal))
+            {
+                return Task.FromResult(CreateJsonResponse(CampaignJson("Open")));
+            }
+
+            return Task.FromResult(CreateJsonResponse("{}"));
+        }
+
+        private static string CampaignJson(string status) => $$"""
+            {"id":"{{CampaignId}}","name":"Campaña de otoño","description":"Alcanzar nuevos prospectos","emailTemplateId":"{{TemplateId}}","status":"{{status}}","audienceGroupIds":["{{GroupId}}"],"createdAt":"2026-01-01T00:00:00Z","updatedAt":"2026-01-01T00:00:00Z"}
+            """;
+
+        private static HttpResponseMessage CreateJsonResponse(string json) =>
+            new(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
     }
 
     private sealed class SingleContactJsonHandler : HttpMessageHandler

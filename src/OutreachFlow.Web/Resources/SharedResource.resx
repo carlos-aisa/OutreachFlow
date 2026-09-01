@@ -364,6 +364,7 @@
   <data name="Validation.EmailAddress" xml:space="preserve"><value>Enter a valid email address.</value></data>
   <data name="Validation.Required" xml:space="preserve"><value>This field is required.</value></data>
   <data name="Nav.ContactGroups" xml:space="preserve"><value>Contact groups</value></data>
+  <data name="Nav.Campaigns" xml:space="preserve"><value>Campaigns</value></data>
   <data name="ContactGroups.PageTitle" xml:space="preserve"><value>Contact groups</value></data>
   <data name="ContactGroups.Description" xml:space="preserve"><value>Build reusable contact audiences from criteria or manual picks.</value></data>
   <data name="ContactGroups.Panel.New" xml:space="preserve"><value>New group</value></data>
@@ -390,4 +391,22 @@
   <data name="ContactGroups.ContactMemberships" xml:space="preserve"><value>Groups</value></data>
   <data name="ContactGroups.NoMemberships" xml:space="preserve"><value>This contact does not currently belong to any group.</value></data>
   <data name="ContactGroups.Manage" xml:space="preserve"><value>Manage groups</value></data>
+  <data name="Campaigns.PageTitle" xml:space="preserve"><value>Campaigns</value></data>
+  <data name="Campaigns.Description" xml:space="preserve"><value>Send a message to a group of contacts and track the results over time.</value></data>
+  <data name="Campaigns.Panel.New" xml:space="preserve"><value>New campaign</value></data>
+  <data name="Campaigns.Form.CreateTitle" xml:space="preserve"><value>Create campaign</value></data>
+  <data name="Campaigns.Form.EditTitle" xml:space="preserve"><value>Edit campaign</value></data>
+  <data name="Campaigns.Form.SelectMessage" xml:space="preserve"><value>Select a template</value></data>
+  <data name="Campaigns.Form.Audience" xml:space="preserve"><value>Audience</value></data>
+  <data name="Campaigns.Form.AudienceHelp" xml:space="preserve"><value>Hold Ctrl (Cmd on Mac) to select more than one group. At least one is required.</value></data>
+  <data name="Campaigns.List.Title" xml:space="preserve"><value>Campaign list</value></data>
+  <data name="Campaigns.List.Count" xml:space="preserve"><value>{0} campaigns</value></data>
+  <data name="Campaigns.List.Loading" xml:space="preserve"><value>Loading campaigns...</value></data>
+  <data name="Campaigns.List.Empty" xml:space="preserve"><value>No campaigns have been created yet.</value></data>
+  <data name="Campaigns.Detail.Loading" xml:space="preserve"><value>Loading campaign...</value></data>
+  <data name="Campaigns.Detail.Audience" xml:space="preserve"><value>Audience</value></data>
+  <data name="Campaigns.Detail.CloseAction" xml:space="preserve"><value>Close campaign</value></data>
+  <data name="Campaigns.Detail.ReopenAction" xml:space="preserve"><value>Reopen campaign</value></data>
+  <data name="CampaignStatus.Open" xml:space="preserve"><value>Open</value></data>
+  <data name="CampaignStatus.Closed" xml:space="preserve"><value>Closed</value></data>
 </root>
