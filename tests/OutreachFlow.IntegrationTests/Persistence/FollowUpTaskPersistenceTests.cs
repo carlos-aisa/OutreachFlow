@@ -80,6 +80,50 @@ public sealed class FollowUpTaskPersistenceTests
         completed[0].Type.Should().Be(FollowUpTaskType.Call);
     }
 
+    [Fact]
+    public async Task ShouldFilterPendingFollowUpTasksDueByACutoffAcrossAllContacts()
+    {
+        await using var connection = await OpenConnectionAsync();
+        await using var context = await CreateMigratedContextAsync(connection);
+        var repository = new FollowUpTaskRepository(context);
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        context.Contacts.Add(contact);
+        await context.SaveChangesAsync();
+
+        var dueSoon = new FollowUpTask(
+            contact.Id,
+            null,
+            DateTimeOffset.UtcNow.AddHours(1),
+            FollowUpTaskType.Email,
+            "Due soon");
+        var dueLater = new FollowUpTask(
+            contact.Id,
+            null,
+            DateTimeOffset.UtcNow.AddDays(30),
+            FollowUpTaskType.Call,
+            "Due later");
+        var completedSoon = new FollowUpTask(
+            contact.Id,
+            null,
+            DateTimeOffset.UtcNow.AddHours(2),
+            FollowUpTaskType.Email,
+            "Completed soon");
+        completedSoon.Complete(DateTimeOffset.UtcNow);
+        await repository.AddAsync(dueSoon);
+        await repository.AddAsync(dueLater);
+        await repository.AddAsync(completedSoon);
+        await context.SaveChangesAsync();
+
+        var dueSoonPending = await repository.ListAsync(new FollowUpTaskFilterRequest(
+            ContactId: null,
+            IsCompleted: false,
+            DueFrom: null,
+            DueTo: DateTimeOffset.UtcNow.AddDays(1)));
+
+        dueSoonPending.Should().ContainSingle();
+        dueSoonPending[0].Notes.Should().Be("Due soon");
+    }
+
     private static async Task<SqliteConnection> OpenConnectionAsync()
     {
         var connection = new SqliteConnection("Data Source=:memory:");

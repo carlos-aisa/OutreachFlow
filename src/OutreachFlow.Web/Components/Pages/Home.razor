@@ -1,26 +1,39 @@
 @page "/"
 @rendermode InteractiveServer
+@using OutreachFlow.Application.Campaigns
 @using OutreachFlow.Application.Contacts
 @using OutreachFlow.Application.EmailDrafts
 @using OutreachFlow.Application.FollowUps
-@using OutreachFlow.Domain.Contacts
+@using OutreachFlow.Domain.Campaigns
 @using OutreachFlow.Domain.EmailDrafts
+@using OutreachFlow.Web.Campaigns
 @using OutreachFlow.Web.Contacts
+@using OutreachFlow.Web.ContactGroups
 @using OutreachFlow.Web.EmailDrafts
 @using OutreachFlow.Web.FollowUps
+@using OutreachFlow.Web.Organizations
 @using Microsoft.Extensions.Localization
 @using OutreachFlow.Web
 @inject ContactApiClient ContactClient
 @inject EmailDraftApiClient DraftClient
 @inject FollowUpTaskApiClient FollowUpClient
+@inject CampaignApiClient CampaignClient
+@inject CampaignRecipientApiClient RecipientClient
+@inject ContactGroupApiClient ContactGroupClient
+@inject OrganizationApiClient OrganizationClient
 @inject IStringLocalizer<SharedResource> Localizer
 
 <PageTitle>@Localizer["Nav.Dashboard"]</PageTitle>
 
 <div class="page-shell">
     <div class="page-intro">
-        <h1 class="page-title">@Localizer["Nav.Dashboard"]</h1>
-        <p class="page-description">@Localizer["Home.Description"]</p>
+        <div>
+            <h1 class="page-title">@Localizer["Nav.Dashboard"]</h1>
+            <p class="page-description">@Localizer["Home.Description"]</p>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-primary" href="/contacts">@Localizer["Home.NewContactAction"]</a>
+        </div>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -28,74 +41,122 @@
         <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
     }
 
-    <section class="summary-grid">
-        <div class="card metric-card">
-            <div class="card-body">
-                <h2 class="metric-label">@Localizer["Home.NewContacts"]</h2>
-                <p class="metric-value">@newContactsCount</p>
-            </div>
-        </div>
-        <div class="card metric-card">
-            <div class="card-body">
-                <h2 class="metric-label">@Localizer["Home.NeedsReviewDrafts"]</h2>
-                <p class="metric-value">@needsReviewDraftsCount</p>
-            </div>
-        </div>
-        <div class="card metric-card">
-            <div class="card-body">
-                <h2 class="metric-label">@Localizer["Home.ApprovedDrafts"]</h2>
-                <p class="metric-value">@approvedDraftsCount</p>
-            </div>
-        </div>
-        <div class="card metric-card">
-            <div class="card-body">
-                <h2 class="metric-label">@Localizer["Home.FailedSends"]</h2>
-                <p class="metric-value">@failedDraftsCount</p>
-            </div>
-        </div>
-    </section>
-
     <section class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="workspace-card-title mb-0">@Localizer["Home.PendingFollowUps.Title"]</h2>
-                <p class="workspace-card-subtitle">@Localizer["Home.PendingFollowUps.Subtitle"]</p>
-            </div>
-            <a class="btn btn-sm btn-outline-primary" href="/follow-ups">@Localizer["Home.PendingFollowUps.Action"]</a>
+        <div class="card-header">
+            <h2 class="workspace-card-title mb-0">@Localizer["Home.Queue.Title"]</h2>
         </div>
         <div class="card-body">
-            @if (pendingFollowUps.Count == 0)
+            @if (!HasQueueItems)
             {
-                <p class="mb-0">@Localizer["Home.PendingFollowUps.Empty"]</p>
+                <p class="mb-0">@Localizer["Home.Queue.Empty"]</p>
             }
             else
             {
-                <div class="list-group">
-                    @foreach (var task in pendingFollowUps)
+                <div class="queue-list">
+                    @if (draftsNeedsReviewCount > 0)
                     {
-                        <div class="list-group-item d-flex justify-content-between align-items-center gap-3">
-                            <div>
-                                <div class="fw-semibold">
-                                    <a href="@($"/contacts/{task.ContactId}")">@task.ContactDisplayName</a>
-                                </div>
-                                <div class="small text-muted">@SharedResourceDisplayNames.FollowUpTaskType(Localizer, task.Type)</div>
+                        <div class="queue-row">
+                            <div class="queue-icon"><span class="bi bi-card-text-queue"></span></div>
+                            <div class="queue-text">
+                                <p class="queue-title">@Localizer["Home.Queue.Drafts.Title", draftsNeedsReviewCount]</p>
+                                <p class="queue-sub">@Localizer["Home.Queue.Drafts.Subtitle"]</p>
                             </div>
-                            <span class="badge text-bg-secondary">@task.DueAt.ToLocalTime().ToString("yyyy-MM-dd")</span>
+                            <a class="btn btn-primary btn-sm" href="/drafts">@Localizer["Home.Queue.Drafts.Action"]</a>
+                        </div>
+                    }
+                    @if (FollowUpsTotalCount > 0)
+                    {
+                        <div class="queue-row">
+                            <div class="queue-icon queue-icon--urgent"><span class="bi bi-calendar-check-queue"></span></div>
+                            <div class="queue-text">
+                                <p class="queue-title">@Localizer["Home.Queue.FollowUps.Title", FollowUpsTotalCount]</p>
+                                <p class="queue-sub">@Localizer["Home.Queue.FollowUps.Subtitle", followUpOverdueCount, followUpDueTodayCount]</p>
+                            </div>
+                            <a class="btn btn-outline-secondary btn-sm" href="/follow-ups">@Localizer["Home.Queue.FollowUps.Action"]</a>
+                        </div>
+                    }
+                    @if (candidateTotalCount > 0)
+                    {
+                        <div class="queue-row">
+                            <div class="queue-icon"><span class="bi bi-send-queue"></span></div>
+                            <div class="queue-text">
+                                <p class="queue-title">@Localizer["Home.Queue.Candidates.Title", candidateTotalCount]</p>
+                                <p class="queue-sub">
+                                    @(singleCandidateCampaign is not null
+                                        ? Localizer["Home.Queue.Candidates.SubtitleNamed", singleCandidateCampaign.Name]
+                                        : Localizer["Home.Queue.Candidates.Subtitle"])
+                                </p>
+                            </div>
+                            <a class="btn btn-outline-secondary btn-sm" href="@CandidatesLink">@Localizer["Home.Queue.Candidates.Action"]</a>
                         </div>
                     }
                 </div>
             }
         </div>
     </section>
+
+    @if (activeCampaigns.Count > 0)
+    {
+        <section class="card mt-4">
+            <div class="card-header">
+                <h2 class="workspace-card-title mb-0">@Localizer["Home.ActiveCampaigns.Title"]</h2>
+                <p class="workspace-card-subtitle">@Localizer["Home.ActiveCampaigns.Subtitle"]</p>
+            </div>
+            <div class="card-body">
+                <div class="campaign-grid">
+                    @foreach (var summary in activeCampaigns)
+                    {
+                        <div class="campaign-card">
+                            <p class="campaign-card-title">@summary.Campaign.Name</p>
+                            @if (!string.IsNullOrWhiteSpace(summary.AudienceNames))
+                            {
+                                <span class="badge text-bg-secondary">@Localizer["Home.ActiveCampaigns.Audience", summary.AudienceNames]</span>
+                            }
+                            <div class="campaign-stats">
+                                <div class="campaign-stat">
+                                    <span class="campaign-stat-value">@summary.Sent</span>
+                                    <span class="campaign-stat-label">@Localizer["Home.ActiveCampaigns.Sent"]</span>
+                                </div>
+                                <div class="campaign-stat">
+                                    <span class="campaign-stat-value">@summary.Pending</span>
+                                    <span class="campaign-stat-label">@Localizer["Home.ActiveCampaigns.Pending"]</span>
+                                </div>
+                                <div class="campaign-stat">
+                                    <span class="campaign-stat-value campaign-stat-value--accent">@summary.Candidates</span>
+                                    <span class="campaign-stat-label">@Localizer["Home.ActiveCampaigns.Candidates"]</span>
+                                </div>
+                            </div>
+                            <a href="@($"/campaigns/{summary.Campaign.Id}")">@Localizer["Home.ActiveCampaigns.ViewAction"]</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+
+    <p class="stat-strip">@Localizer["Home.StatStrip", contactsCount, organizationsCount, groupsCount]</p>
 </div>
 
 @code {
-    private int newContactsCount;
-    private int needsReviewDraftsCount;
-    private int approvedDraftsCount;
-    private int failedDraftsCount;
-    private IReadOnlyList<FollowUpTaskDto> pendingFollowUps = [];
+    private int draftsNeedsReviewCount;
+    private int followUpOverdueCount;
+    private int followUpDueTodayCount;
+    private int candidateTotalCount;
+    private CampaignDto? singleCandidateCampaign;
+    private CampaignDto? primaryCandidateCampaign;
+    private IReadOnlyList<ActiveCampaignSummary> activeCampaigns = [];
+    private int contactsCount;
+    private int organizationsCount;
+    private int groupsCount;
     private string? errorMessage;
+
+    private int FollowUpsTotalCount => followUpOverdueCount + followUpDueTodayCount;
+
+    private bool HasQueueItems =>
+        draftsNeedsReviewCount > 0 || FollowUpsTotalCount > 0 || candidateTotalCount > 0;
+
+    private string CandidatesLink =>
+        primaryCandidateCampaign is not null ? $"/campaigns/{primaryCandidateCampaign.Id}#campaign-candidates" : "/campaigns";
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,28 +169,66 @@
 
         try
         {
-            var newContacts = await ContactClient.ListAsync(new ContactFilterRequest(
+            var needsReviewDrafts = await DraftClient.ListAsync(EmailDraftStatus.NeedsReview);
+            draftsNeedsReviewCount = needsReviewDrafts.Count;
+
+            var now = DateTimeOffset.Now;
+            var endOfToday = new DateTimeOffset(now.Date.AddDays(1).AddTicks(-1), now.Offset);
+            var dueSoonFollowUps = await FollowUpClient.ListAsync(new FollowUpTaskFilterRequest(
+                ContactId: null,
+                IsCompleted: false,
+                DueFrom: null,
+                DueTo: endOfToday));
+            followUpOverdueCount = dueSoonFollowUps.Count(task => task.DueAt < now.Date);
+            followUpDueTodayCount = dueSoonFollowUps.Count - followUpOverdueCount;
+
+            var groups = await ContactGroupClient.ListAsync();
+            var campaigns = await CampaignClient.ListAsync();
+            var openCampaigns = campaigns.Where(campaign => campaign.Status == CampaignStatus.Open).ToArray();
+
+            var summaries = new List<ActiveCampaignSummary>();
+            var candidateCampaigns = new List<(CampaignDto Campaign, int Count)>();
+
+            foreach (var campaign in openCampaigns)
+            {
+                var recipients = await RecipientClient.ListAsync(campaign.Id);
+                var candidates = await RecipientClient.DiscoverCandidatesAsync(campaign.Id);
+                var sent = recipients.Count(recipient => recipient.Status == CampaignRecipientStatus.Sent);
+                var pending = recipients.Count(recipient =>
+                    recipient.Status is CampaignRecipientStatus.Incorporated or CampaignRecipientStatus.Drafted);
+                var audienceNames = string.Join(", ", campaign.AudienceGroupIds
+                    .Select(groupId => groups.FirstOrDefault(group => group.Id == groupId)?.Name)
+                    .Where(name => name is not null));
+
+                summaries.Add(new ActiveCampaignSummary(campaign, audienceNames, sent, pending, candidates.Count));
+
+                if (candidates.Count > 0)
+                {
+                    candidateCampaigns.Add((campaign, candidates.Count));
+                }
+            }
+
+            activeCampaigns = summaries;
+            candidateTotalCount = candidateCampaigns.Sum(candidate => candidate.Count);
+            singleCandidateCampaign = candidateCampaigns.Count == 1 ? candidateCampaigns[0].Campaign : null;
+            primaryCandidateCampaign = candidateCampaigns
+                .OrderByDescending(candidate => candidate.Count)
+                .Select(candidate => candidate.Campaign)
+                .FirstOrDefault();
+
+            var contacts = await ContactClient.ListAsync(new ContactFilterRequest(
                 Search: null,
                 TagId: null,
-                Status: ContactStatus.New,
+                Status: null,
                 DoNotContact: null,
                 OrganizationId: null,
                 LastContactedFrom: null,
                 LastContactedTo: null));
-            var needsReviewDrafts = await DraftClient.ListAsync(EmailDraftStatus.NeedsReview);
-            var approvedDrafts = await DraftClient.ListAsync(EmailDraftStatus.Approved);
-            var failedDrafts = await DraftClient.ListAsync(EmailDraftStatus.Failed);
-            pendingFollowUps = await FollowUpClient.ListAsync(new FollowUpTaskFilterRequest(
-                ContactId: null,
-                IsCompleted: false,
-                DueFrom: null,
-                DueTo: null,
-                Limit: 10));
+            var organizations = await OrganizationClient.ListAsync();
 
-            newContactsCount = newContacts.Count;
-            needsReviewDraftsCount = needsReviewDrafts.Count;
-            approvedDraftsCount = approvedDrafts.Count;
-            failedDraftsCount = failedDrafts.Count;
+            contactsCount = contacts.Count;
+            organizationsCount = organizations.Count;
+            groupsCount = groups.Count;
         }
         catch (InvalidOperationException exception)
         {
@@ -140,4 +239,11 @@
             errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
         }
     }
+
+    private sealed record ActiveCampaignSummary(
+        CampaignDto Campaign,
+        string AudienceNames,
+        int Sent,
+        int Pending,
+        int Candidates);
 }

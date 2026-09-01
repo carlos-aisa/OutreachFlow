@@ -35,7 +35,7 @@ public sealed class WebLocalizationComponentTests : BunitContext
         component.Markup.Should().Contain("Contactos");
         component.Markup.Should().Contain("Organizaciones");
         component.Markup.Should().Contain("Plantillas");
-        component.Markup.Should().Contain("Espacio de trabajo");
+        component.Markup.Should().Contain("Campañas");
         component.Markup.Should().Contain("Configuración");
     }
 
@@ -173,7 +173,7 @@ public sealed class WebLocalizationComponentTests : BunitContext
 
         var component = Render<Contacts>();
 
-        component.Markup.Should().Contain("Contactos");
+        component.Markup.Should().Contain("Directorio");
         component.Markup.Should().Contain("Filtros");
 
         component.Find("#open-create-contact-panel").Click();
@@ -242,8 +242,11 @@ public sealed class WebLocalizationComponentTests : BunitContext
         Services.AddSingleton(new FollowUpTaskApiClient(httpClient));
         Services.AddSingleton(new AttachmentAssetApiClient(httpClient));
         Services.AddSingleton(new ContactImportApiClient(httpClient));
+        Services.AddSingleton(new CampaignApiClient(httpClient));
+        Services.AddSingleton(new CampaignRecipientApiClient(httpClient));
+        Services.AddSingleton(new ContactGroupApiClient(httpClient));
 
-        Render<Home>().Markup.Should().Contain("Panel");
+        Render<Home>().Markup.Should().Contain("Inicio");
 
         var draftsMarkup = Render<Drafts>().Markup;
         draftsMarkup.Should().Contain("Borradores");

@@ -28,23 +28,25 @@ public sealed class FollowUpTaskRepository(OutreachFlowDbContext dbContext) : IF
             query = query.Where(task => task.ContactId == filter.ContactId);
         }
 
-        if (filter.IsCompleted is not null)
+        if (filter.IsCompleted is bool isCompleted)
         {
-            query = query.Where(task => task.IsCompleted == filter.IsCompleted);
-        }
-
-        if (filter.DueFrom is not null)
-        {
-            query = query.Where(task => task.DueAt >= filter.DueFrom);
-        }
-
-        if (filter.DueTo is not null)
-        {
-            query = query.Where(task => task.DueAt <= filter.DueTo);
+            query = query.Where(task => task.IsCompleted == isCompleted);
         }
 
         var tasks = await query.ToArrayAsync(cancellationToken);
-        IEnumerable<FollowUpTask> orderedTasks = tasks
+        IEnumerable<FollowUpTask> filteredTasks = tasks;
+
+        if (filter.DueFrom is DateTimeOffset dueFrom)
+        {
+            filteredTasks = filteredTasks.Where(task => task.DueAt >= dueFrom);
+        }
+
+        if (filter.DueTo is DateTimeOffset dueTo)
+        {
+            filteredTasks = filteredTasks.Where(task => task.DueAt <= dueTo);
+        }
+
+        IEnumerable<FollowUpTask> orderedTasks = filteredTasks
             .OrderBy(task => task.DueAt)
             .ThenBy(task => task.CreatedAt);
 
