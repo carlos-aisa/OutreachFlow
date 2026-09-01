@@ -1,6 +1,7 @@
 using OutreachFlow.Api.Errors;
 using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.Contacts;
+using OutreachFlow.Application.ContactGroups;
 using OutreachFlow.Domain.Contacts;
 
 namespace OutreachFlow.Api.Endpoints;
@@ -50,6 +51,18 @@ public static class ContactEndpoints
             .WithName("CreateContact")
             .WithOpenApi();
 
+        group.MapPost("/intakes", async (
+            CreateContactIntakeRequest request,
+            IContactService service,
+            CancellationToken cancellationToken) =>
+            await ApiEndpoint.HandleAsync(async () =>
+            {
+                var contact = await service.CreateIntakeAsync(request, cancellationToken);
+                return Results.Created($"/api/v1/contacts/{contact.Id}", contact);
+            }))
+            .WithName("CreateContactIntake")
+            .WithOpenApi();
+
         group.MapGet("/{id:guid}", async (
             Guid id,
             IContactService service,
@@ -62,6 +75,15 @@ public static class ContactEndpoints
                     : Results.Ok(contact);
             }))
             .WithName("GetContact")
+            .WithOpenApi();
+
+        group.MapGet("/{id:guid}/groups", async (
+            Guid id,
+            IContactGroupService service,
+            CancellationToken cancellationToken) =>
+            await ApiEndpoint.HandleAsync(async () =>
+                Results.Ok(await service.ListForContactAsync(id, cancellationToken))))
+            .WithName("ListContactGroupsForContact")
             .WithOpenApi();
 
         group.MapPut("/{id:guid}", async (

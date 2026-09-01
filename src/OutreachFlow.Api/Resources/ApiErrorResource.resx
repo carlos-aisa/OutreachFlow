@@ -39,6 +39,12 @@
   <data name="ApiError.AttachmentAssetNotFound" xml:space="preserve">
     <value>Attachment asset was not found.</value>
   </data>
+  <data name="ApiError.CampaignNotFound" xml:space="preserve">
+    <value>Campaign was not found.</value>
+  </data>
+  <data name="ApiError.CampaignRecipientAlreadyIncorporated" xml:space="preserve">
+    <value>This contact is already incorporated into the campaign for its current message.</value>
+  </data>
   <data name="ApiError.ContactEmailAlreadyExists" xml:space="preserve">
     <value>A contact with this email already exists.</value>
   </data>

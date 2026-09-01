@@ -15,7 +15,8 @@ public sealed class FollowUpTask
         DateTimeOffset dueAt,
         FollowUpTaskType type,
         string? notes = null,
-        DateTimeOffset? createdAt = null)
+        DateTimeOffset? createdAt = null,
+        Guid? campaignRecipientId = null)
     {
         if (contactId == Guid.Empty)
         {
@@ -32,6 +33,7 @@ public sealed class FollowUpTask
         CompletedAt = null;
         CreatedAt = createdAt ?? DateTimeOffset.UtcNow;
         UpdatedAt = CreatedAt;
+        CampaignRecipientId = campaignRecipientId;
     }
 
     public Guid Id { get; private set; }
@@ -53,6 +55,8 @@ public sealed class FollowUpTask
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset UpdatedAt { get; private set; }
+
+    public Guid? CampaignRecipientId { get; private set; }
 
     public void Update(
         DateTimeOffset dueAt,

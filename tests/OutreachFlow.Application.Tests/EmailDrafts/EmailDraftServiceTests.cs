@@ -7,6 +7,7 @@ using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.Templates;
 using OutreachFlow.Application.Tests.Support;
 using OutreachFlow.Domain.Attachments;
+using OutreachFlow.Domain.Campaigns;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.ContactActivities;
 using OutreachFlow.Domain.EmailDrafts;
@@ -650,6 +651,140 @@ public sealed class EmailDraftServiceTests
             .WithMessage("Do Not Contact recipients cannot receive emails.");
     }
 
+    [Fact]
+    public async Task ShouldMarkCampaignRecipientSentAndCreateCampaignFollowUpOnSuccessfulSend()
+    {
+        var contactRepository = new InMemoryContactRepository();
+        var organizationRepository = new InMemoryOrganizationRepository();
+        var emailTemplateRepository = new InMemoryEmailTemplateRepository();
+        var senderProfileRepository = new InMemorySenderProfileRepository();
+        var attachmentRepository = new InMemoryAttachmentAssetRepository();
+        var draftRepository = new InMemoryEmailDraftRepository();
+        var emailMessageRepository = new InMemoryEmailMessageRepository();
+        var followUpTaskRepository = new InMemoryFollowUpTaskRepository();
+        var contactActivityRepository = new InMemoryContactActivityRepository();
+        var unitOfWork = new InMemoryUnitOfWork();
+        var campaignRecipientRepository = new InMemoryCampaignRecipientRepository();
+        var campaignRepository = new InMemoryCampaignRepository();
+        var emailSender = new InMemoryEmailSender();
+        var policy = new FixedEmailSendingPolicy(TimeSpan.FromDays(7));
+        var followUpPolicy = new FixedFollowUpAutomationPolicy(false, 7, FollowUpTaskType.Email);
+        var contactActivityService = new ContactActivityService(contactRepository, contactActivityRepository);
+        var service = new EmailDraftService(
+            contactRepository,
+            organizationRepository,
+            emailTemplateRepository,
+            senderProfileRepository,
+            attachmentRepository,
+            draftRepository,
+            emailMessageRepository,
+            followUpTaskRepository,
+            campaignRecipientRepository,
+            campaignRepository,
+            emailSender,
+            policy,
+            followUpPolicy,
+            contactActivityService,
+            new TemplateRenderer(),
+            unitOfWork);
+
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Body");
+        await emailTemplateRepository.AddAsync(template);
+        var campaign = new Campaign("Autumn outreach", null, template.Id, [Guid.NewGuid()]);
+        campaign.ConfigureFollowUp(true, 3, FollowUpTaskType.Call);
+        await campaignRepository.AddAsync(campaign);
+        var recipient = new CampaignRecipient(campaign.Id, contact.Id, template.Id);
+        await campaignRecipientRepository.AddAsync(recipient);
+
+        var generationResult = await service.GenerateForContactsAsync(new GenerateEmailDraftsForContactsRequest(
+            [contact.Id],
+            template.Id,
+            senderProfile.Id,
+            []));
+        var draftId = generationResult.Drafts.Single().Id;
+        recipient.AssignDraft(draftId);
+        await service.ApproveAsync(draftId);
+
+        await service.SendApprovedDraftAsync(draftId);
+
+        recipient.Status.Should().Be(CampaignRecipientStatus.Sent);
+        var followUpTask = followUpTaskRepository.Tasks.Single();
+        followUpTask.CampaignRecipientId.Should().Be(recipient.Id);
+        followUpTask.Type.Should().Be(FollowUpTaskType.Call);
+        followUpTask.DueAt.Should().BeCloseTo(DateTimeOffset.UtcNow.AddDays(3), TimeSpan.FromMinutes(1));
+    }
+
+    [Fact]
+    public async Task ShouldMarkCampaignRecipientFailedOnSendFailure()
+    {
+        var contactRepository = new InMemoryContactRepository();
+        var organizationRepository = new InMemoryOrganizationRepository();
+        var emailTemplateRepository = new InMemoryEmailTemplateRepository();
+        var senderProfileRepository = new InMemorySenderProfileRepository();
+        var attachmentRepository = new InMemoryAttachmentAssetRepository();
+        var draftRepository = new InMemoryEmailDraftRepository();
+        var emailMessageRepository = new InMemoryEmailMessageRepository();
+        var followUpTaskRepository = new InMemoryFollowUpTaskRepository();
+        var contactActivityRepository = new InMemoryContactActivityRepository();
+        var unitOfWork = new InMemoryUnitOfWork();
+        var campaignRecipientRepository = new InMemoryCampaignRecipientRepository();
+        var campaignRepository = new InMemoryCampaignRepository();
+        var emailSender = new InMemoryEmailSender(_ => new EmailSendResult(
+            Success: false,
+            Provider: "Fake",
+            ProviderMessageId: null,
+            ErrorMessage: "Simulated failure from tests."));
+        var policy = new FixedEmailSendingPolicy(TimeSpan.FromDays(7));
+        var followUpPolicy = new FixedFollowUpAutomationPolicy(false, 7, FollowUpTaskType.Email);
+        var contactActivityService = new ContactActivityService(contactRepository, contactActivityRepository);
+        var service = new EmailDraftService(
+            contactRepository,
+            organizationRepository,
+            emailTemplateRepository,
+            senderProfileRepository,
+            attachmentRepository,
+            draftRepository,
+            emailMessageRepository,
+            followUpTaskRepository,
+            campaignRecipientRepository,
+            campaignRepository,
+            emailSender,
+            policy,
+            followUpPolicy,
+            contactActivityService,
+            new TemplateRenderer(),
+            unitOfWork);
+
+        var contact = new Contact("Alex Morgan", "alex@example.com");
+        await contactRepository.AddAsync(contact);
+        var senderProfile = new SenderProfile("Primary Sender", "sender@example.com");
+        await senderProfileRepository.AddAsync(senderProfile);
+        var template = new EmailTemplate("Intro", null, "Subject", "Body");
+        await emailTemplateRepository.AddAsync(template);
+        var campaign = new Campaign("Autumn outreach", null, template.Id, [Guid.NewGuid()]);
+        await campaignRepository.AddAsync(campaign);
+        var recipient = new CampaignRecipient(campaign.Id, contact.Id, template.Id);
+        await campaignRecipientRepository.AddAsync(recipient);
+
+        var generationResult = await service.GenerateForContactsAsync(new GenerateEmailDraftsForContactsRequest(
+            [contact.Id],
+            template.Id,
+            senderProfile.Id,
+            []));
+        var draftId = generationResult.Drafts.Single().Id;
+        recipient.AssignDraft(draftId);
+        await service.ApproveAsync(draftId);
+
+        await service.SendApprovedDraftAsync(draftId);
+
+        recipient.Status.Should().Be(CampaignRecipientStatus.Failed);
+        followUpTaskRepository.Tasks.Should().BeEmpty();
+    }
+
     private static EmailDraftService CreateEmailDraftService(
         out InMemoryContactRepository contactRepository,
         out InMemoryEmailTemplateRepository emailTemplateRepository,
@@ -674,6 +809,8 @@ public sealed class EmailDraftServiceTests
         followUpTaskRepository = new InMemoryFollowUpTaskRepository();
         contactActivityRepository = new InMemoryContactActivityRepository();
         unitOfWork = new InMemoryUnitOfWork();
+        var campaignRecipientRepository = new InMemoryCampaignRecipientRepository();
+        var campaignRepository = new InMemoryCampaignRepository();
         var emailSender = new InMemoryEmailSender(sendHandler);
         var policy = new FixedEmailSendingPolicy(equivalentEmailWindow ?? TimeSpan.FromDays(7));
         var followUpPolicy = new FixedFollowUpAutomationPolicy(
@@ -691,6 +828,8 @@ public sealed class EmailDraftServiceTests
             draftRepository,
             emailMessageRepository,
             followUpTaskRepository,
+            campaignRecipientRepository,
+            campaignRepository,
             emailSender,
             policy,
             followUpPolicy,

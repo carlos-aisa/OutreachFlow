@@ -53,4 +53,21 @@ public sealed class FollowUpTaskTests
         act.Should().Throw<DomainException>()
             .WithMessage("Follow-up task is already completed.");
     }
+
+    [Fact]
+    public void ShouldRecordCampaignRecipientContext()
+    {
+        var campaignRecipientId = Guid.NewGuid();
+
+        var task = new FollowUpTask(
+            Guid.NewGuid(),
+            null,
+            DateTimeOffset.UtcNow.AddDays(2),
+            FollowUpTaskType.Email,
+            "Auto-created after campaign send.",
+            createdAt: null,
+            campaignRecipientId: campaignRecipientId);
+
+        task.CampaignRecipientId.Should().Be(campaignRecipientId);
+    }
 }

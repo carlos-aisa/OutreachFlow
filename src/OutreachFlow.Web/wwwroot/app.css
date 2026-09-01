@@ -30,10 +30,6 @@
     --workspace-sidebar-icon: rgba(217, 229, 251, 0.74);
     --workspace-sidebar-icon-hover: rgba(217, 229, 251, 0.92);
     --workspace-sidebar-icon-active: #ffffff;
-    --workspace-shell-overlay: rgba(248, 251, 255, 0.94);
-    --workspace-shell-overlay-strong: rgba(244, 247, 251, 0.72);
-    --workspace-top-row-surface: rgba(255, 255, 255, 0.76);
-    --workspace-top-row-border: rgba(194, 206, 222, 0.6);
     --workspace-card-bg: rgba(255, 255, 255, 0.95);
     --workspace-card-bg-alt: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 249, 255, 0.96));
     --workspace-card-header-bg: linear-gradient(180deg, rgba(245, 248, 253, 0.98), rgba(238, 243, 251, 0.98));
@@ -93,10 +89,6 @@ html[data-theme="dark"] {
     --workspace-sidebar-icon: rgba(214, 226, 251, 0.82);
     --workspace-sidebar-icon-hover: #ffffff;
     --workspace-sidebar-icon-active: #ffffff;
-    --workspace-shell-overlay: rgba(12, 18, 30, 0.92);
-    --workspace-shell-overlay-strong: rgba(12, 18, 30, 0.76);
-    --workspace-top-row-surface: rgba(17, 24, 39, 0.72);
-    --workspace-top-row-border: rgba(107, 126, 156, 0.34);
     --workspace-card-bg: rgba(22, 32, 51, 0.94);
     --workspace-card-bg-alt: linear-gradient(180deg, rgba(27, 39, 64, 0.94), rgba(19, 28, 46, 0.96));
     --workspace-card-header-bg: linear-gradient(180deg, rgba(29, 42, 68, 0.96), rgba(21, 31, 51, 0.96));
@@ -539,6 +531,188 @@ h1:focus {
 
 .template-body {
     min-height: 16rem;
+}
+
+.side-panel-scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(16, 24, 39, 0.45);
+    z-index: 1040;
+}
+
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 460px;
+    max-width: 92vw;
+    background: var(--workspace-surface);
+    box-shadow: var(--workspace-shadow);
+    border-left: 1px solid var(--workspace-border);
+    z-index: 1041;
+    display: flex;
+    flex-direction: column;
+}
+
+.side-panel form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.side-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--workspace-border);
+}
+
+.side-panel-close {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--workspace-text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+.side-panel-close:hover {
+    color: var(--workspace-heading);
+}
+
+.side-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.side-panel-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1.1rem 1.5rem;
+    border-top: 1px solid var(--workspace-border);
+    background: var(--workspace-card-header-bg);
+}
+
+.combo-wrap {
+    position: relative;
+}
+
+.combo-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.4rem;
+    background: var(--workspace-surface);
+    border: 1px solid var(--workspace-border-strong);
+    border-radius: var(--workspace-radius-sm);
+    box-shadow: var(--workspace-shadow-soft);
+    max-height: 230px;
+    overflow-y: auto;
+    z-index: 20;
+}
+
+.combo-item {
+    padding: 0.65rem 0.9rem;
+    font-size: 0.92rem;
+    color: var(--workspace-text);
+    cursor: pointer;
+    border-bottom: 1px solid var(--workspace-border);
+}
+
+.combo-item:last-child {
+    border-bottom: none;
+}
+
+.combo-item:hover {
+    background: var(--workspace-outline-hover-surface);
+}
+
+.combo-item--empty {
+    color: var(--workspace-text-muted);
+    cursor: default;
+}
+
+.combo-item--empty:hover {
+    background: none;
+}
+
+.combo-clear {
+    position: absolute;
+    top: 50%;
+    right: 0.6rem;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: var(--workspace-text-muted);
+    cursor: pointer;
+    padding: 0.2rem;
+}
+
+.combo-clear:hover {
+    color: var(--workspace-heading);
+}
+
+.combo-wrap input.form-control {
+    padding-right: 2.2rem;
+}
+
+.combo-item--create {
+    color: var(--workspace-accent-ink);
+    background: rgba(139, 216, 90, 0.12);
+    font-weight: 700;
+}
+
+.combo-item--create:hover {
+    background: rgba(139, 216, 90, 0.22);
+}
+
+.org-new-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(139, 216, 90, 0.18);
+    border: 1px solid rgba(111, 195, 58, 0.35);
+    color: #2f6b1c;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-top: 0.6rem;
+}
+
+.org-extra-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--workspace-link);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    margin-top: 0.5rem;
+    margin-left: 0.75rem;
+    display: inline-block;
+}
+
+.org-extra-toggle:hover {
+    color: var(--workspace-link-hover);
+}
+
+@media (max-width: 767.98px) {
+    .side-panel {
+        width: 100%;
+        max-width: 100%;
+    }
 }
 
 @media (max-width: 991.98px) {

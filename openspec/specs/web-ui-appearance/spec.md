@@ -19,7 +19,7 @@ The web application SHALL present a consistent visual system across layout, card
 - **THEN** text, icons, surfaces, borders, and interactive states MUST remain visually legible with the shared workspace styling
 
 ### Requirement: Navigation shell establishes clear orientation
-The web application SHALL render a persistent navigation shell that clearly separates navigation from work content, makes the current location easy to identify, and provides a clear destination for user settings without embedding preference controls in the sidebar header.
+The web application SHALL render a persistent navigation shell that clearly separates navigation from work content, makes the current location easy to identify, provides a clear destination for user settings without embedding preference controls in the sidebar header, and keeps the sidebar header itself compact.
 
 #### Scenario: Active route is visually identifiable
 - **WHEN** a user navigates to a page from the sidebar
@@ -33,16 +33,24 @@ The web application SHALL render a persistent navigation shell that clearly sepa
 - **WHEN** the dark theme is active and a navigation item is selected
 - **THEN** the selected item background, text, and icon MUST remain visually distinguishable from inactive items
 
+#### Scenario: Sidebar header stays compact
+- **WHEN** the sidebar renders
+- **THEN** its header shows only the product name, without a workspace tagline or descriptive paragraph competing with navigation items for space
+
 ### Requirement: Primary work pages support fast scanning
-The web application SHALL improve the visual hierarchy of dense operational pages so users can scan titles, filters, forms, and tabular content with less effort.
+The web application SHALL improve the visual hierarchy of dense operational pages, including record-creation panels opened from them, so users can scan titles, filters, forms, tabular content, and contextual next actions with less effort.
 
 #### Scenario: Page headers establish clear structure
 - **WHEN** a user opens a primary work page
-- **THEN** the page title, supporting description, and first actionable section MUST appear in a clear top-to-bottom hierarchy
+- **THEN** the page shows one title with a purpose-specific description directly beneath it, without a separate top bar above it or a small line repeating the same title
 
 #### Scenario: Dense content remains readable
 - **WHEN** a page contains forms, tables, or stacked detail sections
 - **THEN** spacing, typography, and surface treatment MUST preserve readable grouping between controls, records, and supporting metadata
+
+#### Scenario: Contact intake reveals optional work progressively
+- **WHEN** a user opens the New contact panel and chooses to create a new organization from the combobox
+- **THEN** essential contact fields remain visible while the optional extra organization fields stay collapsed behind an explicit action, without implying that organization association is required
 
 ### Requirement: Layout remains usable across responsive breakpoints
 The web application SHALL preserve the refreshed appearance without reducing usability on narrow screens.
@@ -54,4 +62,38 @@ The web application SHALL preserve the refreshed appearance without reducing usa
 #### Scenario: Responsive forms and tables remain operable
 - **WHEN** a page containing forms or tables is viewed on a narrow screen
 - **THEN** controls MUST remain reachable, stacked content MUST preserve hierarchy, and tabular content MUST remain readable inside responsive containers
+
+### Requirement: Record creation uses a dismissible side panel on primary list pages
+The web application SHALL let a primary list page open record creation and editing in a dismissible side panel triggered from a primary header action or a record's edit action, keeping the record list as the page's default, dominant content.
+
+#### Scenario: Primary action opens the creation panel
+- **WHEN** a user selects the primary "New" action in a primary list page's header
+- **THEN** the system opens a side panel containing the creation form without navigating away from the list
+
+#### Scenario: List remains the default view
+- **WHEN** a user opens a primary list page
+- **THEN** the record list is visible without first requiring the user to dismiss or scroll past a creation form
+
+#### Scenario: Edit action opens the same panel pre-filled
+- **WHEN** a user selects a record's edit action on a page that supports editing
+- **THEN** the system opens the same side panel pre-filled with that record's data instead of swapping an inline form between create and edit modes
+
+#### Scenario: Page-scoped secondary content remains outside the panel
+- **WHEN** a page has content tied to the whole page or a set of related records rather than the single record's own fields, such as a contact group's member list or a template's variable reference
+- **THEN** that content MUST remain on the main page rather than move into the panel
+
+#### Scenario: Pattern applies across primary list pages
+- **WHEN** a user opens the Organizations, Tags, Contact groups, Sender profiles, Templates, Attachments, or Follow-ups page
+- **THEN** each page follows the shared header-action, filters-above-list, and side-panel-creation pattern
+
+### Requirement: Single-record pickers support search at scale
+The web application SHALL let a user find a single existing contact or organization by typing to search, rather than scrolling a plain dropdown listing every record, anywhere a form assigns or filters by one existing contact or organization.
+
+#### Scenario: Assign a contact by searching
+- **WHEN** a user opens the follow-up task creation panel
+- **THEN** they can type to filter contacts by name or email and select one, instead of scrolling a full list
+
+#### Scenario: Filter by organization by searching
+- **WHEN** a user filters contacts, or filters draft-generation recipients, by organization
+- **THEN** they can type to filter organizations by name and select one, instead of scrolling a full list
 

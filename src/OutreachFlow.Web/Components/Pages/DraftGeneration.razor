@@ -30,7 +30,6 @@
 
 <div class="page-shell">
 <div class="page-intro">
-    <p class="page-kicker">@Localizer["DraftGeneration.Kicker"]</p>
     <h1 class="page-title">@Localizer["DraftGeneration.PageTitle"]</h1>
     <p class="page-description">@Localizer["DraftGeneration.Description"]</p>
 </div>
@@ -73,13 +72,13 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">@Localizer["Common.Organization"]</label>
-                    <select class="form-select" @bind="selectedOrganizationId">
-                        <option value="">@Localizer["Common.Any"]</option>
-                        @foreach (var organization in organizations)
-                        {
-                            <option value="@organization.Id">@organization.Name</option>
-                        }
-                    </select>
+                    <SearchSelect TItem="OrganizationDto"
+                                  Items="organizations"
+                                  DisplayText="@(o => o.Name)"
+                                  GetId="@(o => o.Id)"
+                                  @bind-SelectedId="selectedOrganizationId"
+                                  Placeholder="@Localizer["Common.Any"]"
+                                  EmptyLabel="@Localizer["Common.NoResults"]" />
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">@Localizer["Common.Tag"]</label>
@@ -299,7 +298,7 @@
     private string? search;
     private string? selectedStatus;
     private string? selectedDoNotContact;
-    private string? selectedOrganizationId;
+    private Guid? selectedOrganizationId;
     private string? selectedTagId;
     private string? selectedTemplateId;
     private string? selectedSenderProfileId;
@@ -417,7 +416,7 @@
                 ParseGuid(selectedTagId),
                 ParseStatus(selectedStatus),
                 ParseBoolean(selectedDoNotContact),
-                ParseGuid(selectedOrganizationId),
+                selectedOrganizationId,
                 null,
                 null,
                 templateId,
@@ -466,7 +465,7 @@
             ParseGuid(selectedTagId),
             ParseStatus(selectedStatus),
             ParseBoolean(selectedDoNotContact),
-            ParseGuid(selectedOrganizationId),
+            selectedOrganizationId,
             null,
             null);
     }

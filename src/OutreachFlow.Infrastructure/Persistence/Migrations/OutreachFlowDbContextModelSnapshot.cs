@@ -67,6 +67,115 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("AttachmentAssets", (string)null);
                 });
 
+            modelBuilder.Entity("OutreachFlow.Domain.Campaigns.Campaign", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("EmailTemplateId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("FollowUpDueDays")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("FollowUpEnabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("FollowUpType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmailTemplateId");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Campaigns", (string)null);
+                });
+
+            modelBuilder.Entity("OutreachFlow.Domain.Campaigns.CampaignAudienceGroup", b =>
+                {
+                    b.Property<Guid>("CampaignId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ContactGroupId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("CampaignId", "ContactGroupId");
+
+                    b.HasIndex("ContactGroupId");
+
+                    b.ToTable("CampaignAudienceGroups", (string)null);
+                });
+
+            modelBuilder.Entity("OutreachFlow.Domain.Campaigns.CampaignRecipient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CampaignId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ContactId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("EmailDraftId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ExclusionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("IncorporatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("MessageTemplateId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContactId");
+
+                    b.HasIndex("EmailDraftId");
+
+                    b.HasIndex("MessageTemplateId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("CampaignId", "ContactId", "MessageTemplateId")
+                        .IsUnique();
+
+                    b.ToTable("CampaignRecipients", (string)null);
+                });
+
             modelBuilder.Entity("OutreachFlow.Domain.ContactActivities.ContactActivity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -110,6 +219,72 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
                     b.HasIndex("ContactId", "OccurredAt");
 
                     b.ToTable("ContactActivities", (string)null);
+                });
+
+            modelBuilder.Entity("OutreachFlow.Domain.ContactGroups.ContactGroup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("ContactGroups", (string)null);
+                });
+
+            modelBuilder.Entity("OutreachFlow.Domain.ContactGroups.ContactGroupCriterion", b =>
+                {
+                    b.Property<Guid>("ContactGroupId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("NormalizedValue")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ContactGroupId", "Type", "NormalizedValue");
+
+                    b.HasIndex("Type");
+
+                    b.ToTable("ContactGroupCriteria", (string)null);
+                });
+
+            modelBuilder.Entity("OutreachFlow.Domain.ContactGroups.ContactGroupMembershipOverride", b =>
+                {
+                    b.Property<Guid>("ContactGroupId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ContactId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("ContactGroupId", "ContactId");
+
+                    b.HasIndex("ContactId");
+
+                    b.ToTable("ContactGroupMembershipOverrides", (string)null);
                 });
 
             modelBuilder.Entity("OutreachFlow.Domain.ContactImports.ImportJob", b =>
@@ -466,6 +641,9 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("CampaignRecipientId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTimeOffset?>("CompletedAt")
                         .HasColumnType("TEXT");
 
@@ -495,6 +673,8 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CampaignRecipientId");
 
                     b.HasIndex("ContactId");
 
@@ -654,6 +834,56 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("Tags", (string)null);
                 });
 
+            modelBuilder.Entity("OutreachFlow.Domain.Campaigns.Campaign", b =>
+                {
+                    b.HasOne("OutreachFlow.Domain.EmailTemplates.EmailTemplate", null)
+                        .WithMany()
+                        .HasForeignKey("EmailTemplateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("OutreachFlow.Domain.Campaigns.CampaignAudienceGroup", b =>
+                {
+                    b.HasOne("OutreachFlow.Domain.Campaigns.Campaign", null)
+                        .WithMany("AudienceGroups")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutreachFlow.Domain.ContactGroups.ContactGroup", null)
+                        .WithMany()
+                        .HasForeignKey("ContactGroupId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("OutreachFlow.Domain.Campaigns.CampaignRecipient", b =>
+                {
+                    b.HasOne("OutreachFlow.Domain.Campaigns.Campaign", null)
+                        .WithMany()
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutreachFlow.Domain.Contacts.Contact", null)
+                        .WithMany()
+                        .HasForeignKey("ContactId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OutreachFlow.Domain.EmailDrafts.EmailDraft", null)
+                        .WithMany()
+                        .HasForeignKey("EmailDraftId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("OutreachFlow.Domain.EmailTemplates.EmailTemplate", null)
+                        .WithMany()
+                        .HasForeignKey("MessageTemplateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("OutreachFlow.Domain.ContactActivities.ContactActivity", b =>
                 {
                     b.HasOne("OutreachFlow.Domain.Contacts.Contact", null)
@@ -666,6 +896,30 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("OutreachFlow.Domain.ContactGroups.ContactGroupCriterion", b =>
+                {
+                    b.HasOne("OutreachFlow.Domain.ContactGroups.ContactGroup", null)
+                        .WithMany()
+                        .HasForeignKey("ContactGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("OutreachFlow.Domain.ContactGroups.ContactGroupMembershipOverride", b =>
+                {
+                    b.HasOne("OutreachFlow.Domain.ContactGroups.ContactGroup", null)
+                        .WithMany()
+                        .HasForeignKey("ContactGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OutreachFlow.Domain.Contacts.Contact", null)
+                        .WithMany()
+                        .HasForeignKey("ContactId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("OutreachFlow.Domain.Contacts.Contact", b =>
@@ -767,6 +1021,11 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("OutreachFlow.Domain.FollowUps.FollowUpTask", b =>
                 {
+                    b.HasOne("OutreachFlow.Domain.Campaigns.CampaignRecipient", null)
+                        .WithMany()
+                        .HasForeignKey("CampaignRecipientId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("OutreachFlow.Domain.Contacts.Contact", null)
                         .WithMany()
                         .HasForeignKey("ContactId")
@@ -777,6 +1036,11 @@ namespace OutreachFlow.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("OutreachFlow.Domain.Campaigns.Campaign", b =>
+                {
+                    b.Navigation("AudienceGroups");
                 });
 
             modelBuilder.Entity("OutreachFlow.Domain.Contacts.Contact", b =>

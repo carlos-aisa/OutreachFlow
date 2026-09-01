@@ -1,4 +1,5 @@
 using OutreachFlow.Domain.Contacts;
+using OutreachFlow.Application.Organizations;
 
 namespace OutreachFlow.Application.Contacts;
 
@@ -22,6 +23,17 @@ public sealed record ContactDto(
 
 public sealed record CreateContactRequest(
     Guid? OrganizationId,
+    string DisplayName,
+    string Email,
+    string? Phone,
+    string? Role,
+    string? Source,
+    ContactStatus Status,
+    bool DoNotContact);
+
+public sealed record CreateContactIntakeRequest(
+    Guid? OrganizationId,
+    CreateOrganizationRequest? NewOrganization,
     string DisplayName,
     string Email,
     string? Phone,

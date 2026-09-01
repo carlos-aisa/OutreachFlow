@@ -10,6 +10,8 @@ using OutreachFlow.Web.SenderProfiles;
 using OutreachFlow.Web.Tags;
 using OutreachFlow.Web.FollowUps;
 using OutreachFlow.Web.ContactImports;
+using OutreachFlow.Web.ContactGroups;
+using OutreachFlow.Web.Campaigns;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWindowsService();
@@ -46,6 +48,8 @@ var apiBaseUrl = builder.Configuration["OutreachFlowApi:BaseUrl"] ??
 
 builder.Services.AddHttpClient<ContactApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<ContactGroupApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<OrganizationApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<TagApiClient>(client =>
@@ -61,6 +65,10 @@ builder.Services.AddHttpClient<EmailDraftApiClient>(client =>
 builder.Services.AddHttpClient<FollowUpTaskApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<ContactImportApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<CampaignApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<CampaignRecipientApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();

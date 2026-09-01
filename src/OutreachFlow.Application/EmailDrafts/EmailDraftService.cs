@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 
 using OutreachFlow.Application.Attachments;
+using OutreachFlow.Application.Campaigns;
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.ContactActivities;
@@ -12,6 +13,7 @@ using OutreachFlow.Application.Organizations;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Application.Templates;
 using OutreachFlow.Domain.Attachments;
+using OutreachFlow.Domain.Campaigns;
 using OutreachFlow.Domain.Common;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.ContactActivities;
@@ -33,6 +35,8 @@ public sealed class EmailDraftService(
     IEmailDraftRepository emailDraftRepository,
     IEmailMessageRepository emailMessageRepository,
     IFollowUpTaskRepository followUpTaskRepository,
+    ICampaignRecipientRepository campaignRecipientRepository,
+    ICampaignRepository campaignRepository,
     IEmailSender emailSender,
     IEmailSendingPolicy emailSendingPolicy,
     IFollowUpAutomationPolicy followUpAutomationPolicy,
@@ -76,9 +80,62 @@ public sealed class EmailDraftService(
             request.LastContactedTo);
 
         var contacts = await contactRepository.ListAsync(contactFilter, cancellationToken);
+
+        return await GenerateForContactsCoreAsync(
+            contacts,
+            emailTemplate,
+            senderProfile,
+            request.AttachmentAssetIds,
+            cancellationToken);
+    }
+
+    public async Task<GenerateEmailDraftsResult> GenerateForContactsAsync(
+        GenerateEmailDraftsForContactsRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var emailTemplate = await emailTemplateRepository.GetByIdAsync(request.TemplateId, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Email template was not found.");
+
+        if (!emailTemplate.IsActive)
+        {
+            throw new ApplicationValidationException("Inactive email templates cannot be used for draft generation.");
+        }
+
+        var senderProfile = await senderProfileRepository.GetByIdAsync(request.SenderProfileId, cancellationToken)
+            ?? throw new ApplicationNotFoundException("Sender profile was not found.");
+
+        if (!senderProfile.IsActive)
+        {
+            throw new ApplicationValidationException("Inactive sender profiles cannot be used for draft generation.");
+        }
+
+        var contacts = new List<Contact>(request.ContactIds.Count);
+
+        foreach (var contactId in request.ContactIds)
+        {
+            var contact = await contactRepository.GetByIdAsync(contactId, cancellationToken)
+                ?? throw new ApplicationNotFoundException("Contact was not found.");
+            contacts.Add(contact);
+        }
+
+        return await GenerateForContactsCoreAsync(
+            contacts,
+            emailTemplate,
+            senderProfile,
+            request.AttachmentAssetIds,
+            cancellationToken);
+    }
+
+    private async Task<GenerateEmailDraftsResult> GenerateForContactsCoreAsync(
+        IReadOnlyList<Contact> contacts,
+        EmailTemplate emailTemplate,
+        SenderProfile senderProfile,
+        IReadOnlyList<Guid>? attachmentAssetIds,
+        CancellationToken cancellationToken)
+    {
         var requestedContacts = contacts.Count;
 
-        var optionalAttachmentIds = request.AttachmentAssetIds?
+        var optionalAttachmentIds = attachmentAssetIds?
             .Where(attachmentId => attachmentId != Guid.Empty)
             .Distinct()
             .ToArray() ?? [];
@@ -366,6 +423,7 @@ public sealed class EmailDraftService(
             : sendResult.Provider.Trim();
 
         EmailMessage emailMessage;
+        var campaignRecipient = await campaignRecipientRepository.GetByEmailDraftIdAsync(draft.Id, cancellationToken);
 
         try
         {
@@ -373,6 +431,7 @@ public sealed class EmailDraftService(
             {
                 draft.MarkSent(now);
                 contact.MarkContacted(now);
+                campaignRecipient?.MarkSent(now);
                 emailMessage = EmailMessage.CreateSent(
                     contact.Id,
                     draft.OrganizationId,
@@ -391,6 +450,7 @@ public sealed class EmailDraftService(
                     : sendResult.ErrorMessage.Trim();
 
                 draft.MarkFailed(failureReason, now);
+                campaignRecipient?.MarkFailed(now);
                 emailMessage = EmailMessage.CreateFailed(
                     contact.Id,
                     draft.OrganizationId,
@@ -409,25 +469,49 @@ public sealed class EmailDraftService(
         }
 
         await emailMessageRepository.AddAsync(emailMessage, cancellationToken);
-        if (sendResult.Success && followUpAutomationPolicy.AutoCreateAfterSuccessfulSend)
-        {
-            var followUpTask = new FollowUpTask(
-                contact.Id,
-                draft.OrganizationId,
-                now.AddDays(followUpAutomationPolicy.AutoCreateDueDays),
-                followUpAutomationPolicy.AutoCreateType,
-                $"Auto-created after sent email: {draft.Subject}");
 
-            await followUpTaskRepository.AddAsync(followUpTask, cancellationToken);
-            await contactActivityService.RecordAsync(new CreateContactActivityRequest(
-                followUpTask.ContactId,
-                followUpTask.OrganizationId,
-                ContactActivityType.FollowUpCreated,
-                Subject: "Follow-up created",
-                BodyPreview: followUpTask.Notes,
-                MetadataJson: null,
-                followUpTask.CreatedAt),
-                cancellationToken);
+        if (sendResult.Success)
+        {
+            FollowUpTask? followUpTask = null;
+
+            if (campaignRecipient is not null)
+            {
+                var campaign = await campaignRepository.GetByIdAsync(campaignRecipient.CampaignId, cancellationToken);
+
+                if (campaign is not null && campaign.FollowUpEnabled)
+                {
+                    followUpTask = new FollowUpTask(
+                        contact.Id,
+                        draft.OrganizationId,
+                        now.AddDays(campaign.FollowUpDueDays),
+                        campaign.FollowUpType,
+                        $"Auto-created after sent email: {draft.Subject}",
+                        campaignRecipientId: campaignRecipient.Id);
+                }
+            }
+            else if (followUpAutomationPolicy.AutoCreateAfterSuccessfulSend)
+            {
+                followUpTask = new FollowUpTask(
+                    contact.Id,
+                    draft.OrganizationId,
+                    now.AddDays(followUpAutomationPolicy.AutoCreateDueDays),
+                    followUpAutomationPolicy.AutoCreateType,
+                    $"Auto-created after sent email: {draft.Subject}");
+            }
+
+            if (followUpTask is not null)
+            {
+                await followUpTaskRepository.AddAsync(followUpTask, cancellationToken);
+                await contactActivityService.RecordAsync(new CreateContactActivityRequest(
+                    followUpTask.ContactId,
+                    followUpTask.OrganizationId,
+                    ContactActivityType.FollowUpCreated,
+                    Subject: "Follow-up created",
+                    BodyPreview: followUpTask.Notes,
+                    MetadataJson: null,
+                    followUpTask.CreatedAt),
+                    cancellationToken);
+            }
         }
 
         await contactActivityService.RecordAsync(new CreateContactActivityRequest(

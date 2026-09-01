@@ -15,10 +15,14 @@
 <PageTitle>@Localizer["FollowUps.PageTitle"]</PageTitle>
 
 <div class="page-shell">
-<div class="page-intro">
-    <p class="page-kicker">@Localizer["FollowUps.PageTitle"]</p>
-    <h1 class="page-title">@Localizer["FollowUps.PageTitle"]</h1>
-    <p class="page-description">@Localizer["FollowUps.Description"]</p>
+<div class="page-intro page-intro--split">
+    <div>
+        <h1 class="page-title">@Localizer["FollowUps.PageTitle"]</h1>
+        <p class="page-description">@Localizer["FollowUps.Description"]</p>
+    </div>
+    <div class="page-actions">
+        <button id="open-create-followup-panel" type="button" class="btn btn-primary" @onclick="OpenCreatePanel">@Localizer["FollowUps.Panel.New"]</button>
+    </div>
 </div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
@@ -30,51 +34,6 @@
 {
     <div class="alert alert-success page-section" role="alert">@successMessage</div>
 }
-
-<section class="card mb-4">
-    <div class="card-header">
-        <h2 class="workspace-card-title mb-0">@Localizer["FollowUps.CreateTitle"]</h2>
-    </div>
-    <div class="card-body">
-        <EditForm Model="newTask" OnValidSubmit="CreateAsync">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label" for="followup-contact">@Localizer["Common.Contact"]</label>
-                    <InputSelect id="followup-contact" class="form-select" @bind-Value="newTask.ContactId">
-                        <option value="">@Localizer["FollowUps.SelectContact"]</option>
-                        @foreach (var contact in contacts)
-                        {
-                            <option value="@contact.Id">@contact.DisplayName (@contact.Email)</option>
-                        }
-                    </InputSelect>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label" for="followup-due">@Localizer["FollowUps.DueAt"]</label>
-                    <InputDate id="followup-due" class="form-control" @bind-Value="newTask.DueDate" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label" for="followup-type">@Localizer["Common.Type"]</label>
-                    <InputSelect id="followup-type" class="form-select" @bind-Value="newTask.Type">
-                        @foreach (var type in FollowUpTypes)
-                        {
-                            <option value="@type">@SharedResourceDisplayNames.FollowUpTaskType(Localizer, type)</option>
-                        }
-                    </InputSelect>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-primary w-100" type="submit" disabled="@isBusy">@Localizer["FollowUps.CreateAction"]</button>
-                </div>
-                <div class="col-12">
-                    <label class="form-label" for="followup-notes">@Localizer["Common.Notes"]</label>
-                    <InputTextArea id="followup-notes" class="form-control" rows="3" @bind-Value="newTask.Notes" />
-                </div>
-            </div>
-        </EditForm>
-    </div>
-</section>
 
 <section class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
@@ -128,6 +87,57 @@
         </table>
     </div>
 </section>
+
+@if (isCreatePanelOpen)
+{
+    <div class="side-panel-scrim" @onclick="CloseCreatePanel"></div>
+    <aside class="side-panel">
+        <EditForm Model="newTask" OnValidSubmit="CreateAsync">
+            <DataAnnotationsValidator />
+            <div class="side-panel-header">
+                <h2 class="workspace-card-title mb-0">@Localizer["FollowUps.CreateTitle"]</h2>
+                <button type="button" class="side-panel-close" @onclick="CloseCreatePanel" aria-label="@Localizer["Common.Close"]">&times;</button>
+            </div>
+            <div class="side-panel-body">
+                <ValidationSummary />
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" for="followup-contact">@Localizer["Common.Contact"]</label>
+                        <SearchSelect TItem="ContactDto"
+                                      Id="followup-contact"
+                                      Items="contacts"
+                                      DisplayText="@(c => $"{c.DisplayName} ({c.Email})")"
+                                      GetId="@(c => c.Id)"
+                                      @bind-SelectedId="newTask.ContactId"
+                                      Placeholder="@Localizer["FollowUps.SelectContact"]"
+                                      EmptyLabel="@Localizer["Common.NoResults"]" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="followup-due">@Localizer["FollowUps.DueAt"]</label>
+                        <InputDate id="followup-due" class="form-control" @bind-Value="newTask.DueDate" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="followup-type">@Localizer["Common.Type"]</label>
+                        <InputSelect id="followup-type" class="form-select" @bind-Value="newTask.Type">
+                            @foreach (var type in FollowUpTypes)
+                            {
+                                <option value="@type">@SharedResourceDisplayNames.FollowUpTaskType(Localizer, type)</option>
+                            }
+                        </InputSelect>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="followup-notes">@Localizer["Common.Notes"]</label>
+                        <InputTextArea id="followup-notes" class="form-control" rows="3" @bind-Value="newTask.Notes" />
+                    </div>
+                </div>
+            </div>
+            <div class="side-panel-footer">
+                <button type="button" class="btn btn-outline-secondary" @onclick="CloseCreatePanel" disabled="@isBusy">@Localizer["Common.Cancel"]</button>
+                <button type="submit" class="btn btn-primary" disabled="@isBusy">@Localizer["FollowUps.CreateAction"]</button>
+            </div>
+        </EditForm>
+    </aside>
+}
 </div>
 
 @code {
@@ -136,6 +146,7 @@
     private IReadOnlyList<ContactDto> contacts = [];
     private IReadOnlyList<FollowUpTaskDto> tasks = [];
     private FollowUpTaskFormModel newTask = new();
+    private bool isCreatePanelOpen;
     private string? errorMessage;
     private string? successMessage;
     private bool isLoading;
@@ -207,7 +218,7 @@
 
         try
         {
-            if (!Guid.TryParse(newTask.ContactId, out var contactId))
+            if (newTask.ContactId is not Guid contactId)
             {
                 throw new InvalidOperationException(Localizer["FollowUps.ContactRequired"]);
             }
@@ -219,6 +230,7 @@
                 newTask.Type,
                 newTask.Notes));
 
+            isCreatePanelOpen = false;
             newTask = new FollowUpTaskFormModel();
             successMessage = Localizer["FollowUps.CreatedSuccess"];
             await LoadTasksAsync(isCompleted: false);
@@ -235,6 +247,17 @@
         {
             isSaving = false;
         }
+    }
+
+    private void OpenCreatePanel()
+    {
+        isCreatePanelOpen = true;
+    }
+
+    private void CloseCreatePanel()
+    {
+        isCreatePanelOpen = false;
+        newTask = new FollowUpTaskFormModel();
     }
 
     private async Task CompleteAsync(Guid taskId)
@@ -266,7 +289,7 @@
     private sealed class FollowUpTaskFormModel
     {
         [LocalizedRequired]
-        public string? ContactId { get; set; }
+        public Guid? ContactId { get; set; }
 
         [LocalizedRequired]
         public DateOnly DueDate { get; set; } = DateOnly.FromDateTime(DateTime.Today.AddDays(2));

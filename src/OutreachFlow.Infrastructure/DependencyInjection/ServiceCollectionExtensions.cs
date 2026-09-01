@@ -2,10 +2,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OutreachFlow.Application.Attachments;
+using OutreachFlow.Application.Campaigns;
 using OutreachFlow.Application.Common;
 using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.ContactActivities;
 using OutreachFlow.Application.ContactImports;
+using OutreachFlow.Application.ContactGroups;
 using OutreachFlow.Application.EmailDrafts;
 using OutreachFlow.Application.EmailSending;
 using OutreachFlow.Application.EmailTemplates;
@@ -116,6 +118,9 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IContactRepository, ContactRepository>();
+        services.AddScoped<IContactGroupRepository, ContactGroupRepository>();
+        services.AddScoped<ICampaignRepository, CampaignRepository>();
+        services.AddScoped<ICampaignRecipientRepository, CampaignRecipientRepository>();
         services.AddScoped<IImportJobRepository, ImportJobRepository>();
         services.AddScoped<IContactActivityRepository, ContactActivityRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();

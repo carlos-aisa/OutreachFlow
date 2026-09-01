@@ -73,9 +73,27 @@ The system SHALL allow users to filter contacts by search text, tag, status, do-
 - **THEN** the system returns only contacts matching both filters
 
 ### Requirement: Contact management UI
-The system SHALL provide Blazor screens for listing contacts and creating contacts.
+The system SHALL provide a Blazor contacts page that shows the contact list as the default view and lets users create contacts through a side panel that keeps organization association optional and resolves an organization from a single search-or-create combobox, supporting an existing organization, a newly created organization, or no organization.
 
 #### Scenario: Create contact from UI
-- **WHEN** a user submits the contact creation form with valid data
-- **THEN** the UI creates the contact and refreshes the contact list
+- **WHEN** a user opens the New contact panel and submits valid contact data
+- **THEN** the UI creates the contact, closes the panel, and presents a contextual next action
 
+#### Scenario: Create contact with an existing organization
+- **WHEN** a user selects an existing organization from the organization combobox and submits valid contact data
+- **THEN** the UI creates the contact and associates it with the selected organization without navigating away from the contacts page
+
+#### Scenario: Create contact with a new organization
+- **WHEN** a user types an organization name that does not match an existing organization, chooses to create it, and submits valid contact data
+- **THEN** the UI creates the organization and the associated contact as one operation without navigating to the organizations page
+
+#### Scenario: Cancel discards panel input
+- **WHEN** a user opens the New contact panel, enters data, and cancels instead of submitting
+- **THEN** the UI closes the panel without creating a contact or organization and discards the entered data
+
+### Requirement: Contact group visibility
+The system SHALL show a contact's group memberships in contact management and allow group membership to be managed from the relevant contact or group experience.
+
+#### Scenario: View contact groups
+- **WHEN** a user views a contact that belongs to groups
+- **THEN** the user can identify those groups and manage manual membership where permitted

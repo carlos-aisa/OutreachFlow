@@ -41,6 +41,12 @@ public sealed record GenerateEmailDraftsRequest(
     Guid SenderProfileId,
     IReadOnlyList<Guid>? AttachmentAssetIds);
 
+public sealed record GenerateEmailDraftsForContactsRequest(
+    IReadOnlyList<Guid> ContactIds,
+    Guid TemplateId,
+    Guid SenderProfileId,
+    IReadOnlyList<Guid>? AttachmentAssetIds);
+
 public sealed record UpdateEmailDraftRequest(
     string Subject,
     string Body);

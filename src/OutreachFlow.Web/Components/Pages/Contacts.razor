@@ -18,15 +18,30 @@
 <PageTitle>@Localizer["Contacts.PageTitle"]</PageTitle>
 
 <div class="page-shell">
-    <div class="page-intro">
-        <p class="page-kicker">@Localizer["Contacts.PageTitle"]</p>
-        <h1 class="page-title">@Localizer["Contacts.PageTitle"]</h1>
-        <p class="page-description">@Localizer["Contacts.Description"]</p>
+    <div class="page-intro page-intro--split">
+        <div>
+            <h1 class="page-title">@Localizer["Contacts.PageTitle"]</h1>
+            <p class="page-description">@Localizer["Contacts.Description"]</p>
+        </div>
+        <div class="page-actions">
+            <button id="open-create-contact-panel" type="button" class="btn btn-primary" @onclick="OpenCreatePanel">@Localizer["Contacts.Panel.NewContact"]</button>
+        </div>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(errorMessage))
     {
         <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
+    }
+
+    @if (createdContact is not null)
+    {
+        <div class="alert alert-success page-section" role="status">
+            <p class="mb-2">@Localizer["Contacts.Intake.Success", createdContact.DisplayName]</p>
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-sm btn-outline-primary" href="@($"/contacts/{createdContact.Id}")">@Localizer["Contacts.Intake.ViewContact"]</a>
+                <a class="btn btn-sm btn-outline-primary" href="/drafts/generate">@Localizer["Contacts.Intake.CreateDraft"]</a>
+            </div>
+        </div>
     }
 
     <section class="card page-section">
@@ -51,13 +66,14 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label" for="contact-organization-filter">@Localizer["Common.Organization"]</label>
-                    <select id="contact-organization-filter" class="form-select" @bind="selectedOrganizationId">
-                        <option value="">@Localizer["Contacts.Filters.AnyOrganization"]</option>
-                        @foreach (var organization in organizations)
-                        {
-                            <option value="@organization.Id">@organization.Name</option>
-                        }
-                    </select>
+                    <SearchSelect TItem="OrganizationDto"
+                                  Id="contact-organization-filter"
+                                  Items="organizations"
+                                  DisplayText="@(o => o.Name)"
+                                  GetId="@(o => o.Id)"
+                                  @bind-SelectedId="selectedOrganizationId"
+                                  Placeholder="@Localizer["Contacts.Filters.AnyOrganization"]"
+                                  EmptyLabel="@Localizer["Common.NoResults"]" />
                 </div>
                 <div class="col-md-2">
                     <label class="form-label" for="contact-tag-filter">@Localizer["Common.Tag"]</label>
@@ -82,69 +98,6 @@
                     <button type="button" class="btn btn-outline-secondary" @onclick="ClearFiltersAsync" disabled="@isLoading">@Localizer["Common.Clear"]</button>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <section class="card page-section">
-        <div class="card-header">
-            <h2 class="workspace-card-title mb-0">@Localizer["Contacts.Form.CreateTitle"]</h2>
-        </div>
-        <div class="card-body">
-            <EditForm Model="newContact" OnValidSubmit="CreateContactAsync">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
-
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label" for="new-contact-name">@Localizer["Common.DisplayName"]</label>
-                        <InputText id="new-contact-name" class="form-control" @bind-Value="newContact.DisplayName" />
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="new-contact-email">@Localizer["Common.Email"]</label>
-                        <InputText id="new-contact-email" class="form-control" @bind-Value="newContact.Email" />
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="new-contact-organization">@Localizer["Common.Organization"]</label>
-                        <InputSelect id="new-contact-organization" class="form-select" @bind-Value="newContact.OrganizationId">
-                            <option value="">@Localizer["Contacts.Form.NoOrganization"]</option>
-                            @foreach (var organization in organizations)
-                            {
-                                <option value="@organization.Id">@organization.Name</option>
-                            }
-                        </InputSelect>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="new-contact-phone">@Localizer["Common.Phone"]</label>
-                        <InputText id="new-contact-phone" class="form-control" @bind-Value="newContact.Phone" />
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="new-contact-role">@Localizer["Common.Role"]</label>
-                        <InputText id="new-contact-role" class="form-control" @bind-Value="newContact.Role" />
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="new-contact-source">@Localizer["Common.Source"]</label>
-                        <InputText id="new-contact-source" class="form-control" @bind-Value="newContact.Source" />
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label" for="new-contact-status">@Localizer["Common.Status"]</label>
-                        <InputSelect id="new-contact-status" class="form-select" @bind-Value="newContact.Status">
-                            @foreach (var status in StatusValues)
-                            {
-                                <option value="@status">@SharedResourceDisplayNames.ContactStatus(Localizer, status)</option>
-                            }
-                        </InputSelect>
-                    </div>
-                    <div class="col-md-4 d-flex align-items-center">
-                        <div class="form-check">
-                            <InputCheckbox id="new-contact-dnc" class="form-check-input" @bind-Value="newContact.DoNotContact" />
-                            <label class="form-check-label" for="new-contact-dnc">@Localizer["Common.DoNotContact"]</label>
-                        </div>
-                    </div>
-                    <div class="col-md-4 d-flex align-items-end justify-content-md-end">
-                        <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Contacts.Form.CreateAction"]</button>
-                    </div>
-                </div>
-            </EditForm>
         </div>
     </section>
 
@@ -203,6 +156,124 @@
             </table>
         </div>
     </section>
+
+    @if (isCreatePanelOpen)
+    {
+        <div class="side-panel-scrim" @onclick="CloseCreatePanel"></div>
+        <aside class="side-panel">
+            <EditForm Model="newContact" OnValidSubmit="CreateContactAsync">
+                <DataAnnotationsValidator />
+                <div class="side-panel-header">
+                    <div>
+                        <h2 class="workspace-card-title mb-0">@Localizer["Contacts.Form.CreateTitle"]</h2>
+                        <p class="workspace-card-subtitle">@Localizer["Contacts.Intake.Description"]</p>
+                    </div>
+                    <button type="button" class="side-panel-close" @onclick="CloseCreatePanel" aria-label="@Localizer["Common.Close"]">&times;</button>
+                </div>
+                <div class="side-panel-body">
+                    <ValidationSummary />
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="new-contact-name">@Localizer["Common.DisplayName"]</label>
+                            <InputText id="new-contact-name" class="form-control" @bind-Value="newContact.DisplayName" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="new-contact-email">@Localizer["Common.Email"]</label>
+                            <InputText id="new-contact-email" class="form-control" @bind-Value="newContact.Email" />
+                        </div>
+                        <div class="col-12 combo-wrap">
+                            <label class="form-label" for="new-contact-organization">@Localizer["Common.Organization"]</label>
+                            <input id="new-contact-organization" class="form-control" type="text" autocomplete="off"
+                                   placeholder="@Localizer["Contacts.Organization.SearchPlaceholder"]"
+                                   value="@organizationQuery"
+                                   @oninput="OnOrganizationQueryChanged"
+                                   @onfocus="OnOrganizationFocus"
+                                   @onblur="OnOrganizationBlur" />
+                            @if (organizationDropdownOpen)
+                            {
+                                <div class="combo-dropdown">
+                                    @foreach (var organization in OrganizationMatches.Take(6))
+                                    {
+                                        <div class="combo-item" @onmousedown:preventDefault="true" @onclick="() => SelectOrganization(organization)">@organization.Name</div>
+                                    }
+                                    @if (ShowCreateOrganizationOption)
+                                    {
+                                        <div class="combo-item combo-item--create" @onmousedown:preventDefault="true" @onclick="MarkAsNewOrganization">
+                                            @Localizer["Contacts.Organization.CreateOption", organizationQuery!.Trim()]
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            @if (isNewOrganization)
+                            {
+                                <div>
+                                    <span class="org-new-badge">@Localizer["Contacts.Organization.NewBadge"]</span>
+                                    <button type="button" class="org-extra-toggle" @onclick="ToggleOrganizationExtra">
+                                        @(showOrganizationExtra ? Localizer["Contacts.Organization.HideDetails"] : Localizer["Contacts.Organization.AddDetails"])
+                                    </button>
+                                    @if (showOrganizationExtra)
+                                    {
+                                        <div class="workspace-panel mt-2">
+                                            <p class="workspace-card-title mb-3">@Localizer["Contacts.Intake.OrganizationDetails"]</p>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label" for="new-organization-type">@Localizer["Common.Type"]</label>
+                                                    <InputText id="new-organization-type" class="form-control" @bind-Value="newOrganization.Type" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label" for="new-organization-city">@Localizer["Common.City"]</label>
+                                                    <InputText id="new-organization-city" class="form-control" @bind-Value="newOrganization.City" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label" for="new-organization-province">@Localizer["Common.Province"]</label>
+                                                    <InputText id="new-organization-province" class="form-control" @bind-Value="newOrganization.Province" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label" for="new-organization-country">@Localizer["Common.Country"]</label>
+                                                    <InputText id="new-organization-country" class="form-control" @bind-Value="newOrganization.Country" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="new-contact-phone">@Localizer["Common.Phone"]</label>
+                            <InputText id="new-contact-phone" class="form-control" @bind-Value="newContact.Phone" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="new-contact-role">@Localizer["Common.Role"]</label>
+                            <InputText id="new-contact-role" class="form-control" @bind-Value="newContact.Role" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="new-contact-source">@Localizer["Common.Source"]</label>
+                            <InputText id="new-contact-source" class="form-control" @bind-Value="newContact.Source" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="new-contact-status">@Localizer["Common.Status"]</label>
+                            <InputSelect id="new-contact-status" class="form-select" @bind-Value="newContact.Status">
+                                @foreach (var status in StatusValues)
+                                {
+                                    <option value="@status">@SharedResourceDisplayNames.ContactStatus(Localizer, status)</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <InputCheckbox id="new-contact-dnc" class="form-check-input" @bind-Value="newContact.DoNotContact" />
+                                <label class="form-check-label" for="new-contact-dnc">@Localizer["Common.DoNotContact"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="side-panel-footer">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseCreatePanel" disabled="@isSaving">@Localizer["Common.Cancel"]</button>
+                    <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Contacts.Form.CreateAction"]</button>
+                </div>
+            </EditForm>
+        </aside>
+    }
 </div>
 
 @code {
@@ -212,9 +283,17 @@
     private IReadOnlyList<OrganizationDto> organizations = [];
     private IReadOnlyList<TagDto> tags = [];
     private ContactFormModel newContact = new();
+    private OrganizationFormModel newOrganization = new();
+    private ContactDto? createdContact;
+    private bool isCreatePanelOpen;
+    private string? organizationQuery;
+    private bool organizationDropdownOpen;
+    private Guid? pickedOrganizationId;
+    private bool isNewOrganization;
+    private bool showOrganizationExtra;
     private string? search;
     private string? selectedStatus;
-    private string? selectedOrganizationId;
+    private Guid? selectedOrganizationId;
     private string? selectedTagId;
     private string? selectedDoNotContact;
     private string? errorMessage;
@@ -256,7 +335,7 @@
                 ParseGuid(selectedTagId),
                 ParseStatus(selectedStatus),
                 ParseBoolean(selectedDoNotContact),
-                ParseGuid(selectedOrganizationId),
+                selectedOrganizationId,
                 null,
                 null));
         }
@@ -288,11 +367,39 @@
     {
         isSaving = true;
         errorMessage = null;
+        createdContact = null;
 
         try
         {
-            await ContactClient.CreateAsync(new CreateContactRequest(
-                ParseGuid(newContact.OrganizationId),
+            var organizationId = pickedOrganizationId;
+            CreateOrganizationRequest? newOrganizationRequest = null;
+
+            if (organizationId is null && !string.IsNullOrWhiteSpace(organizationQuery))
+            {
+                var trimmedName = organizationQuery.Trim();
+                var existingMatch = organizations.FirstOrDefault(organization =>
+                    string.Equals(organization.Name, trimmedName, StringComparison.OrdinalIgnoreCase));
+
+                if (existingMatch is not null)
+                {
+                    organizationId = existingMatch.Id;
+                }
+                else
+                {
+                    newOrganizationRequest = new CreateOrganizationRequest(
+                        trimmedName,
+                        newOrganization.Type,
+                        null,
+                        newOrganization.City,
+                        newOrganization.Province,
+                        newOrganization.Country,
+                        null);
+                }
+            }
+
+            createdContact = await ContactClient.CreateIntakeAsync(new CreateContactIntakeRequest(
+                organizationId,
+                newOrganizationRequest,
                 newContact.DisplayName,
                 newContact.Email,
                 newContact.Phone,
@@ -301,7 +408,8 @@
                 newContact.Status,
                 newContact.DoNotContact));
 
-            newContact = new ContactFormModel();
+            isCreatePanelOpen = false;
+            ResetCreateForm();
             await LoadReferenceDataAsync();
             await LoadContactsAsync();
         }
@@ -317,6 +425,81 @@
         {
             isSaving = false;
         }
+    }
+
+    private void OpenCreatePanel()
+    {
+        isCreatePanelOpen = true;
+    }
+
+    private void CloseCreatePanel()
+    {
+        isCreatePanelOpen = false;
+        ResetCreateForm();
+    }
+
+    private void ResetCreateForm()
+    {
+        newContact = new ContactFormModel();
+        newOrganization = new OrganizationFormModel();
+        organizationQuery = null;
+        organizationDropdownOpen = false;
+        pickedOrganizationId = null;
+        isNewOrganization = false;
+        showOrganizationExtra = false;
+    }
+
+    private IReadOnlyList<OrganizationDto> OrganizationMatches =>
+        string.IsNullOrWhiteSpace(organizationQuery)
+            ? organizations
+            : organizations
+                .Where(organization => organization.Name.Contains(organizationQuery, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+    private bool ShowCreateOrganizationOption =>
+        !string.IsNullOrWhiteSpace(organizationQuery) &&
+        !organizations.Any(organization => string.Equals(organization.Name, organizationQuery.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    private void OnOrganizationQueryChanged(ChangeEventArgs e)
+    {
+        organizationQuery = e.Value?.ToString();
+        organizationDropdownOpen = true;
+        pickedOrganizationId = null;
+        isNewOrganization = false;
+    }
+
+    private void OnOrganizationFocus()
+    {
+        organizationDropdownOpen = true;
+        pickedOrganizationId = null;
+        isNewOrganization = false;
+    }
+
+    private async Task OnOrganizationBlur()
+    {
+        await Task.Delay(150);
+        organizationDropdownOpen = false;
+        StateHasChanged();
+    }
+
+    private void SelectOrganization(OrganizationDto organization)
+    {
+        organizationQuery = organization.Name;
+        pickedOrganizationId = organization.Id;
+        isNewOrganization = false;
+        organizationDropdownOpen = false;
+    }
+
+    private void MarkAsNewOrganization()
+    {
+        isNewOrganization = true;
+        pickedOrganizationId = null;
+        organizationDropdownOpen = false;
+    }
+
+    private void ToggleOrganizationExtra()
+    {
+        showOrganizationExtra = !showOrganizationExtra;
     }
 
     private static Guid? ParseGuid(string? value)
@@ -354,8 +537,6 @@
 
     private sealed class ContactFormModel
     {
-        public string? OrganizationId { get; set; }
-
         [LocalizedRequired]
         public string DisplayName { get; set; } = string.Empty;
 
@@ -372,5 +553,16 @@
         public ContactStatus Status { get; set; } = ContactStatus.New;
 
         public bool DoNotContact { get; set; }
+    }
+
+    private sealed class OrganizationFormModel
+    {
+        public string? Type { get; set; }
+
+        public string? City { get; set; }
+
+        public string? Province { get; set; }
+
+        public string? Country { get; set; }
     }
 }
