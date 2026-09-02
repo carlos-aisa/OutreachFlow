@@ -7,6 +7,7 @@
 @using OutreachFlow.Web.Organizations
 @inject OrganizationApiClient OrganizationClient
 @inject IStringLocalizer<SharedResource> Localizer
+@inject IJSRuntime JS
 
 <PageTitle>@Localizer["Organizations.PageTitle"]</PageTitle>
 
@@ -40,19 +41,20 @@
                     <th scope="col">@Localizer["Common.Website"]</th>
                     <th scope="col">@Localizer["Common.City"]</th>
                     <th scope="col">@Localizer["Common.Country"]</th>
+                    <th scope="col">@Localizer["Common.Actions"]</th>
                 </tr>
             </thead>
             <tbody>
                 @if (isLoading)
                 {
                     <tr>
-                        <td colspan="5">@Localizer["Organizations.List.Loading"]</td>
+                        <td colspan="6">@Localizer["Organizations.List.Loading"]</td>
                     </tr>
                 }
                 else if (organizations.Count == 0)
                 {
                     <tr>
-                        <td colspan="5">@Localizer["Organizations.List.Empty"]</td>
+                        <td colspan="6">@Localizer["Organizations.List.Empty"]</td>
                     </tr>
                 }
                 else
@@ -65,6 +67,10 @@
                             <td>@(organization.Website ?? "-")</td>
                             <td>@(organization.City ?? "-")</td>
                             <td>@(organization.Country ?? "-")</td>
+                            <td class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => SelectOrganization(organization)">@Localizer["Common.Edit"]</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => DeleteOrganizationAsync(organization)">@Localizer["Common.Delete"]</button>
+                            </td>
                         </tr>
                     }
                 }
@@ -77,10 +83,10 @@
 {
     <div class="side-panel-scrim" @onclick="CloseCreatePanel"></div>
     <aside class="side-panel">
-        <EditForm Model="newOrganization" OnValidSubmit="CreateOrganizationAsync">
+        <EditForm Model="newOrganization" OnValidSubmit="SaveOrganizationAsync">
             <DataAnnotationsValidator />
             <div class="side-panel-header">
-                <h2 class="workspace-card-title mb-0">@Localizer["Organizations.Form.CreateTitle"]</h2>
+                <h2 class="workspace-card-title mb-0">@(editingOrganization is null ? Localizer["Organizations.Form.CreateTitle"] : Localizer["Organizations.Form.EditTitle"])</h2>
                 <button type="button" class="side-panel-close" @onclick="CloseCreatePanel" aria-label="@Localizer["Common.Close"]">&times;</button>
             </div>
             <div class="side-panel-body">
@@ -118,7 +124,7 @@
             </div>
             <div class="side-panel-footer">
                 <button type="button" class="btn btn-outline-secondary" @onclick="CloseCreatePanel" disabled="@isSaving">@Localizer["Common.Cancel"]</button>
-                <button type="submit" class="btn btn-success" disabled="@isSaving">@Localizer["Organizations.Form.CreateAction"]</button>
+                <button type="submit" class="btn @(editingOrganization is null ? "btn-success" : "btn-primary")" disabled="@isSaving">@(editingOrganization is null ? Localizer["Organizations.Form.CreateAction"] : Localizer["Common.Save"])</button>
             </div>
         </EditForm>
     </aside>
@@ -128,6 +134,7 @@
 @code {
     private IReadOnlyList<OrganizationDto> organizations = [];
     private OrganizationFormModel newOrganization = new();
+    private OrganizationDto? editingOrganization;
     private bool isCreatePanelOpen;
     private string? errorMessage;
     private bool isLoading;
@@ -161,24 +168,37 @@
         }
     }
 
-    private async Task CreateOrganizationAsync()
+    private async Task SaveOrganizationAsync()
     {
         isSaving = true;
         errorMessage = null;
 
         try
         {
-            await OrganizationClient.CreateAsync(new CreateOrganizationRequest(
-                newOrganization.Name,
-                newOrganization.Type,
-                newOrganization.Website,
-                newOrganization.City,
-                newOrganization.Province,
-                newOrganization.Country,
-                newOrganization.Notes));
+            if (editingOrganization is null)
+            {
+                await OrganizationClient.CreateAsync(new CreateOrganizationRequest(
+                    newOrganization.Name,
+                    newOrganization.Type,
+                    newOrganization.Website,
+                    newOrganization.City,
+                    newOrganization.Province,
+                    newOrganization.Country,
+                    newOrganization.Notes));
+            }
+            else
+            {
+                await OrganizationClient.UpdateAsync(editingOrganization.Id, new UpdateOrganizationRequest(
+                    newOrganization.Name,
+                    newOrganization.Type,
+                    newOrganization.Website,
+                    newOrganization.City,
+                    newOrganization.Province,
+                    newOrganization.Country,
+                    newOrganization.Notes));
+            }
 
-            isCreatePanelOpen = false;
-            newOrganization = new OrganizationFormModel();
+            CloseCreatePanel();
             await LoadOrganizationsAsync();
         }
         catch (InvalidOperationException exception)
@@ -197,12 +217,63 @@
 
     private void OpenCreatePanel()
     {
+        editingOrganization = null;
+        newOrganization = new OrganizationFormModel();
         isCreatePanelOpen = true;
+    }
+
+    private void SelectOrganization(OrganizationDto organization)
+    {
+        editingOrganization = organization;
+        newOrganization = new OrganizationFormModel
+        {
+            Name = organization.Name,
+            Type = organization.Type,
+            Website = organization.Website,
+            City = organization.City,
+            Province = organization.Province,
+            Country = organization.Country,
+            Notes = organization.Notes
+        };
+        isCreatePanelOpen = true;
+    }
+
+    private async Task DeleteOrganizationAsync(OrganizationDto organization)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", Localizer["Common.ConfirmDelete", organization.Name].Value);
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        errorMessage = null;
+
+        try
+        {
+            await OrganizationClient.DeleteAsync(organization.Id);
+
+            if (editingOrganization?.Id == organization.Id)
+            {
+                CloseCreatePanel();
+            }
+
+            await LoadOrganizationsAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
     }
 
     private void CloseCreatePanel()
     {
         isCreatePanelOpen = false;
+        editingOrganization = null;
         newOrganization = new OrganizationFormModel();
     }
 
