@@ -24,6 +24,9 @@ Thumbs.db
 *.db-shm
 *.db-wal
 
+# Local attachment uploads
+src/OutreachFlow.Api/storage/
+
 # Test results
 /TestResults/
 **/TestResults/
