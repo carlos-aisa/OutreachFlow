@@ -13,6 +13,7 @@
 @inject ContactApiClient ContactClient
 @inject TagApiClient TagClient
 @inject IStringLocalizer<SharedResource> Localizer
+@inject IJSRuntime JS
 
 <PageTitle>@Localizer["ContactGroups.PageTitle"]</PageTitle>
 
@@ -49,7 +50,7 @@
     private async Task SaveAsync() { isSaving = true; errorMessage = null; try { var criteria = BuildCriteria(); if (editingGroup is null) await ContactGroupClient.CreateAsync(new CreateContactGroupRequest(form.Name, criteria)); else await ContactGroupClient.UpdateAsync(editingGroup.Id, new UpdateContactGroupRequest(form.Name, criteria)); ClosePanel(); await LoadAsync(); } catch (Exception exception) { errorMessage = exception.Message; } finally { isSaving = false; } }
     private void OpenCreatePanel() { panelOpen = true; editingGroup = null; form.Name = form.Provinces = form.Cities = form.OrganizationTypes = string.Empty; selectedTagIds.Clear(); }
     private async Task SelectGroup(ContactGroupDto group) { editingGroup = group; selectedGroupForMembers = group; panelOpen = true; form.Name = group.Name; SetValues(group.Criteria, ContactGroupCriterionType.Province, value => form.Provinces = value); SetValues(group.Criteria, ContactGroupCriterionType.City, value => form.Cities = value); SetValues(group.Criteria, ContactGroupCriterionType.OrganizationType, value => form.OrganizationTypes = value); selectedTagIds.Clear(); foreach (var item in group.Criteria.Where(item => item.Type == ContactGroupCriterionType.Tag && Guid.TryParse(item.Value, out _))) selectedTagIds.Add(Guid.Parse(item.Value)); await LoadAsync(); }
-    private async Task DeleteAsync(ContactGroupDto group) { try { await ContactGroupClient.DeleteAsync(group.Id); if (editingGroup?.Id == group.Id) ClosePanel(); await LoadAsync(); } catch (Exception exception) { errorMessage = exception.Message; } }
+    private async Task DeleteAsync(ContactGroupDto group) { if (!await JS.InvokeAsync<bool>("confirm", Localizer["Common.ConfirmDelete", group.Name].Value)) return; try { await ContactGroupClient.DeleteAsync(group.Id); if (editingGroup?.Id == group.Id) ClosePanel(); await LoadAsync(); } catch (Exception exception) { errorMessage = exception.Message; } }
     private async Task SetOverrideAsync(Guid contactId, ContactGroupOverrideType type) { if (selectedGroupForMembers is null) return; try { await ContactGroupClient.SetOverrideAsync(selectedGroupForMembers.Id, contactId, type); members = await ContactGroupClient.ListMembersAsync(selectedGroupForMembers.Id); } catch (Exception exception) { errorMessage = exception.Message; } }
     private void SetSelectedTags(ChangeEventArgs args) { selectedTagIds.Clear(); if (args.Value is string[] values) foreach (var value in values.Where(value => Guid.TryParse(value, out _))) selectedTagIds.Add(Guid.Parse(value)); }
     private IReadOnlyList<ContactGroupCriterionRequest> BuildCriteria() => Values(form.Provinces, ContactGroupCriterionType.Province).Concat(Values(form.Cities, ContactGroupCriterionType.City)).Concat(Values(form.OrganizationTypes, ContactGroupCriterionType.OrganizationType)).Concat(selectedTagIds.Select(id => new ContactGroupCriterionRequest(ContactGroupCriterionType.Tag, id.ToString()))).ToArray();

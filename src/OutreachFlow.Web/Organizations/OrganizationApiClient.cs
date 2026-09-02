@@ -25,4 +25,24 @@ public sealed class OrganizationApiClient(HttpClient httpClient)
 
         return await ApiClientJson.ReadRequiredAsync<OrganizationDto>(response, cancellationToken);
     }
+
+    public async Task<OrganizationDto> UpdateAsync(
+        Guid id,
+        UpdateOrganizationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.PutAsJsonAsync(
+            $"api/v1/organizations/{id}",
+            request,
+            ApiClientJson.Options,
+            cancellationToken);
+
+        return await ApiClientJson.ReadRequiredAsync<OrganizationDto>(response, cancellationToken);
+    }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.DeleteAsync($"api/v1/organizations/{id}", cancellationToken);
+        await ApiClientJson.EnsureSuccessAsync(response, cancellationToken);
+    }
 }

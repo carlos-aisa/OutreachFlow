@@ -69,11 +69,13 @@
   <data name="Common.SignatureFormat" xml:space="preserve"><value>Signature format</value></data>
   <data name="Common.SignatureFormatPlaceholder" xml:space="preserve"><value>No signature format</value></data>
   <data name="Common.ApiUnavailablePrefix" xml:space="preserve"><value>Could not reach the OutreachFlow API</value></data>
+  <data name="Common.ConfirmDelete" xml:space="preserve"><value>Delete "{0}"? This can't be undone.</value></data>
   <data name="Organizations.PageTitle" xml:space="preserve"><value>Organizations</value></data>
   <data name="Organizations.Description" xml:space="preserve"><value>Manage the organizations your contacts belong to.</value></data>
   <data name="Organizations.Panel.New" xml:space="preserve"><value>New organization</value></data>
   <data name="Organizations.Form.CreateTitle" xml:space="preserve"><value>Create organization</value></data>
   <data name="Organizations.Form.CreateAction" xml:space="preserve"><value>Create organization</value></data>
+  <data name="Organizations.Form.EditTitle" xml:space="preserve"><value>Edit organization</value></data>
   <data name="Organizations.List.Title" xml:space="preserve"><value>Organization list</value></data>
   <data name="Organizations.List.Count" xml:space="preserve"><value>{0} organizations</value></data>
   <data name="Organizations.List.Loading" xml:space="preserve"><value>Loading organizations...</value></data>
