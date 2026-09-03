@@ -249,6 +249,9 @@ public sealed class CampaignRecipientServiceTests
         public Task UpsertOverrideAsync(ContactGroupMembershipOverride membershipOverride, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
 
+        public Task RemoveOverrideAsync(Guid contactGroupId, Guid contactId, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
         public void Remove(ContactGroup contactGroup) => _groups.Remove(contactGroup);
     }
 }

@@ -124,6 +124,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IImportJobRepository, ImportJobRepository>();
         services.AddScoped<IContactActivityRepository, ContactActivityRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
+        services.AddScoped<IOrganizationTypeRepository, OrganizationTypeRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<ISenderProfileRepository, SenderProfileRepository>();
         services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();

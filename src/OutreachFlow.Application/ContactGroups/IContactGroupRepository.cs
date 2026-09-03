@@ -13,6 +13,7 @@ public interface IContactGroupRepository
     Task AddCriterionAsync(ContactGroupCriterion criterion, CancellationToken cancellationToken = default);
     Task ReplaceCriteriaAsync(Guid contactGroupId, IReadOnlyList<ContactGroupCriterion> criteria, CancellationToken cancellationToken = default);
     Task UpsertOverrideAsync(ContactGroupMembershipOverride membershipOverride, CancellationToken cancellationToken = default);
+    Task RemoveOverrideAsync(Guid contactGroupId, Guid contactId, CancellationToken cancellationToken = default);
     void Remove(ContactGroup contactGroup);
 }
 

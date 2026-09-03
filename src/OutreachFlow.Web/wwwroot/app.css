@@ -240,6 +240,10 @@ a:focus-visible,
     overflow: hidden;
 }
 
+.card--overflow-visible {
+    overflow: visible;
+}
+
 .card-header,
 .card-footer {
     background: var(--workspace-card-header-bg);
@@ -409,6 +413,24 @@ textarea.form-control {
     font-weight: 700;
     letter-spacing: 0.02em;
     padding: 0.55rem 0.8rem;
+}
+
+.badge--success {
+    background: rgba(47, 143, 91, 0.16);
+    border: 1px solid rgba(47, 143, 91, 0.34);
+    color: var(--workspace-success);
+}
+
+.badge--danger {
+    background: rgba(193, 84, 99, 0.14);
+    border: 1px solid rgba(193, 84, 99, 0.32);
+    color: var(--workspace-danger);
+}
+
+.badge--muted {
+    background: transparent;
+    border: 1px solid var(--workspace-border-strong);
+    color: var(--workspace-text-muted);
 }
 
 .text-bg-secondary {
@@ -951,6 +973,34 @@ h1:focus {
     border-top: 1px solid rgba(194, 206, 222, 0.5);
     color: var(--workspace-text-muted);
     font-size: 0.85rem;
+}
+
+.pagination-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.9rem 1.35rem;
+    border-top: 1px solid var(--workspace-border);
+    background: var(--workspace-card-header-bg);
+}
+
+.pagination-summary {
+    color: var(--workspace-text-muted);
+    font-size: 0.85rem;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pagination-page {
+    color: var(--workspace-text-muted);
+    font-size: 0.85rem;
+    white-space: nowrap;
 }
 
 @media (max-width: 767.98px) {

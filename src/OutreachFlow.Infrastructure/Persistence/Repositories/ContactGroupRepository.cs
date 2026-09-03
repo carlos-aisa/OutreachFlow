@@ -51,5 +51,13 @@ public sealed class ContactGroupRepository(OutreachFlowDbContext dbContext) : IC
         await dbContext.ContactGroupMembershipOverrides.AddAsync(membershipOverride, cancellationToken);
     }
 
+    public async Task RemoveOverrideAsync(Guid contactGroupId, Guid contactId, CancellationToken cancellationToken = default)
+    {
+        var existing = await dbContext.ContactGroupMembershipOverrides.FindAsync(
+            [contactGroupId, contactId],
+            cancellationToken);
+        if (existing is not null) dbContext.ContactGroupMembershipOverrides.Remove(existing);
+    }
+
     public void Remove(ContactGroup contactGroup) => dbContext.ContactGroups.Remove(contactGroup);
 }

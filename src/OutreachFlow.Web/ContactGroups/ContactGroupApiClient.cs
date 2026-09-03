@@ -19,6 +19,12 @@ public sealed class ContactGroupApiClient(HttpClient httpClient)
         return await ApiClientJson.ReadRequiredAsync<ContactGroupDto>(response, cancellationToken);
     }
 
+    public async Task<ContactGroupDto> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.GetAsync($"api/v1/contact-groups/{id}", cancellationToken);
+        return await ApiClientJson.ReadRequiredAsync<ContactGroupDto>(response, cancellationToken);
+    }
+
     public async Task<ContactGroupDto> UpdateAsync(Guid id, UpdateContactGroupRequest request, CancellationToken cancellationToken = default)
     {
         using var response = await httpClient.PutAsJsonAsync($"api/v1/contact-groups/{id}", request, ApiClientJson.Options, cancellationToken);
@@ -43,9 +49,21 @@ public sealed class ContactGroupApiClient(HttpClient httpClient)
         return await ApiClientJson.ReadRequiredAsync<IReadOnlyList<ContactGroupMemberDto>>(response, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<ContactGroupMembershipDto>> ListMembershipStatusAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.GetAsync($"api/v1/contact-groups/{id}/membership-status", cancellationToken);
+        return await ApiClientJson.ReadRequiredAsync<IReadOnlyList<ContactGroupMembershipDto>>(response, cancellationToken);
+    }
+
     public async Task SetOverrideAsync(Guid id, Guid contactId, ContactGroupOverrideType type, CancellationToken cancellationToken = default)
     {
         using var response = await httpClient.PutAsync($"api/v1/contact-groups/{id}/members/{contactId}/membership-override?type={type}", null, cancellationToken);
+        await ApiClientJson.EnsureSuccessAsync(response, cancellationToken);
+    }
+
+    public async Task ClearOverrideAsync(Guid id, Guid contactId, CancellationToken cancellationToken = default)
+    {
+        using var response = await httpClient.DeleteAsync($"api/v1/contact-groups/{id}/members/{contactId}/membership-override", cancellationToken);
         await ApiClientJson.EnsureSuccessAsync(response, cancellationToken);
     }
 }

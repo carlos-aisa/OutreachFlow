@@ -68,6 +68,48 @@ internal sealed class InMemoryOrganizationRepository : IOrganizationRepository
     }
 }
 
+internal sealed class InMemoryOrganizationTypeRepository : IOrganizationTypeRepository
+{
+    private readonly List<OrganizationType> _organizationTypes = [];
+
+    public IReadOnlyList<OrganizationType> OrganizationTypes => _organizationTypes;
+
+    public Task AddAsync(OrganizationType organizationType, CancellationToken cancellationToken = default)
+    {
+        _organizationTypes.Add(organizationType);
+        return Task.CompletedTask;
+    }
+
+    public Task<OrganizationType?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_organizationTypes.FirstOrDefault(organizationType => organizationType.Id == id));
+    }
+
+    public Task<OrganizationType?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var normalizedName = NormalizeKey(name);
+
+        return Task.FromResult(_organizationTypes.FirstOrDefault(
+            organizationType => organizationType.NormalizedName == normalizedName));
+    }
+
+    public Task<IReadOnlyList<OrganizationType>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult<IReadOnlyList<OrganizationType>>(
+            _organizationTypes.OrderBy(organizationType => organizationType.Name).ToArray());
+    }
+
+    public void Remove(OrganizationType organizationType)
+    {
+        _organizationTypes.Remove(organizationType);
+    }
+
+    private static string NormalizeKey(string value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToUpperInvariant();
+    }
+}
+
 internal sealed class InMemoryTagRepository : ITagRepository
 {
     private readonly List<Tag> _tags = [];
@@ -441,6 +483,14 @@ internal sealed class InMemoryContactGroupRepository : IContactGroupRepository
 
     public Task UpsertOverrideAsync(
         ContactGroupMembershipOverride membershipOverride,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveOverrideAsync(
+        Guid contactGroupId,
+        Guid contactId,
         CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;

@@ -24,6 +24,7 @@
             <p class="page-description">@Localizer["Contacts.Description"]</p>
         </div>
         <div class="page-actions">
+            <a class="btn btn-outline-secondary" href="/imports">@Localizer["Contacts.Panel.ImportContacts"]</a>
             <button id="open-create-contact-panel" type="button" class="btn btn-primary" @onclick="OpenCreatePanel">@Localizer["Contacts.Panel.NewContact"]</button>
         </div>
     </div>
@@ -44,7 +45,7 @@
         </div>
     }
 
-    <section class="card page-section">
+    <section class="card card--overflow-visible page-section">
         <div class="card-header">
             <h2 class="workspace-card-title mb-0">@Localizer["Contacts.Filters.Title"]</h2>
         </div>
@@ -137,7 +138,7 @@
                     }
                     else
                     {
-                        @foreach (var contact in contacts)
+                        @foreach (var contact in PagedContacts)
                         {
                             <tr>
                                 <td>
@@ -155,6 +156,7 @@
                 </tbody>
             </table>
         </div>
+        <Pagination CurrentPage="currentPage" CurrentPageChanged="OnPageChanged" PageSize="PageSize" TotalItems="contacts.Count" />
     </section>
 
     @if (isCreatePanelOpen)
@@ -299,6 +301,12 @@
     private string? errorMessage;
     private bool isLoading;
     private bool isSaving;
+    private int currentPage = 1;
+
+    private const int PageSize = 25;
+
+    private IEnumerable<ContactDto> PagedContacts =>
+        contacts.Skip((currentPage - 1) * PageSize).Take(PageSize);
 
     protected override async Task OnInitializedAsync()
     {
@@ -338,6 +346,7 @@
                 selectedOrganizationId,
                 null,
                 null));
+            currentPage = 1;
         }
         catch (InvalidOperationException exception)
         {
@@ -351,6 +360,11 @@
         {
             isLoading = false;
         }
+    }
+
+    private void OnPageChanged(int page)
+    {
+        currentPage = page;
     }
 
     private async Task ClearFiltersAsync()

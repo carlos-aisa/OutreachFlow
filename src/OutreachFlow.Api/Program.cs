@@ -72,6 +72,7 @@ app.MapGet("/api/v1/health", () =>
     .WithOpenApi();
 
 app.MapOrganizationEndpoints();
+app.MapOrganizationTypeEndpoints();
 app.MapContactEndpoints();
 app.MapContactGroupEndpoints();
 app.MapCampaignEndpoints();
