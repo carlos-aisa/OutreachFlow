@@ -6,6 +6,7 @@ using Bunit;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using OutreachFlow.Web.Components.Pages;
+using OutreachFlow.Web.Contacts;
 using OutreachFlow.Web.Organizations;
 
 namespace OutreachFlow.IntegrationTests.Web;
@@ -14,6 +15,8 @@ namespace OutreachFlow.IntegrationTests.Web;
 public sealed class OrganizationsComponentTests : BunitContext
 {
     private static readonly Guid OrganizationId = Guid.Parse("1b2c3d4e-5f60-4a7b-8c9d-0e1f2a3b4c5d");
+    private static readonly Guid ContactId = Guid.Parse("2c3d4e5f-6071-4b8c-9d0e-1f2a3b4c5d6e");
+    private static readonly Guid OrganizationTypeId = Guid.Parse("4d5e6f70-8192-4a0b-8c1d-2e3f4a5b6c7d");
 
     [Fact]
     public void ShouldEditOrganizationAndSendUpdateRequest()
@@ -37,6 +40,39 @@ public sealed class OrganizationsComponentTests : BunitContext
                 request.PathAndQuery == $"/api/v1/organizations/{OrganizationId}"));
 
         component.Markup.Should().Contain("Acme Corporation");
+    }
+
+    [Fact]
+    public void ShouldShowContactCountAndMembersForOrganization()
+    {
+        using var cultureScope = CultureTestScope.Use("en-US");
+        using var component = RenderOrganizations(out _);
+
+        component.WaitForAssertion(() => component.Find("table tbody tr").TextContent.Should().Contain("1"));
+
+        component.Find("button.btn-outline-primary").Click();
+
+        component.Markup.Should().Contain("Jamie Smith");
+        component.Markup.Should().Contain("jamie@example.com");
+    }
+
+    [Fact]
+    public void ShouldCreateAndSelectNewOrganizationTypeInline()
+    {
+        using var cultureScope = CultureTestScope.Use("en-US");
+        using var component = RenderOrganizations(out var handler);
+
+        component.Find("#open-create-organization-panel").Click();
+        component.Find("#organization-type").Input("Colegio");
+
+        component.Find(".combo-item--create").Click();
+
+        component.WaitForAssertion(() =>
+            handler.Requests.Should().Contain(request =>
+                request.Method == HttpMethod.Post &&
+                request.PathAndQuery == "/api/v1/organization-types"));
+
+        component.Find("#organization-type").GetAttribute("value").Should().Be("Colegio");
     }
 
     [Fact]
@@ -89,6 +125,8 @@ public sealed class OrganizationsComponentTests : BunitContext
         };
 
         Services.AddSingleton(new OrganizationApiClient(httpClient));
+        Services.AddSingleton(new OrganizationTypeApiClient(httpClient));
+        Services.AddSingleton(new ContactApiClient(httpClient));
 
         return Render<Organizations>();
     }
@@ -113,6 +151,27 @@ public sealed class OrganizationsComponentTests : BunitContext
             if (request.Method == HttpMethod.Get && path == "/api/v1/organizations")
             {
                 return JsonResponse(deleted ? Array.Empty<object>() : [BuildOrganization()]);
+            }
+
+            if (request.Method == HttpMethod.Get && path == "/api/v1/contacts")
+            {
+                return JsonResponse(deleted ? Array.Empty<object>() : [BuildContact()]);
+            }
+
+            if (request.Method == HttpMethod.Get && path == "/api/v1/organization-types")
+            {
+                return JsonResponse(Array.Empty<object>());
+            }
+
+            if (request.Method == HttpMethod.Post && path == "/api/v1/organization-types")
+            {
+                var body = await request.Content!.ReadFromJsonAsync<CreateOrganizationTypeBody>(JsonOptions, cancellationToken);
+                return JsonResponse(new
+                {
+                    id = OrganizationTypeId,
+                    name = body!.Name,
+                    createdAt = DateTimeOffset.UtcNow
+                });
             }
 
             if (request.Method == HttpMethod.Put && path == $"/api/v1/organizations/{OrganizationId}")
@@ -152,6 +211,28 @@ public sealed class OrganizationsComponentTests : BunitContext
             };
         }
 
+        private object BuildContact()
+        {
+            var now = DateTimeOffset.UtcNow;
+            return new
+            {
+                id = ContactId,
+                organizationId = OrganizationId,
+                organizationName = name,
+                displayName = "Jamie Smith",
+                email = "jamie@example.com",
+                phone = (string?)null,
+                role = (string?)null,
+                source = (string?)null,
+                status = "New",
+                doNotContact = false,
+                lastContactedAt = (DateTimeOffset?)null,
+                createdAt = now,
+                updatedAt = now,
+                tags = Array.Empty<object>()
+            };
+        }
+
         private static HttpResponseMessage JsonResponse<T>(T payload)
         {
             return new HttpResponseMessage(HttpStatusCode.OK)
@@ -171,5 +252,7 @@ public sealed class OrganizationsComponentTests : BunitContext
             string? Province,
             string? Country,
             string? Notes);
+
+        private sealed record CreateOrganizationTypeBody(string Name);
     }
 }

@@ -310,6 +310,8 @@ public sealed class WebLocalizationComponentTests : BunitContext
         using var cultureScope = CultureTestScope.Use("es-ES");
         Services.AddLocalization(options => options.ResourcesPath = "Resources");
         Services.AddSingleton(new OrganizationApiClient(CreateHttpClient()));
+        Services.AddSingleton(new OrganizationTypeApiClient(CreateHttpClient()));
+        Services.AddSingleton(new ContactApiClient(CreateHttpClient()));
 
         var component = Render<Organizations>();
 

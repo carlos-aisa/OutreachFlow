@@ -10,3 +10,5 @@ public sealed record UpdateContactGroupRequest(string Name, IReadOnlyList<Contac
 public sealed record ContactGroupDto(Guid Id, string Name, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, IReadOnlyList<ContactGroupCriterionRequest> Criteria);
 
 public sealed record ContactGroupMemberDto(Guid ContactId, bool IsManualInclusion, bool IsManualExclusion);
+
+public sealed record ContactGroupMembershipDto(Guid ContactId, ContactGroupMembershipStatus Status);

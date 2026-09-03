@@ -22,6 +22,8 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
 
     public DbSet<Organization> Organizations => Set<Organization>();
 
+    public DbSet<OrganizationType> OrganizationTypes => Set<OrganizationType>();
+
     public DbSet<Tag> Tags => Set<Tag>();
 
     public DbSet<ContactTag> ContactTags => Set<ContactTag>();
@@ -61,6 +63,7 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigureOrganizations(modelBuilder);
+        ConfigureOrganizationTypes(modelBuilder);
         ConfigureContacts(modelBuilder);
         ConfigureTags(modelBuilder);
         ConfigureContactTags(modelBuilder);
@@ -96,6 +99,26 @@ public sealed class OutreachFlowDbContext(DbContextOptions<OutreachFlowDbContext
             builder.Property(organization => organization.Province).HasMaxLength(100);
             builder.Property(organization => organization.Country).HasMaxLength(100);
             builder.Property(organization => organization.Notes).HasMaxLength(4000);
+        });
+    }
+
+    private static void ConfigureOrganizationTypes(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<OrganizationType>(builder =>
+        {
+            builder.ToTable("OrganizationTypes");
+            builder.HasKey(organizationType => organizationType.Id);
+
+            builder.Property(organizationType => organizationType.Name)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            builder.Property(organizationType => organizationType.NormalizedName)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            builder.HasIndex(organizationType => organizationType.NormalizedName)
+                .IsUnique();
         });
     }
 

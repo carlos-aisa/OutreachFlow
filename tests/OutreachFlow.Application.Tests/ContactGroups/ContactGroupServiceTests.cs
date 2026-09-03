@@ -45,6 +45,53 @@ public sealed class ContactGroupServiceTests
         members.Should().ContainSingle().Which.ContactId.Should().Be(included);
     }
 
+    [Fact]
+    public async Task ShouldClassifyMembershipStatusForEveryContact()
+    {
+        var criteriaMatch = Guid.NewGuid();
+        var manuallyIncluded = Guid.NewGuid();
+        var manuallyExcluded = Guid.NewGuid();
+        var notAMember = Guid.NewGuid();
+        var repository = new FakeContactGroupRepository
+        {
+            Contacts =
+            [
+                new(criteriaMatch, "Asturias", null, null, new HashSet<Guid>()),
+                new(manuallyIncluded, null, null, null, new HashSet<Guid>()),
+                new(manuallyExcluded, "Asturias", null, null, new HashSet<Guid>()),
+                new(notAMember, null, null, null, new HashSet<Guid>())
+            ]
+        };
+        var service = new ContactGroupService(repository, new InMemoryUnitOfWork());
+        var group = await service.CreateAsync(new CreateContactGroupRequest(
+            "Asturias", [new(ContactGroupCriterionType.Province, "Asturias")]));
+        await service.SetOverrideAsync(group.Id, manuallyIncluded, ContactGroupOverrideType.Include);
+        await service.SetOverrideAsync(group.Id, manuallyExcluded, ContactGroupOverrideType.Exclude);
+
+        var statuses = (await service.ListMembershipStatusAsync(group.Id)).ToDictionary(status => status.ContactId, status => status.Status);
+
+        statuses[criteriaMatch].Should().Be(ContactGroupMembershipStatus.MemberByCriteria);
+        statuses[manuallyIncluded].Should().Be(ContactGroupMembershipStatus.MemberByManualInclusion);
+        statuses[manuallyExcluded].Should().Be(ContactGroupMembershipStatus.ExcludedManually);
+        statuses[notAMember].Should().Be(ContactGroupMembershipStatus.NotAMember);
+    }
+
+    [Fact]
+    public async Task ShouldRevertToCriteriaBasedStatusWhenOverrideIsCleared()
+    {
+        var contactId = Guid.NewGuid();
+        var repository = new FakeContactGroupRepository { Contacts = [new(contactId, "Madrid", null, null, new HashSet<Guid>())] };
+        var service = new ContactGroupService(repository, new InMemoryUnitOfWork());
+        var group = await service.CreateAsync(new CreateContactGroupRequest(
+            "Asturias", [new(ContactGroupCriterionType.Province, "Asturias")]));
+        await service.SetOverrideAsync(group.Id, contactId, ContactGroupOverrideType.Include);
+
+        await service.ClearOverrideAsync(group.Id, contactId);
+
+        var statuses = await service.ListMembershipStatusAsync(group.Id);
+        statuses.Should().ContainSingle().Which.Status.Should().Be(ContactGroupMembershipStatus.NotAMember);
+    }
+
     private sealed class FakeContactGroupRepository : IContactGroupRepository
     {
         public List<ContactGroup> Groups { get; } = []; public List<ContactGroupCriterion> Criteria { get; } = []; public List<ContactGroupMembershipOverride> Overrides { get; } = []; public IReadOnlyList<ContactGroupEvaluationContact> Contacts { get; set; } = [];
@@ -57,6 +104,7 @@ public sealed class ContactGroupServiceTests
         public Task AddCriterionAsync(ContactGroupCriterion item, CancellationToken cancellationToken = default) { Criteria.Add(item); return Task.CompletedTask; }
         public Task ReplaceCriteriaAsync(Guid id, IReadOnlyList<ContactGroupCriterion> items, CancellationToken cancellationToken = default) { Criteria.RemoveAll(item => item.ContactGroupId == id); Criteria.AddRange(items); return Task.CompletedTask; }
         public Task UpsertOverrideAsync(ContactGroupMembershipOverride item, CancellationToken cancellationToken = default) { Overrides.RemoveAll(x => x.ContactGroupId == item.ContactGroupId && x.ContactId == item.ContactId); Overrides.Add(item); return Task.CompletedTask; }
+        public Task RemoveOverrideAsync(Guid contactGroupId, Guid contactId, CancellationToken cancellationToken = default) { Overrides.RemoveAll(x => x.ContactGroupId == contactGroupId && x.ContactId == contactId); return Task.CompletedTask; }
         public void Remove(ContactGroup contactGroup) => Groups.Remove(contactGroup);
     }
 }

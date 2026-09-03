@@ -1,0 +1,230 @@
+@page "/organization-types"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.Extensions.Localization
+@using OutreachFlow.Application.Organizations
+@using OutreachFlow.Web
+@using OutreachFlow.Web.Organizations
+@inject OrganizationTypeApiClient OrganizationTypeClient
+@inject IStringLocalizer<SharedResource> Localizer
+@inject IJSRuntime JS
+
+<PageTitle>@Localizer["OrganizationTypes.PageTitle"]</PageTitle>
+
+<div class="page-shell">
+    <div class="page-intro page-intro--split">
+        <div>
+            <h1 class="page-title">@Localizer["OrganizationTypes.PageTitle"]</h1>
+            <p class="page-description">@Localizer["OrganizationTypes.Description"]</p>
+        </div>
+        <div class="page-actions">
+            <button id="open-create-organization-type-panel" type="button" class="btn btn-primary" @onclick="OpenCreatePanel">@Localizer["OrganizationTypes.Panel.New"]</button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
+    }
+
+    <section class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="workspace-card-title mb-0">@Localizer["OrganizationTypes.List.Title"]</h2>
+            <span class="badge text-bg-secondary">@Localizer["OrganizationTypes.List.Count", organizationTypes.Count]</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">@Localizer["Common.Name"]</th>
+                        <th scope="col">@Localizer["Common.Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (isLoading)
+                    {
+                        <tr>
+                            <td colspan="2">@Localizer["OrganizationTypes.List.Loading"]</td>
+                        </tr>
+                    }
+                    else if (organizationTypes.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="2">@Localizer["OrganizationTypes.List.Empty"]</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var organizationType in organizationTypes)
+                        {
+                            <tr>
+                                <td>@organizationType.Name</td>
+                                <td class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => SelectOrganizationType(organizationType)">@Localizer["Common.Edit"]</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => DeleteOrganizationTypeAsync(organizationType)">@Localizer["Common.Delete"]</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @if (isPanelOpen)
+    {
+        <div class="side-panel-scrim" @onclick="CloseCreatePanel"></div>
+        <aside class="side-panel">
+            <EditForm Model="form" OnValidSubmit="SaveOrganizationTypeAsync">
+                <DataAnnotationsValidator />
+                <div class="side-panel-header">
+                    <h2 class="workspace-card-title mb-0">@(editingOrganizationType is null ? Localizer["OrganizationTypes.Form.CreateTitle"] : Localizer["OrganizationTypes.Form.EditTitle"])</h2>
+                    <button type="button" class="side-panel-close" @onclick="CloseCreatePanel" aria-label="@Localizer["Common.Close"]">&times;</button>
+                </div>
+                <div class="side-panel-body">
+                    <ValidationSummary />
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="organization-type-name">@Localizer["Common.Name"]</label>
+                            <InputText id="organization-type-name" class="form-control" @bind-Value="form.Name" />
+                        </div>
+                    </div>
+                </div>
+                <div class="side-panel-footer">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseCreatePanel" disabled="@isSaving">@Localizer["Common.Cancel"]</button>
+                    <button type="submit" class="btn @(editingOrganizationType is null ? "btn-success" : "btn-primary")" disabled="@isSaving">@(editingOrganizationType is null ? Localizer["OrganizationTypes.Form.CreateAction"] : Localizer["Common.Save"])</button>
+                </div>
+            </EditForm>
+        </aside>
+    }
+</div>
+
+@code {
+    private IReadOnlyList<OrganizationTypeDto> organizationTypes = [];
+    private OrganizationTypeFormModel form = new();
+    private OrganizationTypeDto? editingOrganizationType;
+    private bool isPanelOpen;
+    private string? errorMessage;
+    private bool isLoading;
+    private bool isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrganizationTypesAsync();
+    }
+
+    private async Task LoadOrganizationTypesAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            organizationTypes = await OrganizationTypeClient.ListAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveOrganizationTypeAsync()
+    {
+        isSaving = true;
+        errorMessage = null;
+
+        try
+        {
+            if (editingOrganizationType is null)
+            {
+                await OrganizationTypeClient.CreateAsync(new CreateOrganizationTypeRequest(form.Name));
+            }
+            else
+            {
+                await OrganizationTypeClient.UpdateAsync(editingOrganizationType.Id, new UpdateOrganizationTypeRequest(form.Name));
+            }
+
+            CloseCreatePanel();
+            await LoadOrganizationTypesAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void OpenCreatePanel()
+    {
+        editingOrganizationType = null;
+        form = new OrganizationTypeFormModel();
+        isPanelOpen = true;
+    }
+
+    private void SelectOrganizationType(OrganizationTypeDto organizationType)
+    {
+        editingOrganizationType = organizationType;
+        form = new OrganizationTypeFormModel { Name = organizationType.Name };
+        isPanelOpen = true;
+    }
+
+    private async Task DeleteOrganizationTypeAsync(OrganizationTypeDto organizationType)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", Localizer["Common.ConfirmDelete", organizationType.Name].Value);
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        errorMessage = null;
+
+        try
+        {
+            await OrganizationTypeClient.DeleteAsync(organizationType.Id);
+
+            if (editingOrganizationType?.Id == organizationType.Id)
+            {
+                CloseCreatePanel();
+            }
+
+            await LoadOrganizationTypesAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+    }
+
+    private void CloseCreatePanel()
+    {
+        isPanelOpen = false;
+        editingOrganizationType = null;
+        form = new OrganizationTypeFormModel();
+    }
+
+    private sealed class OrganizationTypeFormModel
+    {
+        [LocalizedRequired]
+        public string Name { get; set; } = string.Empty;
+    }
+}

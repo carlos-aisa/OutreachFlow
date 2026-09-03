@@ -25,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICampaignService, CampaignService>();
         services.AddScoped<ICampaignRecipientService, CampaignRecipientService>();
         services.AddScoped<IOrganizationService, OrganizationService>();
+        services.AddScoped<IOrganizationTypeService, OrganizationTypeService>();
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<IContactActivityService, ContactActivityService>();
         services.AddScoped<ISenderProfileService, SenderProfileService>();

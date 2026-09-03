@@ -46,6 +46,18 @@ public static class ContactGroupEndpoints
             }))
             .WithName("SetContactGroupMemberOverride").WithOpenApi();
 
+        group.MapDelete("/{id:guid}/members/{contactId:guid}/membership-override", async (Guid id, Guid contactId, IContactGroupService service, CancellationToken cancellationToken) =>
+            await ApiEndpoint.HandleAsync(async () =>
+            {
+                await service.ClearOverrideAsync(id, contactId, cancellationToken);
+                return Results.NoContent();
+            }))
+            .WithName("ClearContactGroupMemberOverride").WithOpenApi();
+
+        group.MapGet("/{id:guid}/membership-status", async (Guid id, IContactGroupService service, CancellationToken cancellationToken) =>
+            await ApiEndpoint.HandleAsync(async () => Results.Ok(await service.ListMembershipStatusAsync(id, cancellationToken))))
+            .WithName("ListContactGroupMembershipStatus").WithOpenApi();
+
         return endpoints;
     }
 }

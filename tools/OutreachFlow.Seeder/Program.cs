@@ -70,6 +70,7 @@ var dbContext = services.GetRequiredService<OutreachFlowDbContext>();
 await dbContext.Database.MigrateAsync();
 
 var organizationService = services.GetRequiredService<IOrganizationService>();
+var organizationTypeService = services.GetRequiredService<IOrganizationTypeService>();
 var contactService = services.GetRequiredService<IContactService>();
 var tagService = services.GetRequiredService<ITagService>();
 var contactGroupService = services.GetRequiredService<IContactGroupService>();
@@ -126,6 +127,13 @@ foreach (var (name, category) in tagSeeds)
 Console.WriteLine($"  {tags.Count} tags created.");
 
 // ---- Organizations ----
+Console.WriteLine("Seeding organization types...");
+foreach (var type in orgTypes)
+{
+    await organizationTypeService.CreateAsync(new CreateOrganizationTypeRequest(type));
+}
+Console.WriteLine($"  {orgTypes.Length} organization types created.");
+
 Console.WriteLine("Seeding organizations...");
 const int OrganizationCount = 90;
 var organizations = new List<(OrganizationDto Dto, string Province, string City, string Type)>();
@@ -517,6 +525,7 @@ for (var batch = 0; batch < 3; batch++)
 Console.WriteLine();
 Console.WriteLine("Row counts:");
 Console.WriteLine($"  Organizations: {await dbContext.Organizations.CountAsync()}");
+Console.WriteLine($"  OrganizationTypes: {await dbContext.OrganizationTypes.CountAsync()}");
 Console.WriteLine($"  Contacts: {await dbContext.Contacts.CountAsync()}");
 Console.WriteLine($"  Tags: {await dbContext.Tags.CountAsync()}");
 Console.WriteLine($"  ContactTags: {await dbContext.ContactTags.CountAsync()}");

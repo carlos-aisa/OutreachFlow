@@ -1,0 +1,290 @@
+@page "/contact-groups/{Id:guid}"
+@rendermode InteractiveServer
+@using Microsoft.Extensions.Localization
+@using OutreachFlow.Application.ContactGroups
+@using OutreachFlow.Application.Contacts
+@using OutreachFlow.Domain.ContactGroups
+@using OutreachFlow.Web
+@using OutreachFlow.Web.ContactGroups
+@using OutreachFlow.Web.Contacts
+@inject ContactGroupApiClient ContactGroupClient
+@inject ContactApiClient ContactClient
+@inject IStringLocalizer<SharedResource> Localizer
+
+<PageTitle>@(group?.Name ?? Localizer["ContactGroups.PageTitle"])</PageTitle>
+
+<div class="page-shell">
+    <div class="page-intro page-intro--split">
+        <div>
+            <h1 class="page-title">@(group?.Name ?? Localizer["ContactGroups.Detail.Loading"])</h1>
+            <p class="page-description">@FormatCriteria(group?.Criteria)</p>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-outline-secondary" href="/contact-groups">@Localizer["ContactGroups.Detail.BackLink"]</a>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="alert alert-danger page-section" role="alert">@errorMessage</div>
+    }
+
+    <section class="card page-section">
+        <div class="card-header">
+            <h2 class="workspace-card-title mb-0">@Localizer["ContactGroups.Members.FiltersTitle"]</h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label" for="contact-group-member-search">@Localizer["Common.Search"]</label>
+                    <input id="contact-group-member-search" class="form-control" @bind="search" @bind:event="oninput" placeholder="@Localizer["ContactGroups.Members.SearchPlaceholder"]" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="contact-group-member-status-filter">@Localizer["Common.Status"]</label>
+                    <select id="contact-group-member-status-filter" class="form-select" @bind="selectedStatusFilter">
+                        <option value="">@Localizer["ContactGroups.Members.Filter.All"]</option>
+                        <option value="member">@Localizer["ContactGroups.Members.Filter.Members"]</option>
+                        <option value="notMember">@Localizer["ContactGroups.Members.Filter.NotMembers"]</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-outline-secondary w-100" @onclick="ClearFilters">@Localizer["Common.Clear"]</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="workspace-card-title mb-0">@Localizer["ContactGroups.Members.Title"]</h2>
+            <span class="badge text-bg-secondary">@Localizer["ContactGroups.Members.Summary", MemberCount, allContacts.Count]</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">@Localizer["Common.DisplayName"]</th>
+                        <th scope="col">@Localizer["Common.Email"]</th>
+                        <th scope="col">@Localizer["Common.Organization"]</th>
+                        <th scope="col">@Localizer["Common.Status"]</th>
+                        <th scope="col">@Localizer["Common.Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (isLoading)
+                    {
+                        <tr>
+                            <td colspan="5">@Localizer["ContactGroups.Detail.Loading"]</td>
+                        </tr>
+                    }
+                    else if (FilteredContacts.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5">@Localizer["Contacts.List.Empty"]</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var (contact, status) in PagedContacts)
+                        {
+                            <tr>
+                                <td><a href="@($"/contacts/{contact.Id}")">@contact.DisplayName</a></td>
+                                <td>@contact.Email</td>
+                                <td>@(contact.OrganizationName ?? "-")</td>
+                                <td><span class="badge @StatusBadgeClass(status)">@StatusLabel(status)</span></td>
+                                <td>
+                                    @switch (status)
+                                    {
+                                        case ContactGroupMembershipStatus.NotAMember:
+                                            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => IncludeAsync(contact.Id)">@Localizer["ContactGroups.Include"]</button>
+                                            break;
+                                        case ContactGroupMembershipStatus.MemberByCriteria:
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => ExcludeAsync(contact.Id)">@Localizer["ContactGroups.Exclude"]</button>
+                                            break;
+                                        default:
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => ClearOverrideAsync(contact.Id)">@Localizer["ContactGroups.Members.ClearOverride"]</button>
+                                            break;
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <Pagination CurrentPage="currentPage" CurrentPageChanged="OnPageChanged" PageSize="PageSize" TotalItems="FilteredContacts.Count" />
+    </section>
+</div>
+
+@code {
+    private const int PageSize = 25;
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private ContactGroupDto? group;
+    private IReadOnlyList<ContactDto> allContacts = [];
+    private Dictionary<Guid, ContactGroupMembershipStatus> statusByContact = [];
+    private string? search;
+    private string? selectedStatusFilter;
+    private int currentPage = 1;
+    private string? errorMessage;
+    private bool isLoading;
+
+    private List<(ContactDto Contact, ContactGroupMembershipStatus Status)> FilteredContacts => allContacts
+        .Select(contact => (Contact: contact, Status: statusByContact.GetValueOrDefault(contact.Id, ContactGroupMembershipStatus.NotAMember)))
+        .Where(item => string.IsNullOrWhiteSpace(search) ||
+            item.Contact.DisplayName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+            item.Contact.Email.Contains(search, StringComparison.OrdinalIgnoreCase))
+        .Where(item => selectedStatusFilter switch
+        {
+            "member" => item.Status != ContactGroupMembershipStatus.NotAMember,
+            "notMember" => item.Status == ContactGroupMembershipStatus.NotAMember,
+            _ => true
+        })
+        .OrderBy(item => item.Contact.DisplayName)
+        .ToList();
+
+    private IEnumerable<(ContactDto Contact, ContactGroupMembershipStatus Status)> PagedContacts =>
+        FilteredContacts.Skip((currentPage - 1) * PageSize).Take(PageSize);
+
+    private int MemberCount => statusByContact.Values.Count(status => status != ContactGroupMembershipStatus.NotAMember);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            group = await ContactGroupClient.GetByIdAsync(Id);
+            allContacts = await ContactClient.ListAsync(new ContactFilterRequest(
+                Search: null,
+                TagId: null,
+                Status: null,
+                DoNotContact: null,
+                OrganizationId: null,
+                LastContactedFrom: null,
+                LastContactedTo: null));
+            var statuses = await ContactGroupClient.ListMembershipStatusAsync(Id);
+            statusByContact = statuses.ToDictionary(status => status.ContactId, status => status.Status);
+            currentPage = 1;
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RefreshStatusesAsync()
+    {
+        try
+        {
+            var statuses = await ContactGroupClient.ListMembershipStatusAsync(Id);
+            statusByContact = statuses.ToDictionary(status => status.ContactId, status => status.Status);
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+    }
+
+    private async Task IncludeAsync(Guid contactId)
+    {
+        try
+        {
+            await ContactGroupClient.SetOverrideAsync(Id, contactId, ContactGroupOverrideType.Include);
+            statusByContact[contactId] = ContactGroupMembershipStatus.MemberByManualInclusion;
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+    }
+
+    private async Task ExcludeAsync(Guid contactId)
+    {
+        try
+        {
+            await ContactGroupClient.SetOverrideAsync(Id, contactId, ContactGroupOverrideType.Exclude);
+            statusByContact[contactId] = ContactGroupMembershipStatus.ExcludedManually;
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+    }
+
+    private async Task ClearOverrideAsync(Guid contactId)
+    {
+        try
+        {
+            await ContactGroupClient.ClearOverrideAsync(Id, contactId);
+            await RefreshStatusesAsync();
+        }
+        catch (InvalidOperationException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (HttpRequestException exception)
+        {
+            errorMessage = $"{Localizer["Common.ApiUnavailablePrefix"]}: {exception.Message}";
+        }
+    }
+
+    private void ClearFilters()
+    {
+        search = null;
+        selectedStatusFilter = null;
+        currentPage = 1;
+    }
+
+    private void OnPageChanged(int page)
+    {
+        currentPage = page;
+    }
+
+    private string StatusLabel(ContactGroupMembershipStatus status) => status switch
+    {
+        ContactGroupMembershipStatus.MemberByCriteria => Localizer["ContactGroups.Status.MemberByCriteria"],
+        ContactGroupMembershipStatus.MemberByManualInclusion => Localizer["ContactGroups.Status.MemberByManualInclusion"],
+        ContactGroupMembershipStatus.ExcludedManually => Localizer["ContactGroups.Status.ExcludedManually"],
+        _ => Localizer["ContactGroups.Status.NotAMember"]
+    };
+
+    private static string StatusBadgeClass(ContactGroupMembershipStatus status) => status switch
+    {
+        ContactGroupMembershipStatus.MemberByManualInclusion => "badge--success",
+        ContactGroupMembershipStatus.ExcludedManually => "badge--danger",
+        ContactGroupMembershipStatus.MemberByCriteria => "text-bg-secondary",
+        _ => "badge--muted"
+    };
+
+    private static string FormatCriteria(IReadOnlyList<ContactGroupCriterionRequest>? criteria) =>
+        criteria is null or { Count: 0 } ? "-" : string.Join(" · ", criteria.Select(item => item.Value));
+}
