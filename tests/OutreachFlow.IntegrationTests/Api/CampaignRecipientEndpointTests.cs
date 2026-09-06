@@ -9,6 +9,7 @@ using OutreachFlow.Application.Contacts;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Application.SenderProfiles;
 using OutreachFlow.Domain.Campaigns;
+using OutreachFlow.Domain.ContactGroups;
 using OutreachFlow.Domain.Contacts;
 using OutreachFlow.Domain.FollowUps;
 
@@ -17,6 +18,7 @@ namespace OutreachFlow.IntegrationTests.Api;
 public sealed class CampaignRecipientEndpointTests
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
+    private static readonly ContactGroupCriterionRequest[] AnyCriteria = [new(ContactGroupCriterionType.Province, "Test")];
 
     [Fact]
     public async Task ShouldDiscoverIncorporateAndListRecipients()
@@ -31,11 +33,14 @@ public sealed class CampaignRecipientEndpointTests
         var group = await PostAsync<ContactGroupDto>(
             client,
             "/api/v1/contact-groups",
-            new CreateContactGroupRequest("Prospects", []));
+            new CreateContactGroupRequest("Prospects", AnyCriteria));
         var contact = await PostAsync<ContactDto>(
             client,
             "/api/v1/contacts",
             new CreateContactRequest(null, "Alex Morgan", "alex@example.com", null, null, null, ContactStatus.New, false));
+        await PutNoContentAsync(
+            client,
+            $"/api/v1/contact-groups/{group.Id}/members/{contact.Id}/membership-override?type={ContactGroupOverrideType.Include}");
         var campaign = await PostAsync<CampaignDto>(
             client,
             "/api/v1/campaigns",
@@ -76,7 +81,7 @@ public sealed class CampaignRecipientEndpointTests
         var group = await PostAsync<ContactGroupDto>(
             client,
             "/api/v1/contact-groups",
-            new CreateContactGroupRequest("Prospects", []));
+            new CreateContactGroupRequest("Prospects", AnyCriteria));
         var contact = await PostAsync<ContactDto>(
             client,
             "/api/v1/contacts",
@@ -108,7 +113,7 @@ public sealed class CampaignRecipientEndpointTests
         var group = await PostAsync<ContactGroupDto>(
             client,
             "/api/v1/contact-groups",
-            new CreateContactGroupRequest("Prospects", []));
+            new CreateContactGroupRequest("Prospects", AnyCriteria));
         var senderProfile = await PostAsync<SenderProfileDto>(
             client,
             "/api/v1/sender-profiles",
@@ -149,7 +154,7 @@ public sealed class CampaignRecipientEndpointTests
         var group = await PostAsync<ContactGroupDto>(
             client,
             "/api/v1/contact-groups",
-            new CreateContactGroupRequest("Prospects", []));
+            new CreateContactGroupRequest("Prospects", AnyCriteria));
         var senderProfile = await PostAsync<SenderProfileDto>(
             client,
             "/api/v1/sender-profiles",
@@ -218,6 +223,12 @@ public sealed class CampaignRecipientEndpointTests
             response.EnsureSuccessStatusCode();
             return await ReadAsync<T>(response);
         }
+    }
+
+    private static async Task PutNoContentAsync(HttpClient client, string uri)
+    {
+        using var response = await client.PutAsync(uri, null);
+        response.EnsureSuccessStatusCode();
     }
 
     private static async Task<T> ReadAsync<T>(HttpResponseMessage response)

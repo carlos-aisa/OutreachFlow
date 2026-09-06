@@ -7,6 +7,7 @@ using OutreachFlow.Application.Campaigns;
 using OutreachFlow.Application.ContactGroups;
 using OutreachFlow.Application.EmailTemplates;
 using OutreachFlow.Domain.Campaigns;
+using OutreachFlow.Domain.ContactGroups;
 using OutreachFlow.Domain.FollowUps;
 
 namespace OutreachFlow.IntegrationTests.Api;
@@ -14,6 +15,7 @@ namespace OutreachFlow.IntegrationTests.Api;
 public sealed class CampaignEndpointTests
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
+    private static readonly ContactGroupCriterionRequest[] AnyCriteria = [new(ContactGroupCriterionType.Province, "Test")];
 
     [Fact]
     public async Task ShouldCreateListAndUpdateCampaign()
@@ -32,7 +34,7 @@ public sealed class CampaignEndpointTests
         var group = await PostAsync<ContactGroupDto>(
             client,
             "/api/v1/contact-groups",
-            new CreateContactGroupRequest("Prospects", []));
+            new CreateContactGroupRequest("Prospects", AnyCriteria));
 
         var campaign = await PostAsync<CampaignDto>(
             client,
@@ -66,11 +68,11 @@ public sealed class CampaignEndpointTests
         var firstGroup = await PostAsync<ContactGroupDto>(
             client,
             "/api/v1/contact-groups",
-            new CreateContactGroupRequest("Prospects", []));
+            new CreateContactGroupRequest("Prospects", AnyCriteria));
         var secondGroup = await PostAsync<ContactGroupDto>(
             client,
             "/api/v1/contact-groups",
-            new CreateContactGroupRequest("Leads", []));
+            new CreateContactGroupRequest("Leads", AnyCriteria));
         var campaign = await PostAsync<CampaignDto>(
             client,
             "/api/v1/campaigns",
@@ -115,7 +117,7 @@ public sealed class CampaignEndpointTests
         var group = await PostAsync<ContactGroupDto>(
             client,
             "/api/v1/contact-groups",
-            new CreateContactGroupRequest("Prospects", []));
+            new CreateContactGroupRequest("Prospects", AnyCriteria));
 
         using var response = await client.PostAsJsonAsync(
             "/api/v1/campaigns",
@@ -138,7 +140,7 @@ public sealed class CampaignEndpointTests
         var group = await PostAsync<ContactGroupDto>(
             client,
             "/api/v1/contact-groups",
-            new CreateContactGroupRequest("Prospects", []));
+            new CreateContactGroupRequest("Prospects", AnyCriteria));
 
         var campaign = await PostAsync<CampaignDto>(
             client,

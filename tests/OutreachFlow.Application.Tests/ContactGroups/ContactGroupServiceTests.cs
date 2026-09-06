@@ -36,7 +36,8 @@ public sealed class ContactGroupServiceTests
         var included = Guid.NewGuid(); var excluded = Guid.NewGuid();
         var repository = new FakeContactGroupRepository { Contacts = [new(included, null, null, null, new HashSet<Guid>()), new(excluded, null, null, null, new HashSet<Guid>())] };
         var service = new ContactGroupService(repository, new InMemoryUnitOfWork());
-        var group = await service.CreateAsync(new CreateContactGroupRequest("Manual", []));
+        var group = await service.CreateAsync(new CreateContactGroupRequest(
+            "Manual", [new(ContactGroupCriterionType.Province, "Nowhere")]));
         await service.SetOverrideAsync(group.Id, excluded, ContactGroupOverrideType.Exclude);
         await service.SetOverrideAsync(group.Id, included, ContactGroupOverrideType.Include);
 
@@ -90,6 +91,31 @@ public sealed class ContactGroupServiceTests
 
         var statuses = await service.ListMembershipStatusAsync(group.Id);
         statuses.Should().ContainSingle().Which.Status.Should().Be(ContactGroupMembershipStatus.NotAMember);
+    }
+
+    [Fact]
+    public async Task ShouldRejectCreatingAGroupWithNoCriteria()
+    {
+        var service = new ContactGroupService(new FakeContactGroupRepository(), new InMemoryUnitOfWork());
+
+        var act = () => service.CreateAsync(new CreateContactGroupRequest("Everyone", []));
+
+        await act.Should().ThrowAsync<ApplicationValidationException>()
+            .WithMessage("At least one criterion is required.");
+    }
+
+    [Fact]
+    public async Task ShouldRejectUpdatingAGroupToHaveNoCriteria()
+    {
+        var repository = new FakeContactGroupRepository();
+        var service = new ContactGroupService(repository, new InMemoryUnitOfWork());
+        var group = await service.CreateAsync(new CreateContactGroupRequest(
+            "Asturias", [new(ContactGroupCriterionType.Province, "Asturias")]));
+
+        var act = () => service.UpdateAsync(group.Id, new UpdateContactGroupRequest("Asturias", []));
+
+        await act.Should().ThrowAsync<ApplicationValidationException>()
+            .WithMessage("At least one criterion is required.");
     }
 
     private sealed class FakeContactGroupRepository : IContactGroupRepository

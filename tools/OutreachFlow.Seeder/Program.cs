@@ -295,7 +295,6 @@ var groupSeeds = new (string Name, ContactGroupCriterionRequest[] Criteria)[]
     ("Empresas de Barcelona", [new(ContactGroupCriterionType.Province, "Barcelona"), new(ContactGroupCriterionType.OrganizationType, "Empresa")]),
     ("Contactos VIP", [new(ContactGroupCriterionType.Tag, vipTag.Id.ToString())]),
     ("Ayuntamientos", [new(ContactGroupCriterionType.OrganizationType, "Ayuntamiento")]),
-    ("Todos los contactos", []),
 };
 var contactGroups = new List<ContactGroupDto>();
 foreach (var (name, criteria) in groupSeeds)

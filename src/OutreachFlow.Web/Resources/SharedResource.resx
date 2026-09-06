@@ -410,6 +410,10 @@
   <data name="ContactGroups.CreateTitle" xml:space="preserve"><value>Create group</value></data>
   <data name="ContactGroups.ListTitle" xml:space="preserve"><value>Groups</value></data>
   <data name="ContactGroups.List.Count" xml:space="preserve"><value>{0} groups</value></data>
+  <data name="ContactGroups.Filters.Title" xml:space="preserve"><value>Filters</value></data>
+  <data name="ContactGroups.Filters.SearchPlaceholder" xml:space="preserve"><value>Group name</value></data>
+  <data name="ContactGroups.MemberCount" xml:space="preserve"><value>{0} contacts</value></data>
+  <data name="ContactGroups.List.Empty" xml:space="preserve"><value>No groups match the current filters.</value></data>
   <data name="ContactGroups.CriteriaCount" xml:space="preserve"><value>{0} criteria</value></data>
   <data name="Common.Create" xml:space="preserve"><value>Create</value></data>
   <data name="Common.Save" xml:space="preserve"><value>Save</value></data>
@@ -424,6 +428,7 @@
   <data name="ContactGroups.OrganizationTypes" xml:space="preserve"><value>Organization types</value></data>
   <data name="ContactGroups.Tags" xml:space="preserve"><value>Tags</value></data>
   <data name="ContactGroups.CriteriaHelp" xml:space="preserve"><value>Separate text values with commas. Values within one field match any selected value; fields are combined.</value></data>
+  <data name="ContactGroups.Form.CriteriaRequired" xml:space="preserve"><value>Choose at least one criterion (province, city, organization type, or tag).</value></data>
   <data name="ContactGroups.Include" xml:space="preserve"><value>Include</value></data>
   <data name="ContactGroups.Exclude" xml:space="preserve"><value>Exclude</value></data>
   <data name="ContactGroups.Detail.BackLink" xml:space="preserve"><value>← Back to groups</value></data>
