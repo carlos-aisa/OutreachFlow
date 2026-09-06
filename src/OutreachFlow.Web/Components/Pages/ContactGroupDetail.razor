@@ -57,7 +57,7 @@
     <section class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h2 class="workspace-card-title mb-0">@Localizer["ContactGroups.Members.Title"]</h2>
-            <span class="badge text-bg-secondary">@Localizer["ContactGroups.Members.Summary", MemberCount, allContacts.Count]</span>
+            <span class="badge text-bg-secondary">@Localizer["ContactGroups.Members.Summary", FilteredContacts.Count, allContacts.Count]</span>
         </div>
         <div class="table-responsive">
             <table class="table table-striped table-hover mb-0">
@@ -126,7 +126,7 @@
     private IReadOnlyList<ContactDto> allContacts = [];
     private Dictionary<Guid, ContactGroupMembershipStatus> statusByContact = [];
     private string? search;
-    private string? selectedStatusFilter;
+    private string? selectedStatusFilter = "member";
     private int currentPage = 1;
     private string? errorMessage;
     private bool isLoading;
@@ -138,8 +138,8 @@
             item.Contact.Email.Contains(search, StringComparison.OrdinalIgnoreCase))
         .Where(item => selectedStatusFilter switch
         {
-            "member" => item.Status != ContactGroupMembershipStatus.NotAMember,
-            "notMember" => item.Status == ContactGroupMembershipStatus.NotAMember,
+            "member" => IsCurrentMember(item.Status),
+            "notMember" => !IsCurrentMember(item.Status),
             _ => true
         })
         .OrderBy(item => item.Contact.DisplayName)
@@ -148,7 +148,8 @@
     private IEnumerable<(ContactDto Contact, ContactGroupMembershipStatus Status)> PagedContacts =>
         FilteredContacts.Skip((currentPage - 1) * PageSize).Take(PageSize);
 
-    private int MemberCount => statusByContact.Values.Count(status => status != ContactGroupMembershipStatus.NotAMember);
+    private static bool IsCurrentMember(ContactGroupMembershipStatus status) =>
+        status is ContactGroupMembershipStatus.MemberByCriteria or ContactGroupMembershipStatus.MemberByManualInclusion;
 
     protected override async Task OnInitializedAsync()
     {
@@ -260,7 +261,7 @@
     private void ClearFilters()
     {
         search = null;
-        selectedStatusFilter = null;
+        selectedStatusFilter = "member";
         currentPage = 1;
     }
 

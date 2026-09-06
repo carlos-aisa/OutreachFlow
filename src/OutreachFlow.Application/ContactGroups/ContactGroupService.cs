@@ -8,6 +8,7 @@ public sealed class ContactGroupService(IContactGroupRepository repository, IUni
 {
     public async Task<ContactGroupDto> CreateAsync(CreateContactGroupRequest request, CancellationToken cancellationToken = default)
     {
+        RequireCriteria(request.Criteria);
         ContactGroup group;
         try { group = new ContactGroup(request.Name); }
         catch (DomainException exception) { throw new ApplicationValidationException(exception.Message); }
@@ -29,6 +30,7 @@ public sealed class ContactGroupService(IContactGroupRepository repository, IUni
 
     public async Task<ContactGroupDto> UpdateAsync(Guid contactGroupId, UpdateContactGroupRequest request, CancellationToken cancellationToken = default)
     {
+        RequireCriteria(request.Criteria);
         var group = await FindGroupAsync(contactGroupId, cancellationToken);
         try { group.Rename(request.Name); }
         catch (DomainException exception) { throw new ApplicationValidationException(exception.Message); }
@@ -114,6 +116,14 @@ public sealed class ContactGroupService(IContactGroupRepository repository, IUni
             if ((await ListMembersAsync(group.Id, cancellationToken)).Any(member => member.ContactId == contactId)) result.Add(group);
         }
         return result;
+    }
+
+    private static void RequireCriteria(IReadOnlyList<ContactGroupCriterionRequest> criteria)
+    {
+        if (criteria.Count == 0)
+        {
+            throw new ApplicationValidationException("At least one criterion is required.");
+        }
     }
 
     private async Task<ContactGroup> FindGroupAsync(Guid contactGroupId, CancellationToken cancellationToken) =>

@@ -20,19 +20,54 @@ public sealed class ContactGroupDetailComponentTests : BunitContext
     private static readonly Guid JorgeId = Guid.Parse("4d4d4d4d-4d4d-4d4d-4d4d-4d4d4d4d4d4d");
 
     [Fact]
-    public void ShouldShowMembershipStatusForEachContact()
+    public void ShouldDefaultToShowingOnlyCurrentMembers()
     {
         using var cultureScope = CultureTestScope.Use("en-US");
         using var component = RenderDetail(out _);
 
-        component.WaitForAssertion(() => component.Markup.Should().Contain("Ana Pérez"));
+        component.WaitForAssertion(() => component.FindAll("table tbody tr").Should().HaveCount(2));
 
-        var rows = component.FindAll("table tbody tr");
-        rows.Should().HaveCount(4);
+        component.Find("#contact-group-member-status-filter").GetAttribute("value").Should().Be("member");
+        component.Markup.Should().Contain("Ana Pérez");
+        component.Markup.Should().Contain("Jorge Díaz");
+        component.Markup.Should().NotContain("Luis Gómez");
+        component.Markup.Should().NotContain("Marta Ruiz");
+        component.Markup.Should().Contain("2 of 4 contacts");
+    }
+
+    [Fact]
+    public void ShouldShowMembershipStatusForEachContactWhenFilteringByAll()
+    {
+        using var cultureScope = CultureTestScope.Use("en-US");
+        using var component = RenderDetail(out _);
+
+        component.WaitForAssertion(() => component.FindAll("table tbody tr").Should().HaveCount(2));
+
+        component.Find("#contact-group-member-status-filter").Change("");
+
+        component.WaitForAssertion(() => component.FindAll("table tbody tr").Should().HaveCount(4));
         component.Markup.Should().Contain("Member (by criteria)");
         component.Markup.Should().Contain("Not a member");
         component.Markup.Should().Contain("Excluded manually");
         component.Markup.Should().Contain("Added manually");
+        component.Markup.Should().Contain("4 of 4 contacts");
+    }
+
+    [Fact]
+    public void ShouldShowOnlyExcludedAndNonMatchingContactsWhenFilteringByNonMembers()
+    {
+        using var cultureScope = CultureTestScope.Use("en-US");
+        using var component = RenderDetail(out _);
+
+        component.WaitForAssertion(() => component.FindAll("table tbody tr").Should().HaveCount(2));
+
+        component.Find("#contact-group-member-status-filter").Change("notMember");
+
+        component.WaitForAssertion(() => component.FindAll("table tbody tr").Should().HaveCount(2));
+        component.Markup.Should().Contain("Luis Gómez");
+        component.Markup.Should().Contain("Marta Ruiz");
+        component.Markup.Should().NotContain("Ana Pérez");
+        component.Markup.Should().NotContain("Jorge Díaz");
     }
 
     [Fact]
@@ -41,6 +76,8 @@ public sealed class ContactGroupDetailComponentTests : BunitContext
         using var cultureScope = CultureTestScope.Use("en-US");
         using var component = RenderDetail(out var handler);
 
+        component.WaitForAssertion(() => component.FindAll("table tbody tr").Should().HaveCount(2));
+        component.Find("#contact-group-member-status-filter").Change("");
         component.WaitForAssertion(() => component.Markup.Should().Contain("Luis Gómez"));
 
         var row = component.FindAll("table tbody tr").First(r => r.TextContent.Contains("Luis Gómez"));
@@ -87,6 +124,8 @@ public sealed class ContactGroupDetailComponentTests : BunitContext
                 request.Method == HttpMethod.Delete &&
                 request.PathAndQuery == $"/api/v1/contact-groups/{GroupId}/members/{JorgeId}/membership-override"));
 
+        component.Find("#contact-group-member-status-filter").Change("");
+
         component.WaitForAssertion(() =>
             component.FindAll("table tbody tr").First(r => r.TextContent.Contains("Jorge Díaz")).TextContent.Should().Contain("Not a member"));
     }
@@ -97,6 +136,8 @@ public sealed class ContactGroupDetailComponentTests : BunitContext
         using var cultureScope = CultureTestScope.Use("en-US");
         using var component = RenderDetail(out _);
 
+        component.WaitForAssertion(() => component.FindAll("table tbody tr").Should().HaveCount(2));
+        component.Find("#contact-group-member-status-filter").Change("");
         component.WaitForAssertion(() => component.FindAll("table tbody tr").Should().HaveCount(4));
 
         component.Find("#contact-group-member-search").Input("Ana");
